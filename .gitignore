@@ -1,0 +1,18 @@
+# Data
+data/out/
+
+# Python
+__pycache__/
+
+# Images
+*.png
+*.jpg
+
+# Gurobi logs
+*.log
+
+# Gurobi models
+*.lp
+
+# IDE
+.vscode/
