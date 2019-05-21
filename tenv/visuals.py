@@ -135,6 +135,8 @@ def plot_region_neighbors(
             )
             fig.savefig(filename, dpi=300, bbox_inches="tight")
 
+            plt.close()
+
 
 def plot_regions(
     G, region_centers, region_id_dict, path=None, show=False, file_format="png"

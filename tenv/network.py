@@ -235,7 +235,12 @@ def save_graph_pic(G, path):
     )
 
 
-def get_sorted_neighbors(G, region_centers, skip=0, path_sorted_neighbors=None):
+def get_sorted_neighbors(
+        distances,
+        region_centers,
+        minimum_distance=0,
+        path_sorted_neighbors=None
+    ):
     neighbors = None
     if os.path.isfile(path_sorted_neighbors):
         neighbors = np.load(path_sorted_neighbors).item()
@@ -250,8 +255,8 @@ def get_sorted_neighbors(G, region_centers, skip=0, path_sorted_neighbors=None):
         )
         neighbors = dict()
         for t, centers in region_centers.items():
-            # Skip max. distnaces
-            if t < skip:
+            # Minimum distances
+            if t < minimum_distance:
                 continue
 
             print(f'{t:04} - {len(centers)}')
@@ -259,7 +264,7 @@ def get_sorted_neighbors(G, region_centers, skip=0, path_sorted_neighbors=None):
             for c_o in centers:
                 neighbors[t][c_o] = list()
                 for c_d in centers:
-                    neighbors[t][c_o].append((c_d, get_distance(G, c_o, c_d)))
+                    neighbors[t][c_o].append((c_d,  distances[c_o][c_d]))
 
                 # Sort according to distance
                 neighbors[t][c_o].sort(key=lambda tup: tup[1])
@@ -688,9 +693,9 @@ def get_distance_matrix(G, distance_dic_m):
 
     # Creating distance matrix
     dist_matrix = []
-    for from_node in G.nodes():
+    for from_node in range(0, get_number_of_nodes(G)):
         to_distance_list = []
-        for to_node in G.nodes():
+        for to_node in range(0, get_number_of_nodes(G)):
 
             try:
                 dist_km = distance_dic_m[from_node][to_node]

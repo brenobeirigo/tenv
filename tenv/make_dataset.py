@@ -97,6 +97,9 @@ def create_trip_data():
         config.path_dist_matrix, distance_matrix
     )
 
+    # Dataframe info
+    print(dt_distance_matrix.describe())
+
     print(
         "\n############################"
         "## Reachability & Regions ##"
@@ -122,9 +125,9 @@ def create_trip_data():
 
     # Distance from centers
     sorted_neighbors = gen.get_sorted_neighbors(
-        G,
+        distance_dic,
         region_centers,
-        skip=60,
+        minimum_distance=0,
         path_sorted_neighbors=config.path_sorted_neighbors,
     )
 
@@ -185,8 +188,6 @@ def create_trip_data():
             config.tripdata["start"],
             config.tripdata["stop"],
         )
-        # Dataframe info
-        # print(dt_distance_matrix.describe())
 
         #  street network node ids (from G) to tripdata
         print("Adding ids...")
