@@ -235,6 +235,104 @@ def save_graph_pic(G, path):
     )
 
 
+def get_sorted_neighbors(G, region_centers, skip=0, path_sorted_neighbors=None):
+    neighbors = None
+    if os.path.isfile(path_sorted_neighbors):
+        neighbors = np.load(path_sorted_neighbors).item()
+        print(
+            f"\nReading region ids dictionary..."
+            f"\nSource: '{path_sorted_neighbors}'."
+        )
+    else:
+        print(
+            f"\nFinding closest node region center ids..."
+            f"\nTarget: '{path_sorted_neighbors}'."
+        )
+        neighbors = dict()
+        for t, centers in region_centers.items():
+            # Skip max. distnaces
+            if t < skip:
+                continue
+
+            print(f'{t:04} - {len(centers)}')
+            neighbors[t] = dict()
+            for c_o in centers:
+                neighbors[t][c_o] = list()
+                for c_d in centers:
+                    neighbors[t][c_o].append((c_d, get_distance(G, c_o, c_d)))
+
+                # Sort according to distance
+                neighbors[t][c_o].sort(key=lambda tup: tup[1])
+
+        np.save(path_sorted_neighbors, neighbors)
+
+    return neighbors
+
+
+def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
+    """Associate each node to its closest region center within a
+     maximum reachable time limit.
+
+    Parameters
+    ----------
+    G : networkx
+        Street network
+    reachability_dict : dict
+        Associate each node with the reachable nodes within maximum
+        distances.
+    region_centers : dict
+        Region centers for each maximum reachable time limit.
+
+    Returns
+    -------
+    dict
+        Dictionary relating nodes to the ids of its closest region
+        centers within each maximum reachable time limit.
+    """
+
+    region_id_dict = None
+    if os.path.isfile(path_region_ids):
+        region_id_dict = np.load(path_region_ids).item()
+        print(
+            f"\nReading region ids dictionary..."
+            f"\nSource: '{path_region_ids}'."
+        )
+    else:
+        print(
+            "\nFinding closest node region center ids..."
+            f"\nTarget: '{path_region_ids}'."
+        )
+        region_id_dict = dict()
+
+        # Loop nodes n to find the closest region centers
+        for n in range(get_number_of_nodes(G)):
+
+            region_id_dict[n] = dict()
+
+            for time_limit, centers in region_centers.items():
+
+                # Set of nodes that can reach n whitin time limit
+                can_reach = get_can_reach_set(
+                    n, reachability_dict, max_trip_duration=time_limit
+                )
+                # Set of region centers that can access n
+                accessible_regions = list(can_reach.intersection(centers))
+
+                # Find closest region center
+                closest = np.argmin(
+                    [
+                        get_distance(G, c, n)
+                        for c in accessible_regions
+                    ]
+                )
+
+                region_id_dict[n][time_limit] = accessible_regions[closest]
+
+        np.save(path_region_ids, region_id_dict)
+
+    return region_id_dict
+
+
 def get_reachability_dic(
     root_path, distance_dic, step=30, total_range=600, speed_km_h=30
 ):
@@ -284,7 +382,10 @@ def get_reachability_dic(
     reachability_dict = None
     try:
         reachability_dict = np.load(root_path).item()
-        print("Reading reachability dictionary '{}'...".format(root_path))
+        print(
+            "Reading reachability dictionary..."
+            f"\nSource: '{root_path}'."
+        )
 
     except:
 
@@ -657,7 +758,7 @@ def get_distance_dic(root_path, G):
         np.save(root_path, distance_dic_m)
 
     print(
-        "Distance data load successfully. #Nodes:",
+        "Distance data loaded successfully. #Nodes:",
         len(distance_dic_m.values()),
     )
 
@@ -869,7 +970,7 @@ def get_region_centers(
 
         if root_path is not None:
             # Create folder to save logs
-            centers_gurobi_log = "{}/region_centers/gurobi_log".format(
+            centers_gurobi_log = "{}/mip_region_centers/gurobi_log".format(
                 root_path
             )
 
@@ -878,7 +979,7 @@ def get_region_centers(
 
             # Create folder to save intermediate work, that is, previous
             # max_delay steps.
-            centers_sub_sols = "{}/region_centers/sub_sols".format(root_path)
+            centers_sub_sols = "{}/mip_region_centers/sub_sols".format(root_path)
 
             if not os.path.exists(centers_sub_sols):
                 os.makedirs(centers_sub_sols)

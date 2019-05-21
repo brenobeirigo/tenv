@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Get network graph and save
     G = nw.get_network_from(
         config.tripdata["region"],
-        config.root_path,
+        config.root_map,
         config.graph_name,
         config.graph_file_name,
     )

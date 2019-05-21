@@ -2,8 +2,9 @@ import functools
 import json
 import sys
 import os
-
 from flask import Flask, jsonify
+from pprint import pprint
+
 
 # REST - WSGI + Flask
 from waitress import serve
@@ -18,7 +19,7 @@ import tenv.network as nw
 import tenv.demand as tp
 
 # Network
-G = nw.load_network(config.graph_file_name, folder=config.root_path)
+G = nw.load_network(config.graph_file_name, folder=config.root_map)
 print(
     "# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
         len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
@@ -36,6 +37,52 @@ reachability_dict = nw.get_reachability_dic(
     total_range=600,
     speed_km_h=30,
 )
+
+# All region centers
+region_centers = nw.get_region_centers(
+    config.path_region_centers,
+    reachability_dict,
+    root_path=config.root_reachability,
+)
+
+print("#Centers per trip duration:")
+print({dist: len(region_centers[dist]) for dist in region_centers})
+pprint(region_centers)
+
+# What is the closest region center of every each
+# node (given a time limit)?
+region_id_dict = nw.get_region_ids(
+    G,
+    reachability_dict,
+    region_centers,
+    path_region_ids=config.path_region_center_ids,
+)
+
+sorted_neighbors = nw.get_sorted_neighbors(
+    G, region_centers, path_sorted_neighbors=config.path_sorted_neighbors
+)
+
+# pprint(region_id_dict)
+
+# print("Nodes:", G.nodes())
+
+
+# for n in range(nw.get_number_of_nodes(G)):
+#     can_reach = nw.get_can_reach_set(
+#         n, reachability_dict, max_trip_duration=30
+#     )
+#     print(n, can_reach)
+#     fig, ax = ox.plot_graph_routes(
+#         G,
+#         [nw.get_sp(G, o, n) for o in can_reach],
+#         route_linewidth=1,
+#         fig_height=10,
+#         node_size=4,
+#         orig_dest_node_size=6,
+#         save=False,
+#         show=True,
+#     )
+
 
 app = Flask(__name__)
 
@@ -159,11 +206,12 @@ def linestring_style(o, d, stroke, width, opacity):
                 "stroke": stroke,
                 "stroke-width": width,
                 "stroke-opacity": opacity,
-            }
+            },
         )
     )
 
 
+@functools.lru_cache(maxsize=None)
 @app.route("/nodes")
 def nodes():
     """Get all network nodes (id, longitude, latitude)
@@ -176,7 +224,7 @@ def nodes():
     Example
     -------
     input = http://localhost:4999/nodes
-    output = {"nodes":[{"id":1360,"x":4.362211,"y":52.0275607}...]}
+    output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
 
     """
     nodes = [
@@ -187,6 +235,7 @@ def nodes():
     return jsonify(dic)
 
 
+@functools.lru_cache(maxsize=None)
 @app.route("/point_style/<int:p>/<color>/<size>/<symbol>")
 def point_style(p, color, size, symbol):
     # E.g.: http://127.0.0.1:4999/point_style/1/%23FF0000/small/circle
@@ -198,11 +247,12 @@ def point_style(p, color, size, symbol):
                 "marker-color": color,
                 "marker-size": size,
                 "marker-symbol": symbol,
-            }
+            },
         )
     )
 
 
+@functools.lru_cache(maxsize=None)
 @app.route("/neighbors/<int:node>/<int:degree>/<direction>")
 def neighbors(node, degree, direction):
     """Get node neighbors within degree levels
@@ -232,6 +282,7 @@ def neighbors(node, degree, direction):
     return ";".join(map(str, node_neighbors))
 
 
+@functools.lru_cache(maxsize=None)
 @app.route("/centers/<int:time_limit>")
 def get_centers(time_limit):
     """Region centers considering time limit
@@ -245,15 +296,72 @@ def get_centers(time_limit):
     -------
     str
         Region center ids
-    """
-    region_centers = nw.get_region_centers(
-        config.path_region_centers,
-        reachability_dict,
-        root_path=config.root_reachability,
-        time_limit=time_limit,
-    )
 
-    return ";".join(map(str, region_centers))
+    Examples
+    --------
+    input = http://localhost:4999/centers/360
+    output = 1042;1077;1097;1117;1854
+    """
+
+    return ";".join(map(str, region_centers[time_limit]))
+
+
+@functools.lru_cache(maxsize=None)
+@app.route("/region_id/<int:time_limit>/<int:node_id>")
+def get_region_id(time_limit, node_id):
+    """Get closest region id that can access node (within time limit)
+
+    Parameters
+    ----------
+    time_limit : int
+        Maximum time limit
+    node_id : int
+        Node id at lowest level
+
+    Returns
+    -------
+    int
+        Region id of node
+    """
+
+    return str(region_id_dict[node_id][time_limit])
+
+
+@functools.lru_cache(maxsize=None)
+@app.route(
+    "/center_neighbors/<int:time_limit>/" "<int:center_id>/<int:n_neighbors>"
+)
+def get_center_neighbors(time_limit, center_id, n_neighbors):
+    """Get the closest 'n_neighbors' neighbors from region center.
+
+    Parameters
+    ----------
+    time_limit : int
+        Max. distance driving creation of region centers
+    center_id : int
+        Region center id
+    n_neighbors : int
+        Max. number of neighbors
+
+    Returns
+    -------
+    int
+        Region center neighbors
+
+    Example
+    -------
+        input = http://localhost:4999/center_neighbors/120/74/4
+        output = 2061;1125;2034;968
+    """
+    return ";".join(
+        [
+            str(neighbor_id)
+            for neighbor_id, distance in sorted_neighbors[time_limit][
+                center_id
+            ]
+            if distance != 0
+        ][:n_neighbors]
+    )
 
 
 @app.route(
@@ -285,11 +393,12 @@ def point_info(
                 "passenger-count": passenger_count,
                 "vehicle-load": vehicle_load,
                 "user-class": user_class,
-            }
+            },
         )
     )
 
 
+@functools.lru_cache(maxsize=None)
 @app.route("/location/<int:id>")
 def location(id):
     """Return location (lon, lat) of point with node id
@@ -306,7 +415,7 @@ def location(id):
 
     Example
     -------
-    http://127.0.0.1:4999/location/1
+    http://localhost:4999/location/1
 
     """
 

@@ -24,7 +24,7 @@ root = os.getcwd().replace("\\", "/")
 
 # Input data
 tripdata = None
-with open("data/in/config_scenario/delft.json") as js:
+with open("data/in/config_scenario/nyc.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
@@ -99,6 +99,9 @@ root_reachability = root_map + "/reachability_{}_{}{}".format(
     step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
 )
 
+root_img_regions = root_reachability + "/img_region_centers"
+root_img_neighbors = root_reachability + "/img_region_center_neighbors"
+
 # Reachability dictionary {o:{max_dist:[d1, d2, d3]}
 path_reachability_dic = "{}/reachability_{}.npy".format(
     root_reachability, graph_name
@@ -106,5 +109,13 @@ path_reachability_dic = "{}/reachability_{}.npy".format(
 
 # Region centers dictionary {max_dist:[c1, c2, c3, c4, c5]}
 path_region_centers = "{}/region_centers_{}.npy".format(
+    root_reachability, graph_name
+)
+
+path_region_center_ids = "{}/region_center_ids_{}.npy".format(
+    root_reachability, graph_name
+)
+
+path_sorted_neighbors = "{}/sorted_neighbors_region_centers_{}.npy".format(
     root_reachability, graph_name
 )

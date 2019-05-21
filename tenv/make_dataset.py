@@ -11,12 +11,13 @@ sys.path.append(root)
 import tenv.config as config
 import tenv.network as gen
 import tenv.demand as tp
+import tenv.visuals as vi
 
 
 def create_trip_data():
     print(
         "###############################"
-        " TRIP DATA SANDBOX "
+        "###### TRIP DATA SANDBOX ######"
         "###############################"
     )
 
@@ -45,6 +46,13 @@ def create_trip_data():
     if not os.path.exists(config.root_reachability):
         os.makedirs(config.root_reachability)
 
+    # Plots ############################################################
+    if not os.path.exists(config.root_img_regions):
+        os.makedirs(config.root_img_regions)
+
+    if not os.path.exists(config.root_img_neighbors):
+        os.makedirs(config.root_img_neighbors)
+
     print(
         (
             "\n>>>>> Target folders:\n"
@@ -57,9 +65,9 @@ def create_trip_data():
     )
 
     print(
-        "\n#######################"
-        " Loading network ######"
-        "#######################"
+        "\n############################"
+        "##### Loading network ######"
+        "############################"
     )
 
     # Get network graph and save
@@ -74,7 +82,7 @@ def create_trip_data():
 
     print(
         "\n############################"
-        " Creating distance data "
+        "## Creating distance data ##"
         "############################"
     )
 
@@ -89,14 +97,75 @@ def create_trip_data():
         config.path_dist_matrix, distance_matrix
     )
 
-    # Dataframe info
-    # print(dt_distance_matrix.describe())
+    print(
+        "\n############################"
+        "## Reachability & Regions ##"
+        "############################"
+    )
+    # Creating reachability dictionary
+    reachability = gen.get_reachability_dic(
+        config.path_reachability_dic,
+        distance_dic,
+        step=config.step,
+        total_range=config.total_range,
+        speed_km_h=config.speed_km_h,
+    )
+
+    # Creating region centers for all max. travel durations
+    # in reachability dictionary
+
+    region_centers = gen.get_region_centers(
+        config.path_region_centers,
+        reachability,
+        root_path=config.root_reachability,
+    )
+
+    # Distance from centers
+    sorted_neighbors = gen.get_sorted_neighbors(
+        G,
+        region_centers,
+        skip=60,
+        path_sorted_neighbors=config.path_sorted_neighbors,
+    )
+
+    # pprint(sorted_neighbors)
+
+    print("Plotting region neighbors...")
+    vi.plot_region_neighbors(
+        G,
+        region_centers,
+        sorted_neighbors,
+        path=config.root_img_neighbors,
+        show=False,
+        file_format="png",
+        max_neighbors=4,
+    )
+
+    # Each node is associated to the closest region center according
+    # to list of max. travel durations
+    region_ids = gen.get_region_ids(
+        G,
+        reachability,
+        region_centers,
+        path_region_ids=config.path_region_center_ids,
+    )
+
+    # Plot region centers (blue) and associated nodes
+    print("Plotting regions...")
+    vi.plot_regions(
+        G,
+        region_centers,
+        region_ids,
+        path=config.root_img_regions,
+        show=False,
+        file_format="png",
+    )
 
     if "url_tripdata" in config.tripdata.keys():
 
         print(
             "\n############################"
-            " Processing trip data "
+            "### Processing trip data ###"
             "############################"
         )
         pprint(config.tripdata["url_tripdata"])
@@ -116,6 +185,8 @@ def create_trip_data():
             config.tripdata["start"],
             config.tripdata["stop"],
         )
+        # Dataframe info
+        # print(dt_distance_matrix.describe())
 
         #  street network node ids (from G) to tripdata
         print("Adding ids...")
@@ -126,9 +197,9 @@ def create_trip_data():
     if "data_gen" in config.tripdata:
 
         print(
-            "\n#######################"
-            " Generating random data "
-            "#######################"
+            "\n############################"
+            "## Generating random data ##"
+            "############################"
         )
 
         print("Trip data generation settings:")
@@ -157,24 +228,6 @@ def create_trip_data():
                     end_timestamp=config.tripdata["data_gen"]["stop"],
                     distance_dic=distance_dic,
                 )
-
-    # Creating reachability dictionary
-    reachability = gen.get_reachability_dic(
-        config.path_reachability_dic,
-        distance_dic,
-        step=config.step,
-        total_range=config.total_range,
-        speed_km_h=config.speed_km_h,
-    )
-
-    # Creating region centers for all max. travel durations
-    # in reachability dictionary
-
-    region_centers = gen.get_region_centers(
-        config.path_region_centers,
-        reachability,
-        root_path=config.root_reachability,
-    )
 
 
 if __name__ == "__main__":
