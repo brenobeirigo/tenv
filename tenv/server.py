@@ -58,31 +58,14 @@ region_id_dict = nw.get_region_ids(
     path_region_ids=config.path_region_center_ids,
 )
 
+node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+print(node_region_ids)
+
 sorted_neighbors = nw.get_sorted_neighbors(
     G, region_centers, path_sorted_neighbors=config.path_sorted_neighbors
 )
 
-# pprint(region_id_dict)
-
-# print("Nodes:", G.nodes())
-
-
-# for n in range(nw.get_number_of_nodes(G)):
-#     can_reach = nw.get_can_reach_set(
-#         n, reachability_dict, max_trip_duration=30
-#     )
-#     print(n, can_reach)
-#     fig, ax = ox.plot_graph_routes(
-#         G,
-#         [nw.get_sp(G, o, n) for o in can_reach],
-#         route_linewidth=1,
-#         fig_height=10,
-#         node_size=4,
-#         orig_dest_node_size=6,
-#         save=False,
-#         show=True,
-#     )
-
+center_nodes = nw.get_center_nodes(region_id_dict)
 
 app = Flask(__name__)
 
@@ -91,19 +74,19 @@ app = Flask(__name__)
 @functools.lru_cache(maxsize=None)
 def sp(o, d):
     """Shortest path between origin and destination (inclusive)
-    
+
     Parameters
     ----------
     o : int
         Origin id
     d : int
         Destination id
-    
+
     Returns
     -------
     str
         List of ids separated by ';'
-    
+
     Example
     -------
     input = http://localhost:4999/sp/1/900
@@ -233,6 +216,61 @@ def nodes():
     ]
     dic = dict(nodes=nodes)
     return jsonify(dic)
+
+
+@functools.lru_cache(maxsize=None)
+@app.route("/center_elements/<int:max_dist>/<int:center>")
+def get_center_elements(max_dist, center):
+    """Get all network nodes (id, longitude, latitude)
+
+    Returns
+    -------
+    str
+        Node ids considering time limit (separated by ;)
+
+    Example
+    -------
+    input = http://localhost:4999/nodes
+    output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
+
+    """
+    print(center_nodes[max_dist][center])
+    return ";".join(center_nodes[max_dist][center])
+
+
+@functools.lru_cache(maxsize=None)
+@app.route("/nodes_level/<int:time_limit>")
+def level_nodes(time_limit):
+    """Get all network nodes (id, longitude, latitude)
+
+    Returns
+    -------
+    str
+        Node ids considering time limit (separated by ;)
+
+    Example
+    -------
+    input = http://localhost:4999/nodes
+    output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
+
+    """
+    nodes = [str(region_id_dict[node_id][time_limit]) for node_id in G.nodes()]
+    return ";".join(nodes)
+
+
+@functools.lru_cache(maxsize=None)
+@app.route("/node_region_ids")
+def get_node_region_ids():
+    """Get list of node ids for each region (defined with minimum
+    reachable time)
+
+    Returns
+    -------
+    dict
+        Dictionary of max. reachable time keys and node id lists.
+    """
+
+    return jsonify(dict(node_region_ids))
 
 
 @functools.lru_cache(maxsize=None)

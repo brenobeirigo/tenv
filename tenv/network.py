@@ -236,11 +236,8 @@ def save_graph_pic(G, path):
 
 
 def get_sorted_neighbors(
-        distances,
-        region_centers,
-        minimum_distance=0,
-        path_sorted_neighbors=None
-    ):
+    distances, region_centers, minimum_distance=0, path_sorted_neighbors=None
+):
     neighbors = None
     if os.path.isfile(path_sorted_neighbors):
         neighbors = np.load(path_sorted_neighbors).item()
@@ -259,12 +256,12 @@ def get_sorted_neighbors(
             if t < minimum_distance:
                 continue
 
-            print(f'{t:04} - {len(centers)}')
+            print(f"{t:04} - {len(centers)}")
             neighbors[t] = dict()
             for c_o in centers:
                 neighbors[t][c_o] = list()
                 for c_d in centers:
-                    neighbors[t][c_o].append((c_d,  distances[c_o][c_d]))
+                    neighbors[t][c_o].append((c_d, distances[c_o][c_d]))
 
                 # Sort according to distance
                 neighbors[t][c_o].sort(key=lambda tup: tup[1])
@@ -272,6 +269,16 @@ def get_sorted_neighbors(
         np.save(path_sorted_neighbors, neighbors)
 
     return neighbors
+
+
+def get_center_nodes(region_id_dict):
+
+    a = defaultdict(lambda: defaultdict(list))
+
+    for n, max_dist_center_id in region_id_dict.items():
+        for max_dist, center_id in max_dist_center_id.items():
+            a[max_dist][center_id].append(n)
+    return a
 
 
 def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
@@ -325,10 +332,7 @@ def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
 
                 # Find closest region center
                 closest = np.argmin(
-                    [
-                        get_distance(G, c, n)
-                        for c in accessible_regions
-                    ]
+                    [get_distance(G, c, n) for c in accessible_regions]
                 )
 
                 region_id_dict[n][time_limit] = accessible_regions[closest]
@@ -387,10 +391,7 @@ def get_reachability_dic(
     reachability_dict = None
     try:
         reachability_dict = np.load(root_path).item()
-        print(
-            "Reading reachability dictionary..."
-            f"\nSource: '{root_path}'."
-        )
+        print("Reading reachability dictionary..." f"\nSource: '{root_path}'.")
 
     except:
 
@@ -775,6 +776,30 @@ def get_distance_dic(root_path, G):
 # #################################################################### #
 
 
+def get_node_region_ids(G, region_id_dict):
+    """Get list of node ids for each region (defined with minimum
+    reachable time)
+
+    Parameters
+    ----------
+    G : networkx
+        Transportation network
+    region_id_dict : dict
+        Dictionary associating each id to its region id
+
+    Returns
+    -------
+    dict
+        Dictionary of max. reachable time keys and node id lists.
+    """
+    node_level_id = defaultdict(list)
+    for node_id in G.nodes():
+        node_level_id[0].append(node_id)
+        for time_limit, region_id in region_id_dict[node_id].items():
+            node_level_id[time_limit].append(region_id)
+    return node_level_id
+
+
 def can_reach(origin, target, max_delay, reachability_dic):
     """ Check if 'target' can be reached from 'origin' in less than
     'max_delay' time steps
@@ -984,7 +1009,9 @@ def get_region_centers(
 
             # Create folder to save intermediate work, that is, previous
             # max_delay steps.
-            centers_sub_sols = "{}/mip_region_centers/sub_sols".format(root_path)
+            centers_sub_sols = "{}/mip_region_centers/sub_sols".format(
+                root_path
+            )
 
             if not os.path.exists(centers_sub_sols):
                 os.makedirs(centers_sub_sols)
