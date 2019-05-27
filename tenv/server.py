@@ -4,7 +4,7 @@ import sys
 import os
 from flask import Flask, jsonify
 from pprint import pprint
-
+import copy
 
 # REST - WSGI + Flask
 from waitress import serve
@@ -18,10 +18,16 @@ import tenv.config as config
 import tenv.network as nw
 import tenv.demand as tp
 
+print(
+    "\n###############################################################"
+    f"\n# GRAPH = {config.graph_file_name}"
+    "\n###############################################################"
+)
+
 # Network
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
 print(
-    "# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
+    "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
         len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
     )
 )
@@ -45,9 +51,9 @@ region_centers = nw.get_region_centers(
     root_path=config.root_reachability,
 )
 
-print("#Centers per trip duration:")
-print({dist: len(region_centers[dist]) for dist in region_centers})
-pprint(region_centers)
+# print("#Centers per trip duration:")
+# print({dist: len(region_centers[dist]) for dist in region_centers})
+# pprint(region_centers)
 
 # What is the closest region center of every each
 # node (given a time limit)?
@@ -59,7 +65,7 @@ region_id_dict = nw.get_region_ids(
 )
 
 node_region_ids = nw.get_node_region_ids(G, region_id_dict)
-print(node_region_ids)
+
 
 sorted_neighbors = nw.get_sorted_neighbors(
     G, region_centers, path_sorted_neighbors=config.path_sorted_neighbors
@@ -95,6 +101,36 @@ def sp(o, d):
     return ";".join(map(str, nw.get_sp(G, o, d)))
 
 
+@app.route("/sp_coords/<int:o>/<int:d>")
+@functools.lru_cache(maxsize=None)
+def sp_coords(o, d):
+    """Shortest path between origin and destination (inclusive)
+
+    Parameters
+    ----------
+    o : int
+        Origin id
+    d : int
+        Destination id
+
+    Returns
+    -------
+    str
+        List of ids separated by ';'
+
+    Example
+    -------
+    input = http://localhost:4999/sp_coords/1/3
+    output = 1;2;67;800;900
+    """
+    return ";".join(map(str, nw.get_sp_coords(G, o, d)))
+
+
+@app.route("/distance_meters/<int:o>/<int:d>")
+def get_distance(o, d):
+    return str(distance_dic[o][d])
+
+
 @app.route("/can_reach/<int:n>/<int:t>")
 @functools.lru_cache(maxsize=None)
 def can_reach(n, t):
@@ -120,31 +156,6 @@ def can_reach(n, t):
     """
 
     return ";".join(map(str, nw.get_can_reach_set(n, reachability_dict, t)))
-
-
-@app.route("/sp_coords/<int:o>/<int:d>")
-@functools.lru_cache(maxsize=None)
-def sp_coords(o, d):
-    """Shortest path between origin and destination (inclusive)
-
-    Parameters
-    ----------
-    o : int
-        Origin id
-    d : int
-        Destination id
-
-    Returns
-    -------
-    str
-        List of ids separated by ';'
-
-    Example
-    -------
-    input = http://localhost:4999/sp_coords/1/3
-    output = 1;2;67;800;900
-    """
-    return ";".join(map(str, nw.get_sp_coords(G, o, d)))
 
 
 @app.route(
@@ -221,8 +232,9 @@ def nodes():
 @functools.lru_cache(maxsize=None)
 @app.route("/center_elements/<int:max_dist>/<int:center>")
 def get_center_elements(max_dist, center):
-    """Get all network nodes (id, longitude, latitude)
-
+    """Get all node ids reachable from center node.
+    Assume center node id belongs to centers calculated for
+    max dist.
     Returns
     -------
     str
@@ -234,8 +246,16 @@ def get_center_elements(max_dist, center):
     output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
 
     """
-    print(center_nodes[max_dist][center])
-    return ";".join(center_nodes[max_dist][center])
+    try:
+        nodes = center_nodes[max_dist][center]
+        # print("NODES:", nodes)
+        return ";".join(map(str, nodes))
+    except Exception as e:
+        print(
+            f"ERROR({e})!\n (center={center}, max_dist={max_dist}) does "
+            " not exist!"
+        )
+        return
 
 
 @functools.lru_cache(maxsize=None)
@@ -261,6 +281,21 @@ def level_nodes(time_limit):
 @functools.lru_cache(maxsize=None)
 @app.route("/node_region_ids")
 def get_node_region_ids():
+    """Get list of node ids for each region (defined with maximum
+    reachable time)
+
+    Returns
+    -------
+    dict
+        Dictionary of maximum reachable time keys and node id lists.
+    """
+
+    return jsonify(dict(node_region_ids))
+
+
+@functools.lru_cache(maxsize=None)
+@app.route("/node_region_ids/<int:step>")
+def get_node_region_ids_step(step):
     """Get list of node ids for each region (defined with minimum
     reachable time)
 
@@ -269,8 +304,14 @@ def get_node_region_ids():
     dict
         Dictionary of max. reachable time keys and node id lists.
     """
+    cut_node_region_ids = copy.deepcopy(node_region_ids)
+    min_reachable_time = list(cut_node_region_ids.keys())
 
-    return jsonify(dict(node_region_ids))
+    # Removing distances which are not multiples of "step"
+    for k in min_reachable_time:
+        if k % step != 0:
+            del cut_node_region_ids[k]
+    return jsonify(dict(cut_node_region_ids))
 
 
 @functools.lru_cache(maxsize=None)
@@ -367,7 +408,7 @@ def get_region_id(time_limit, node_id):
 
 @functools.lru_cache(maxsize=None)
 @app.route(
-    "/center_neighbors/<int:time_limit>/" "<int:center_id>/<int:n_neighbors>"
+    "/center_neighbors/<int:time_limit>/<int:center_id>/<int:n_neighbors>"
 )
 def get_center_neighbors(time_limit, center_id, n_neighbors):
     """Get the closest 'n_neighbors' neighbors from region center.

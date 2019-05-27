@@ -208,7 +208,7 @@ def get_network_from(region, root_path, graph_name, graph_filename):
             print("Error loading graph:", e)
 
     print(
-        "# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
+        "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
             len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
         )
     )
@@ -391,7 +391,7 @@ def get_reachability_dic(
     reachability_dict = None
     try:
         reachability_dict = np.load(root_path).item()
-        print("Reading reachability dictionary..." f"\nSource: '{root_path}'.")
+        print("\nReading reachability dictionary..." f"\nSource: '{root_path}'.")
 
     except:
 
@@ -632,10 +632,10 @@ def get_sp(G, o, d):
 
 def get_random_node(G):
     """Find random node in G
-    
+
     Arguments:
         G {networkx} -- Transportation network
-    
+
     Returns:
         [tuple] -- node id, lon, lat
     """
@@ -751,7 +751,7 @@ def get_distance_dic(root_path, G):
     distance_dic_m = None
     try:
         print(
-            "Trying to read distance data from file:\n'{}'.".format(root_path)
+            "\nTrying to read distance data from file:\n'{}'.".format(root_path)
         )
         distance_dic_m = np.load(root_path).item()
 
