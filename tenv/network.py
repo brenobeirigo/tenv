@@ -8,13 +8,14 @@ from collections import defaultdict
 import functools
 import random
 from gurobipy import Model, GurobiError, GRB, quicksum
+import math
 
 # #################################################################### #
 # Create, load, save network ######################################### #
 # #################################################################### #
 
 
-def node_access(G, node, degree=1, direction="backward"):
+def node_access(G, node, degree=1, direction="forward"):
     """
     Return the set of nodes which lead to "node" (direction = backaward)
     or the set o nodes which can be accessed from "node"
@@ -39,7 +40,7 @@ def node_access(G, node, degree=1, direction="backward"):
 
     for _ in range(0, degree):
 
-        # Predecessors i degrees away
+        # Predecessors/successors i degrees away
         access_i = set()
 
         for j in access:
@@ -157,6 +158,9 @@ def get_network_from(region, root_path, graph_name, graph_filename):
 
             # Create and store graph name
             G.graph["name"] = graph_name
+
+            # Save region name
+            G.graph["region"] = region
 
             print(
                 "#ORIGINAL -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
@@ -391,7 +395,9 @@ def get_reachability_dic(
     reachability_dict = None
     try:
         reachability_dict = np.load(root_path).item()
-        print("\nReading reachability dictionary..." f"\nSource: '{root_path}'.")
+        print(
+            "\nReading reachability dictionary..." f"\nSource: '{root_path}'."
+        )
 
     except:
 
@@ -462,7 +468,7 @@ def get_can_reach_set(n, reach_dic, max_trip_duration=150):
     return can_reach_target
 
 
-def get_list_coord(G, o, d):
+def get_list_coord(G, o, d, projection="GPS"):
     """Get the list of intermediate coordinates between
     nodes o and d (inclusive).
 
@@ -477,12 +483,24 @@ def get_list_coord(G, o, d):
 
     edge_data = G.get_edge_data(o, d)[0]
     try:
-        return ox.LineString(edge_data["geometry"]).coords
+        if projection == "GPS":
+            return ox.LineString(edge_data["geometry"]).coords
+        else:
+            return [
+                wgs84_to_web_mercator(x,y)
+                for x,y in ox.LineString(edge_data["geometry"]).coords
+            ]
     except:
-        return [
-            (G.node[o]["x"], G.node[o]["y"]),
-            (G.node[d]["x"], G.node[d]["y"]),
-        ]
+        if projection == "GPS":
+            return [
+                (G.node[o]["x"], G.node[o]["y"]),
+                (G.node[d]["x"], G.node[d]["y"]),
+            ]
+        else:
+            return [
+                wgs84_to_web_mercator(G.node[o]["x"], G.node[o]["y"]),
+                wgs84_to_web_mercator(G.node[d]["x"], G.node[d]["y"]),
+            ]
 
 
 # #################################################################### #
@@ -548,7 +566,7 @@ def get_linestring(G, o, d, **kwargs):
     return geojson
 
 
-def get_sp_coords(G, o, d):
+def get_sp_coords(G, o, d, projection="GPS"):
     """Return coordinates of the shortest path.
     E.g.: [[x, y], [z,w]]
 
@@ -564,17 +582,166 @@ def get_sp_coords(G, o, d):
 
     list_ids = get_sp(G, o, d)
 
-    for i in range(0, len(list_ids) - 1):
-        linestring.extend(get_list_coord(G, list_ids[i], list_ids[i + 1]))
-        linestring = linestring[:-1]
+    if projection == "GPS":
 
-    # Add last node coordinate (excluded in for loop)
-    linestring.append((G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"]))
+        for i in range(0, len(list_ids) - 1):
+            linestring.extend(
+                get_list_coord(
+                    G, list_ids[i], list_ids[i + 1], projection=projection
+                )
+            )
+            linestring = linestring[:-1]
+
+        # Add last node coordinate (excluded in for loop)
+        linestring.append(
+            (G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"])
+        )
+
+    else:
+
+        for i in range(0, len(list_ids) - 1):
+            linestring.extend(
+                get_list_coord(
+                    G, list_ids[i], list_ids[i + 1], projection=projection
+                )
+            )
+            linestring = linestring[:-1]
+
+        # Add last node coordinate (excluded in for loop)
+        linestring.append(
+            wgs84_to_web_mercator(
+                G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"]
+            )
+        )
 
     # List of points (x y) connection from_id and to_id
     coords = [[u, v] for u, v in linestring]
 
     return coords
+
+
+def get_duration(dist_m, speed_km_h=30):
+    dist_s = 3.6 * dist_m / speed_km_h
+    return dist_s
+
+def get_intermediate_coords(G, o, d, n_coords, projection="GPS", waypoint=None):
+    """Get "n_coords" between origin and destination. Populate segments
+    in proportion to legs' distance.
+
+    Parameters
+    ----------
+    G : networkx
+        Street network
+    o : int
+        Origin id
+    d : int
+        Destination i
+    n_coords : int
+        Number of coordinates between o and d (inclusive)
+
+    Returns
+    -------
+    list of coordinates
+        [description]
+    """
+
+    # Shortest path
+    if waypoint and waypoint not in [o, d]:
+        sp = get_sp_coords(G, o, waypoint)
+        sp = sp[:-1] + get_sp_coords(G, waypoint, d)
+    else:
+        sp = get_sp_coords(G, o, d)
+    
+    # If not single point
+    if len(sp) > 1:
+        # Coordinate pairs, e.g., [(p1, p2), (p2, p3)]
+        od_pairs = list(zip(sp[:-1], sp[1:]))
+
+        # Distance (euclidian) in meters between each pair
+        pair_distances = np.array([distance(*p1, *p2) for p1, p2 in od_pairs])
+
+        # E.g., 1---100m----2, 2----300m----3 => [0.25, 0.75]
+        percentage_pair_distances = pair_distances / np.sum(pair_distances)
+
+        # How many points per pair (-1 removes last of the sequence)
+        n_points_between_pairs = percentage_pair_distances * (n_coords - 1)
+        n_points_between_pairs = np.ceil(n_points_between_pairs)
+
+        # Guarantees the right number of points
+        while np.sum(n_points_between_pairs) + 1 > n_coords:
+            n_points_between_pairs[np.argmax(n_points_between_pairs)] -= 1
+
+        while np.sum(n_points_between_pairs) + 1 < n_coords:
+            n_points_between_pairs[np.argmin(n_points_between_pairs)] += 1
+
+        # Tuple (od pair, #points between od - including o)
+        intermediate_points = list(zip(od_pairs, n_points_between_pairs))
+
+        list_coords = []
+        total_distance = 0
+        duration_s = [0]
+
+        for pair, n_intermediate in intermediate_points:
+
+            p1, p2 = pair
+
+            list_coords.append(p1)
+
+            # Step fraction (if there are intermediate points)
+            step_fraction = 1.0 / (n_intermediate if n_intermediate > 0 else 1)
+
+            # Start from second point since p1 as already added
+            # Finishes before p2 since it will be added in the next round
+            all_fraction_steps = np.arange(
+                step_fraction,
+                0.9999,
+                step_fraction
+            )
+
+            distance_pair = 0
+
+            # Loop all fractions to derive the intermediate lon, lat
+            # coordinates following the line
+            for fraction in all_fraction_steps:
+                lon, lat = intermediate_coord(*p1, *p2, fraction)
+
+                distance_leg = distance(*list_coords[-1], lon, lat)
+
+                # Update distance between p1 and p2
+                distance_pair += distance_leg
+
+                # Add intermediate coordinate
+                list_coords.append([lon, lat])
+
+                # Duration to travel the leg between the current pair
+                duration_s.append(get_duration(distance_leg))
+
+            # Add last leg distance
+            distance_last_leg = distance(*list_coords[-1], *p2)
+
+            # Update distance between p1 and p2
+            distance_pair += distance_last_leg
+
+            # Duration to travel the last leg (to p2)
+            duration_s.append(get_duration(distance_last_leg))
+
+            total_distance += distance_pair
+
+        # Add last point (last p2)
+        list_coords.append(sp[-1])
+
+        # Cumulative durations, distances
+        duration_cum_list = np.cumsum(duration_s)
+    
+    else:
+        list_coords = sp
+        duration_cum_list = []
+        total_distance=0
+
+    if projection == "MERCATOR":
+        list_coords = [wgs84_to_web_mercator(*p) for p in list_coords]
+
+    return list_coords, duration_cum_list, total_distance
 
 
 def get_sp_linestring_durations(G, o, d, speed):
@@ -678,6 +845,53 @@ def get_largest_connected_component(G):
 # #################################################################### #
 
 
+def distance(lon1, lat1, lon2, lat2):
+
+    return ox.great_circle_vec(lat1, lon1, lat2, lon2)
+
+
+def intermediate_coord(lon1, lat1, lon2, lat2, fraction):
+    """
+    Returns the point at given fraction between two coordinates.
+    """
+    rad_lat_o = math.radians(lat1)
+    rad_lon_o = math.radians(lon1)
+    rad_lat_d = math.radians(lat2)
+    rad_lon_d = math.radians(lon2)
+
+    # distance between points
+    rad_lat = rad_lat_d - rad_lat_o
+    rad_lon = rad_lon_d - rad_lon_o
+    a = math.sin(rad_lat / 2) * math.sin(rad_lat / 2) + (
+        math.cos(rad_lat_o)
+        * math.cos(rad_lat_d)
+        * math.sin(rad_lon / 2)
+        * math.sin(rad_lon / 2)
+    )
+
+    delta = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    A = math.sin((1 - fraction) * delta) / math.sin(delta)
+    B = math.sin(fraction * delta) / math.sin(delta)
+
+    x = (
+        A * math.cos(rad_lat_o) * math.cos(rad_lon_o)
+        + B * math.cos(rad_lat_d) * math.cos(rad_lon_d)
+    )
+    y = (
+        A * math.cos(rad_lat_o) * math.sin(rad_lon_o)
+        + B * math.cos(rad_lat_d) * math.sin(rad_lon_d)
+    )
+    z = A * math.sin(rad_lat_o) + B * math.sin(rad_lat_d)
+
+    lat_atan2 = math.atan2(z, math.sqrt(x * x + y * y))
+    lon_atan2 = math.atan2(y, x)
+
+    lat = math.degrees(lat_atan2)
+    lon = math.degrees(lon_atan2)
+
+    return lon, lat
+
 def get_distance_matrix(G, distance_dic_m):
     """Return distance matrix (n x n). Value is 'None' when path does
     not exist
@@ -751,7 +965,9 @@ def get_distance_dic(root_path, G):
     distance_dic_m = None
     try:
         print(
-            "\nTrying to read distance data from file:\n'{}'.".format(root_path)
+            "\nTrying to read distance data from file:\n'{}'.".format(
+                root_path
+            )
         )
         distance_dic_m = np.load(root_path).item()
 
@@ -769,6 +985,13 @@ def get_distance_dic(root_path, G):
     )
 
     return distance_dic_m
+
+
+def wgs84_to_web_mercator(lon, lat):
+    k = 6378137
+    x = lon * (k * np.pi / 180.0)
+    y = np.log(np.tan((90 + lat) * np.pi / 360.0)) * k
+    return x, y
 
 
 # #################################################################### #

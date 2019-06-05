@@ -4,6 +4,7 @@ import sys
 import os
 from flask import Flask, jsonify
 from pprint import pprint
+from bisect import bisect_right, bisect_left
 import copy
 
 # REST - WSGI + Flask
@@ -17,6 +18,8 @@ sys.path.append(root)
 import tenv.config as config
 import tenv.network as nw
 import tenv.demand as tp
+import numpy as np
+import math
 
 print(
     "\n###############################################################"
@@ -131,6 +134,46 @@ def get_distance(o, d):
     return str(distance_dic[o][d])
 
 
+@app.route("/sp/<int:o>/<int:d>/<projection>")
+@functools.lru_cache(maxsize=None)
+def sp_json(o, d, projection="GPS"):
+    """Shortest path between origin and destination (inclusive)
+
+    Parameters
+    ----------
+    o : int
+        Origin id
+    d : int
+        Destination id
+
+    Returns
+    -------
+    str
+        List of ids separated by ';'
+
+    Example
+    -------
+    input = http://localhost:4999/sp_coords/1/3
+    output = 1;2;67;800;900
+    """
+    return jsonify({"sp": nw.get_sp_coords(G, o, d, projection=projection)})
+
+
+@app.route("/info/")
+def get_info():
+    """Return network info"""
+    info = {
+        "region": config.region,
+        "node_count": len(G.nodes()),
+        "edge_count": len(G.edges()),
+        "centers": {
+            dist: len(center_ids) for dist, center_ids in center_nodes.items()
+        },
+    }
+
+    return jsonify(info)
+
+
 @app.route("/can_reach/<int:n>/<int:t>")
 @functools.lru_cache(maxsize=None)
 def can_reach(n, t):
@@ -156,6 +199,86 @@ def can_reach(n, t):
     """
 
     return ";".join(map(str, nw.get_can_reach_set(n, reachability_dict, t)))
+
+
+@app.route(
+    "/sp_segmented/<int:o>/<int:d>/<int:waypoint>/"
+    "<int:total_points>/<int:step_duration>/<projection>"
+)
+@functools.lru_cache(maxsize=None)
+def sp_segmented(
+    o, d, waypoint, total_points, step_duration, projection="GPS"
+):
+    """Return "total_points" coordinates between origin and destination.
+
+    Break coordinates acoording to "step_duration"
+
+    
+    Parameters
+    ----------
+    o : int
+        Origin id
+    d : int
+        Destination id
+    total_points : int
+        Number of coordinates between origin and destination (inclusive)
+    step_duration : int
+        Time steps in seconds to break the coordinates
+    projection : str, optional
+        Coordinate projection (MERCATOR or GPS), by default "GPS"
+
+    Returns
+    -------
+    json file
+        {
+            sp=[[[p1,p2],[p3,p4]], [[p4,p5],[p6,p7]]],
+            step_count = 2,
+            len = 7,
+            duration = ?,
+            distance = ?
+
+        }
+    """
+
+    list_coords, cum_duration, dist_m = nw.get_intermediate_coords(
+        G, o, d, total_points, projection=projection, waypoint=waypoint
+    )
+
+    step_coords = []
+    step_duration_cum = 0
+    lo_idx = 0
+
+    # Segmenting list of coords
+    while True:
+
+        step_duration_cum += step_duration
+
+        hi_idx = bisect_left(cum_duration, step_duration_cum, lo=lo_idx)
+
+        # Happens when list_coords has a single point
+        if hi_idx <= 0:
+            step_coords.append(list_coords)
+            break
+
+        # Slice coordinate list
+        step_coords.append(list_coords[lo_idx:hi_idx])
+
+        # Update lower id to slice coordinate list
+        lo_idx = hi_idx - 1
+
+        # List of coords has ended
+        if hi_idx == len(list_coords):
+            break
+
+    return jsonify(
+        {
+            "len": len(list_coords),
+            "duration": nw.get_duration(dist_m),
+            "distance": dist_m,
+            "step_count": len(step_coords),
+            "sp": step_coords,
+        }
+    )
 
 
 @app.route(
@@ -206,8 +329,8 @@ def linestring_style(o, d, stroke, width, opacity):
 
 
 @functools.lru_cache(maxsize=None)
-@app.route("/nodes")
-def nodes():
+@app.route("/nodes/<projection>")
+def nodes(projection):
     """Get all network nodes (id, longitude, latitude)
 
     Returns
@@ -221,10 +344,26 @@ def nodes():
     output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
 
     """
-    nodes = [
-        {"id": id, "x": G.node[id]["x"], "y": G.node[id]["y"]}
-        for id in G.nodes()
-    ]
+    if projection == "GPS":
+        nodes = [
+            {"id": id, "x": G.node[id]["x"], "y": G.node[id]["y"]}
+            for id in G.nodes()
+        ]
+
+    else:
+        nodes = [
+            {"id": id, "x": x, "y": y}
+            for id, x, y in [
+                (
+                    id,
+                    *nw.wgs84_to_web_mercator(
+                        G.node[id]["x"], G.node[id]["y"]
+                    ),
+                )
+                for id in G.nodes()
+            ]
+        ]
+
     dic = dict(nodes=nodes)
     return jsonify(dic)
 
@@ -358,6 +497,8 @@ def neighbors(node, degree, direction):
     node_neighbors = nw.node_access(
         G, node, degree=degree, direction=direction
     )
+    node_neighbors.remove(node)
+
     return ";".join(map(str, node_neighbors))
 
 
@@ -432,15 +573,29 @@ def get_center_neighbors(time_limit, center_id, n_neighbors):
         input = http://localhost:4999/center_neighbors/120/74/4
         output = 2061;1125;2034;968
     """
-    return ";".join(
-        [
-            str(neighbor_id)
+
+    # When time limit is zero, return immediate neighbors
+    if time_limit == 0:
+        node_neighbors = nw.node_access(G, center_id, degree=1)
+
+        # Node is not its own neighbor
+        node_neighbors.discard(center_id)
+
+        # Sort neighbors by distance
+        node_neighbors = list(node_neighbors)
+        node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
+
+    else:
+        node_neighbors = [
+            neighbor_id
             for neighbor_id, distance in sorted_neighbors[time_limit][
                 center_id
             ]
             if distance != 0
-        ][:n_neighbors]
-    )
+        ]
+
+    # Restrict set of neighbors and return
+    return ";".join(list(map(str, node_neighbors))[:n_neighbors])
 
 
 @app.route(
