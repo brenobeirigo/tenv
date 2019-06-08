@@ -54,12 +54,7 @@ region_centers = nw.get_region_centers(
     root_path=config.root_reachability,
 )
 
-# print("#Centers per trip duration:")
-# print({dist: len(region_centers[dist]) for dist in region_centers})
-# pprint(region_centers)
-
-# What is the closest region center of every each
-# node (given a time limit)?
+# What is the closest region center of every node (given a time limit)?
 region_id_dict = nw.get_region_ids(
     G,
     reachability_dict,
@@ -71,10 +66,37 @@ node_region_ids = nw.get_node_region_ids(G, region_id_dict)
 
 
 sorted_neighbors = nw.get_sorted_neighbors(
-    G, region_centers, path_sorted_neighbors=config.path_sorted_neighbors
+    distance_dic,
+    region_centers,
+    path_sorted_neighbors=config.path_sorted_neighbors,
 )
 
 center_nodes = nw.get_center_nodes(region_id_dict)
+
+
+# print("\n##### Distance dictionary ###################################")
+# # pprint(distance_dic)
+
+# print("\n##### Reachability dictionary ###############################")
+# pprint(reachability_dict)
+
+# print("\n##### Centers per trip duration #############################")
+# print(" - Count: ")
+# pprint({dist: len(region_centers[dist]) for dist in region_centers})
+# print(" - Centers:")
+# pprint(region_centers)
+
+# print("\n##### Region id #############################################")
+# pprint(region_id_dict)
+
+# print("\n##### Node region ids #######################################")
+# pprint(node_region_ids)
+
+# print("\n##### Center nodes ##########################################")
+# pprint(center_nodes)
+
+# print("\n##### Sorted neighbors ######################################")
+# pprint(sorted_neighbors)
 
 app = Flask(__name__)
 
@@ -203,10 +225,62 @@ def can_reach(n, t):
 
 
 @app.route(
+    "/sp_sliced/<int:o>/<int:d>/<int:waypoint>/"
+    "<int:total_points>/<int:step_count>/<projection>"
+)
+@functools.lru_cache(maxsize=None)
+def sp_sliced(o, d, waypoint, total_points, step_count, projection="GPS"):
+    """Return "total_points" coordinates between origin and destination.
+
+    Break coordinates acoording to "step_duration"
+
+    
+    Parameters
+    ----------
+    o : int
+        Origin id
+    d : int
+        Destination id
+    total_points : int
+        Number of coordinates between origin and destination (inclusive)
+    step_duration : int
+        Time steps in seconds to break the coordinates
+    projection : str, optional
+        Coordinate projection (MERCATOR or GPS), by default "GPS"
+
+    Returns
+    -------
+    json file
+        {
+            sp=[[[p1,p2],[p3,p4]], [[p4,p5],[p6,p7]]],
+            step_count = 2,
+            len = 7,
+            duration = ?,
+            distance = ?
+
+        }
+    """
+
+    list_coords, cum_duration, dist_m = nw.get_intermediate_coords(
+        G, o, d, total_points, projection=projection, waypoint=waypoint
+    )
+
+    if step_count == 0:
+        print(list_coords)
+    step = total_points // step_count
+
+    list_sliced = [
+        list_coords[i : i + step] for i in np.arange(0, total_points, step)
+    ]
+
+    return jsonify({"sp": list_sliced})
+
+
+@functools.lru_cache(maxsize=None)
+@app.route(
     "/sp_segmented/<int:o>/<int:d>/<int:waypoint>/"
     "<int:total_points>/<int:step_duration>/<projection>"
 )
-@functools.lru_cache(maxsize=None)
 def sp_segmented(
     o, d, waypoint, total_points, step_duration, projection="GPS"
 ):
@@ -446,6 +520,10 @@ def get_node_region_ids_step(step):
     """
     cut_node_region_ids = copy.deepcopy(node_region_ids)
     min_reachable_time = list(cut_node_region_ids.keys())
+
+    # When no levels are defined, region corresponds to all nodes
+    if step == 0:
+        return jsonify({0: cut_node_region_ids[0]})
 
     # Removing distances which are not multiples of "step"
     for k in min_reachable_time:
