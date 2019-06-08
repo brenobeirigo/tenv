@@ -459,6 +459,14 @@ def get_can_reach_set(n, reach_dic, max_trip_duration=150):
     set
         Set of nodes that can reach n in less than 'max_trip_duration'
         seconds.
+
+    Example
+    -------
+    >>> reach_dic = {1:{0:[1],30:[2,3],60:[4,5,6]}}
+    >>> get_can_reach_set(1, reach_dic, max_trip_duration=0)
+    {1}
+    >>> get_can_reach_set(1, reach_dic, max_trip_duration=30)
+    {1,2,3}
     """
 
     can_reach_target = set()
