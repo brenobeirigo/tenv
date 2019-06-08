@@ -164,6 +164,7 @@ def get_info():
     """Return network info"""
     info = {
         "region": config.region,
+        "label": config.graph_name,
         "node_count": len(G.nodes()),
         "edge_count": len(G.edges()),
         "centers": {
