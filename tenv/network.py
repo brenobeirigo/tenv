@@ -395,17 +395,17 @@ def get_reachability_dic(
     reachability_dict = None
     try:
         reachability_dict = np.load(root_path).item()
+        
         print(
             "\nReading reachability dictionary..." f"\nSource: '{root_path}'."
         )
 
-    except:
-
+    except FileNotFoundError:
         reachability_dict = defaultdict(lambda: defaultdict(set))
 
         # E.g., [30, 60, 90, ..., 600]
         steps_in_range_list = [
-            i for i in range(step, total_range + step, step)
+            i for i in range(0, total_range + step, step)
         ]
         print(
             ("Calculating reachability...\n" + "Steps:{}").format(
@@ -1025,7 +1025,7 @@ def get_node_region_ids(G, region_id_dict):
     """
     node_level_id = defaultdict(list)
     for node_id in G.nodes():
-        node_level_id[0].append(node_id)
+        # Note time_limit always start from 0
         for time_limit, region_id in region_id_dict[node_id].items():
             node_level_id[time_limit].append(region_id)
     return node_level_id
