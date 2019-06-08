@@ -24,7 +24,7 @@ root = os.getcwd().replace("\\", "/")
 
 # Input data
 tripdata = None
-with open("data/in/config_scenario/nyc.json") as js:
+with open("data/in/config_scenario/delft.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
