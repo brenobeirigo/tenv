@@ -106,7 +106,7 @@ def create_trip_data():
         "############################"
     )
     # Creating reachability dictionary
-    reachability = gen.get_reachability_dic(
+    reachability, steps = gen.get_reachability_dic(
         config.path_reachability_dic,
         distance_dic,
         step=config.step,
@@ -118,9 +118,11 @@ def create_trip_data():
     # in reachability dictionary
 
     region_centers = gen.get_region_centers(
+        steps,
         config.path_region_centers,
         reachability,
         root_path=config.root_reachability,
+        round_trip=True,
     )
 
     # Distance from centers

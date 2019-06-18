@@ -39,7 +39,7 @@ print(
 distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
 
 # Reachability dictionary
-reachability_dict = nw.get_reachability_dic(
+reachability_dict, steps = nw.get_reachability_dic(
     config.path_reachability_dic,
     distance_dic,
     step=30,
@@ -49,9 +49,11 @@ reachability_dict = nw.get_reachability_dic(
 
 # All region centers
 region_centers = nw.get_region_centers(
+    steps,
     config.path_region_centers,
     reachability_dict,
     root_path=config.root_reachability,
+    round_trip=True,
 )
 
 # What is the closest region center of every node (given a time limit)?
@@ -506,6 +508,18 @@ def get_node_region_ids():
 
     return jsonify(dict(node_region_ids))
 
+@functools.lru_cache(maxsize=None)
+@app.route("/node_region_count")
+def get_node_region_count():
+    """Get count of single ids for each maximum reachable time
+
+    Returns
+    -------
+    dict
+        Dictionary of maximum reachable time keys and counts.
+    """
+
+    return jsonify({k: len(set(n)) for k,n in node_region_ids.items()})
 
 @functools.lru_cache(maxsize=None)
 @app.route("/node_region_ids/<int:step>")

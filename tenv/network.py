@@ -128,7 +128,7 @@ def download_network(region, network_type):
     """
 
     # Download graph
-    G = ox.graph_from_place(region, network_type=network_type)
+    G = ox.graph_from_place(region, network_type=network_type, simplify=True)
 
     return G
 
@@ -393,6 +393,10 @@ def get_reachability_dic(
     """
 
     reachability_dict = None
+
+    # E.g., [30, 60, 90, ..., 600]
+    steps_in_range_list = [i for i in range(step, total_range + step, step)]
+    
     try:
         reachability_dict = np.load(root_path).item()
         print(
@@ -403,10 +407,7 @@ def get_reachability_dic(
 
         reachability_dict = defaultdict(lambda: defaultdict(set))
 
-        # E.g., [30, 60, 90, ..., 600]
-        steps_in_range_list = [
-            i for i in range(step, total_range + step, step)
-        ]
+
         print(
             ("Calculating reachability...\n" + "Steps:{}").format(
                 steps_in_range_list
@@ -436,7 +437,7 @@ def get_reachability_dic(
 
         np.save(root_path, dict(reachability_dict))
 
-    return reachability_dict
+    return reachability_dict, steps_in_range_list
 
 
 def get_can_reach_set(n, reach_dic, max_trip_duration=150):
@@ -495,7 +496,7 @@ def get_list_coord(G, o, d, projection="GPS"):
             return ox.LineString(edge_data["geometry"]).coords
         else:
             return [
-                wgs84_to_web_mercator(x,y)
+                wgs84_to_web_mercator(x, y)
                 for x,y in ox.LineString(edge_data["geometry"]).coords
             ]
     except:
@@ -1031,32 +1032,104 @@ def get_node_region_ids(G, region_id_dict):
     return node_level_id
 
 
-def can_reach(origin, target, max_delay, reachability_dic):
-    """ Check if 'target' can be reached from 'origin' in less than
+def can_reach(origin, target, max_delay, reachability_dic, round_trip=False):
+    """Check if 'target' can be reached from 'origin' in less than
     'max_delay' time steps
+    
+    Parameters
+    ----------
+    origin : int
+        id of departure node
+    target : int
+        id of node to reach
+    max_delay : int
+        Maximum trip delay between origin and target
+    reachability_dic : dict(int=dict(int=set()))
+        Stores the set 's' of nodes that can reach 'target' node in less
+        then 't' time steps.
+        E.g.: reachability_dic[target][max_delay] = s
+    round_trip : bool, optional
+        True when 'origin' must reach 'target' and the other way around,
+        by default False
 
-    Arguments:
-        origin {int} -- id of departure node
-        target {int} -- id of node to reach
-        max_delay {int} -- Maximum trip delay between origin and target
-        reachability_dic {dict{int:dict{int:set}} -- Stores the set
-            's' of nodes that can reach 'target' node in less then 't'
-            time steps.  E.g.: reachability_dic[target][max_delay] = s
+    Returns
+    -------
+    int
+        1 if 'target' can be reached from 'origin' in less than
+        'max_delay' time steps
 
-    Returns:
-        [bool] -- True if 'target' can be reached from 'origin' in
-            less than 'max_delay' time steps
+    Example
+    -------
+
+    ### One way reachability
+
+    >>> reachability_dic[1][30] = {1,2,3,4}
+    >>> reachability_dic[1][60] = {7,8,9,10,11,12}
+    >>> reachability_dic[1][90] = {13,14,15,17,18,19,20}
+
+    >>> can_reach(2, 1, 30, reachability_dic, round_trip=False)
+    1 # node 1 can be reached from node 2 in <= 30s
+    >>> can_reach(2, 1, 90, reachability_dic, round_trip=False)
+    1 # node 1 can be reached from node 2 in <= 90s
+
+    ### Round reachability
+    
+    >>> reachability_dic[1][30] = {1,2,3,4}
+    >>> reachability_dic[1][60] = {7,8,9,10,11,12}
+    >>> reachability_dic[1][90] = {13,14,15,17,18,19,20}
+
+    >>> reachability_dic[2][30] = {2,3}
+    >>> reachability_dic[2][60] = {1,3,4}
+    >>> reachability_dic[2][90] = {21,24,15}
+
+    >>> can_reach(2, 1, 30, reachability_dic, round_trip=True)
+    0 # node 1 can be reached from node 2 in <= 30s but node 2 CANNOT be reached from node 1 in 30s
+    >>> can_reach(2, 1, 90, reachability_dic, round_trip=True)
+    1 # node 1 can be reached from node 2 in <= 90s and node 2 CAN be reached from node 2 in 30s
     """
+
+
+    # Target can be reached from origin
+    origin_target = False
+
+    # Origin can be reached from target
+    target_origin = False
 
     for step in reachability_dic[target].keys():
         if step <= max_delay:
-            if origin in reachability_dic[target][step]:
-                return 1
+
+            # Origin->target has been defined to 1 in previous step
+            if not origin_target:
+                if origin in reachability_dic[target][step]:
+                    origin_target = True
+
+            # If two way, check if target can also reach origin
+            if round_trip:
+                if not target_origin:
+                    if target in reachability_dic[origin][step]:
+                        target_origin = True
+
+                # If two way reachability exists
+                if origin_target and target_origin:
+                    return 1
+
+            # If one way reachability exists (i.e., 'target' can be
+            # reached from 'origin' in less than 'max_delay' time steps)
+            elif origin_target:
+                    return 1
+
+    # e.g., reachability[n1][30] = {n1,n2,n3,n4}
+
+
     return 0
 
 
 def ilp_node_reachability(
-    reachability_dic, max_delay=180, log_path=None, time_limit=None
+    reachability_dic,
+    max_delay=180,
+    log_path=None,
+    time_limit=None,
+    round_trip=False
 ):
 
     # List of nodes ids
@@ -1072,13 +1145,15 @@ def ilp_node_reachability(
             # Create log path if not exists
             if not os.path.exists(log_path):
                 os.makedirs(log_path)
+            
+            round_trip_label = ("_round_trip" if round_trip else "")
 
-            m.Params.LogFile = "{}/region_centers_{}.log".format(
-                log_path, max_delay
+            m.Params.LogFile = "{}/region_centers{}_{}.log".format(
+                log_path, round_trip_label, max_delay
             )
 
-            m.Params.ResultFile = "{}/region_centers_{}.lp".format(
-                log_path, max_delay
+            m.Params.ResultFile = "{}/region_centers{}_{}.lp".format(
+                log_path, round_trip_label, max_delay
             )
 
         # xi = 1, if vertex Vi is used as a region center
@@ -1097,7 +1172,11 @@ def ilp_node_reachability(
                     quicksum(
                         x[center]
                         * can_reach(
-                            center, origin, max_delay, reachability_dic
+                            center,
+                            origin,
+                            max_delay,
+                            reachability_dic,
+                            round_trip=round_trip
                         )
                         for center in node_ids
                     )
@@ -1164,7 +1243,12 @@ def ilp_node_reachability(
 
 
 def get_region_centers(
-    path_region_centers, reachability_dic, root_path=None, time_limit=60
+    steps,
+    path_region_centers,
+    reachability_dic,
+    root_path=None,
+    time_limit=60,
+    round_trip=False
 ):
     """Find minimum number of region centers, every 'step'
 
@@ -1197,7 +1281,7 @@ def get_region_centers(
     time_limit : int, optional
         Expiration time (in seconds) of the ILP model
         execution, by default 60
-    
+
     Returns
     -------
     dict
@@ -1214,16 +1298,13 @@ def get_region_centers(
         )
 
     else:
-        # TODO invert keys in reachability dict. First: steps!
-        any_key = next(iter(reachability_dic))
-        max_trip_duration_list = list(reachability_dic[any_key].keys())
 
         print(
             (
                 "\nCalculating region center dictionary..."
                 "\nMax. durations: {}"
                 "\nTarget path: '{}'."
-            ).format(max_trip_duration_list, path_region_centers)
+            ).format(steps, path_region_centers)
         )
         # If not None, defines the location of the steps of a solution
         centers_gurobi_log = None
@@ -1248,7 +1329,7 @@ def get_region_centers(
                 os.makedirs(centers_sub_sols)
 
         centers_dic = dict()
-        for max_delay in sorted(max_trip_duration_list):
+        for max_delay in sorted(steps):
 
             if centers_sub_sols is not None:
                 # Name of intermediate region centers file for 'max_delay'
@@ -1271,6 +1352,7 @@ def get_region_centers(
                     max_delay=max_delay,
                     log_path=centers_gurobi_log,
                     time_limit=time_limit,
+                    round_trip=round_trip
                 )
             except Exception as e:
                 print(e)
