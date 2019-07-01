@@ -8,9 +8,9 @@ print("SYS PATH:", sys.path)
 print(os.listdir)
 
 
-def get_excerpt_name(start, stop):
+def get_excerpt_name(start, stop, label="excerpt"):
     return (
-        "tripdata_excerpt_{}_{}".format(start, stop)
+        "tripdata_{}_{}_{}".format(label, start, stop)
         .replace(":", "")
         .replace(" ", "_")
     )
@@ -24,7 +24,7 @@ root = os.getcwd().replace("\\", "/")
 
 # Input data
 tripdata = None
-with open("data/in/config_scenario/delft.json") as js:
+with open("data/in/config_scenario/nyc_external.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
@@ -62,13 +62,17 @@ path_tripdata_clone = None
 
 # Path of trip data with ids
 if "url_tripdata" in tripdata:
+    local = tripdata["url_tripdata"]
 
     # Presumably, the last part of the url is the file name
-    tripdata_filename = tripdata["url_tripdata"].split("/")[-1]
-    path_tripdata_source = "{}/raw_{}".format(root_tripdata, tripdata_filename)
+    tripdata_filename = f'raw_{local.split("/")[-1]}'
+    path_tripdata_source = "{}/{}".format(root_tripdata, tripdata_filename)
 
     # Excerpt name shows time interval
-    excerpt_name = get_excerpt_name(tripdata["start"], tripdata["stop"])
+    excerpt_name = get_excerpt_name(
+        tripdata["start"],
+        tripdata["stop"])
+
     path_tripdata_ids = "{}/{}_ids.csv".format(root_tripdata, excerpt_name)
     path_tripdata = "{}/{}.csv".format(root_tripdata, excerpt_name)
 

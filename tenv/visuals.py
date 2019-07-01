@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import osmnx as ox
-
+import os
 
 def plot_region_neighbors(
     G,
@@ -10,6 +10,7 @@ def plot_region_neighbors(
     show=False,
     file_format="png",
     max_neighbors=1000,
+    replace=False,
 ):
     """Plot all region centers and associated nodes
 
@@ -31,7 +32,7 @@ def plot_region_neighbors(
     max_neighbors: int
         Max. number of closest neighbors
     """
-
+    
     nodes = list(G.nodes())
 
     map_features = {
@@ -48,6 +49,16 @@ def plot_region_neighbors(
     }
     # Loop max. reachable distances of region centers
     for max_dist, centers in region_centers.items():
+        if path:
+            filename = (
+                    f"{path}/"
+                    f"max_dist_{max_dist:03}_"
+                    f"neighbors_{max_neighbors:03}.{file_format}"
+                )
+
+            # If file exists and should not be replaced, skip
+            if os.path.isfile(filename) and not replace:
+                continue
 
         all_paths = list()
         # List of ods to plot lines from centers to reachable nodes
@@ -128,18 +139,13 @@ def plot_region_neighbors(
             plt.show()
 
         if path:
-            filename = (
-                f"{path}/"
-                f"max_dist_{max_dist:03}_"
-                f"neighbors_{max_neighbors:03}.{file_format}"
-            )
             fig.savefig(filename, dpi=300, bbox_inches="tight")
 
             plt.close()
 
 
 def plot_regions(
-    G, region_centers, region_id_dict, path=None, show=False, file_format="png"
+    G, region_centers, region_id_dict, path=None, show=False, file_format="png", replace=False
 ):
     """Plot all region centers and associated nodes
 
@@ -175,6 +181,19 @@ def plot_regions(
     }
     # Loop max. reachable distances of region centers
     for max_dist, centers in region_centers.items():
+
+        n_centers = len(region_centers[max_dist])
+
+        if path:
+            
+            filename = (
+                f"{path}/"
+                f"max_dist_{max_dist:03}_centers_{n_centers:03}.{file_format}"
+            )
+
+            # If file exists and should not be replaced, skip
+            if os.path.isfile(filename) and not replace:
+                continue
 
         all_paths = list()
         # List of ods to plot lines from centers to reachable nodes
@@ -234,8 +253,6 @@ def plot_regions(
         #     f"\n {centers_from_nodes}({len(centers)})"
         # )
 
-        n_centers = len(region_centers[max_dist])
-
         ax.title.set_text(
             f"Reachable from centers in {(max_dist/60):>4.1f} min\n"
             f"(#centers = {n_centers:>3})"
@@ -245,8 +262,4 @@ def plot_regions(
             plt.show()
 
         if path:
-            filename = (
-                f"{path}/"
-                f"max_dist_{max_dist:03}_centers_{n_centers:03}.{file_format}"
-            )
             fig.savefig(filename, dpi=300, bbox_inches="tight")

@@ -119,6 +119,7 @@ def get_trip_data(tripdata_path, output_path, start=None, stop=None):
         tripdata_dt_excerpt.sort_index(inplace=True)
 
         # Save day data
+        print(f"Saving {len(tripdata_dt_excerpt)} to '{output_path}'...")
         tripdata_dt_excerpt.to_csv(output_path)
 
     return tripdata_dt_excerpt

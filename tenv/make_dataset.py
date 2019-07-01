@@ -98,7 +98,7 @@ def create_trip_data():
     )
 
     # Dataframe info
-    print(dt_distance_matrix.describe())
+    # print(dt_distance_matrix.describe())
 
     print(
         "\n############################"
@@ -122,7 +122,7 @@ def create_trip_data():
         config.path_region_centers,
         reachability,
         root_path=config.root_reachability,
-        round_trip=True,
+        round_trip=False,
     )
 
     # Distance from centers
@@ -144,6 +144,7 @@ def create_trip_data():
         show=False,
         file_format="png",
         max_neighbors=4,
+        replace=False,
     )
 
     # Each node is associated to the closest region center according
@@ -164,6 +165,7 @@ def create_trip_data():
         path=config.root_img_regions,
         show=False,
         file_format="png",
+        replace=False,
     )
 
     if "url_tripdata" in config.tripdata.keys():
@@ -187,14 +189,54 @@ def create_trip_data():
         dt_tripdata = tp.get_trip_data(
             config.path_tripdata_source,
             config.path_tripdata,
-            config.tripdata["start"],
-            config.tripdata["stop"],
+            start=config.tripdata["start"],
+            stop=config.tripdata["stop"],
         )
 
         #  street network node ids (from G) to tripdata
         print("Adding ids...")
         tp.add_ids(
-            config.path_tripdata, config.path_tripdata_ids, G, distance_dic
+            config.path_tripdata,
+            config.path_tripdata_ids,
+            G,
+            distance_dic
+        )
+    
+    # Trip data is saved in external drive
+    if "path_tripdata" in config.tripdata.keys():
+        
+        # Get excerpt (start, stop)
+        print("Cleaning trip data...")
+        
+        # Cleaned data setup
+        output_cleaned = config.tripdata["output_cleaned_tripdata"]
+        file_name_cleaned = config.get_excerpt_name(
+            config.tripdata["start"],
+            config.tripdata["stop"],
+            label="cleaned"
+        )+".csv"
+
+        dt_tripdata = tp.get_trip_data(
+            config.tripdata["path_tripdata"],
+            output_cleaned+file_name_cleaned,
+            start=config.tripdata["start"],
+            stop=config.tripdata["stop"],
+        )
+
+        # Cleaned data + graph ids setup
+        output_ids = config.tripdata["output_ids_tripdata"]
+        file_name_ids = config.get_excerpt_name(
+            config.tripdata["start"],
+            config.tripdata["stop"],
+            label="ids"
+        )+".csv"
+        #  street network node ids (from G) to tripdata
+        print("Adding ids...")
+        tp.add_ids(
+            output_cleaned+file_name_cleaned,
+            output_ids+file_name_ids,
+            G,
+            distance_dic
         )
 
     if "data_gen" in config.tripdata:
