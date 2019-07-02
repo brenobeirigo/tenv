@@ -69,6 +69,10 @@ Save environment to a text file
 
     conda env export > environment_name.yaml
 
+Remove environment
+
+    conda env remove --name NAME_ENV
+
 ## SERVER
 
 The file `server.py` starts a local server to provide easy access to the trip data.
