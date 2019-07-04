@@ -207,37 +207,41 @@ def create_trip_data():
         
         # Get excerpt (start, stop)
         print("Cleaning trip data...")
-        
-        # Cleaned data setup
-        output_cleaned = config.tripdata["output_cleaned_tripdata"]
-        file_name_cleaned = config.get_excerpt_name(
-            config.tripdata["start"],
-            config.tripdata["stop"],
-            label="cleaned"
-        )+".csv"
 
-        dt_tripdata = tp.get_trip_data(
-            config.tripdata["path_tripdata"],
-            output_cleaned+file_name_cleaned,
-            start=config.tripdata["start"],
-            stop=config.tripdata["stop"],
-        )
+        for file, tw in config.tripdata["file_tw"].items():
 
-        # Cleaned data + graph ids setup
-        output_ids = config.tripdata["output_ids_tripdata"]
-        file_name_ids = config.get_excerpt_name(
-            config.tripdata["start"],
-            config.tripdata["stop"],
-            label="ids"
-        )+".csv"
-        #  street network node ids (from G) to tripdata
-        print("Adding ids...")
-        tp.add_ids(
-            output_cleaned+file_name_cleaned,
-            output_ids+file_name_ids,
-            G,
-            distance_dic
-        )
+            earliest, latest = tw
+
+            # Cleaned data setup
+            output_cleaned = config.tripdata["output_cleaned_tripdata"]
+            file_name_cleaned = config.get_excerpt_name(
+                earliest,
+                latest,
+                label="cleaned"
+            )+".csv"
+
+            dt_tripdata = tp.get_trip_data(
+                f'{config.tripdata["path_tripdata"]}/{file}',
+                output_cleaned+file_name_cleaned,
+                earliest,
+                latest,
+            )
+
+            # Cleaned data + graph ids setup
+            output_ids = config.tripdata["output_ids_tripdata"]
+            file_name_ids = config.get_excerpt_name(
+                earliest,
+                latest,
+                label="ids"
+            )+".csv"
+            #  street network node ids (from G) to tripdata
+            print("Adding ids...")
+            tp.add_ids(
+                output_cleaned+file_name_cleaned,
+                output_ids+file_name_ids,
+                G,
+                distance_dic
+            )
 
     if "data_gen" in config.tripdata:
 
