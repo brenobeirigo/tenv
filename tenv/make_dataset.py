@@ -46,12 +46,21 @@ def create_trip_data():
     if not os.path.exists(config.root_reachability):
         os.makedirs(config.root_reachability)
 
+    if not os.path.exists(config.root_reachability_concentric):
+        os.makedirs(config.root_reachability_concentric)
+
     # Plots ############################################################
     if not os.path.exists(config.root_img_regions):
         os.makedirs(config.root_img_regions)
 
+    if not os.path.exists(config.root_img_regions_concentric):
+        os.makedirs(config.root_img_regions_concentric)
+
     if not os.path.exists(config.root_img_neighbors):
         os.makedirs(config.root_img_neighbors)
+    
+    if not os.path.exists(config.root_img_neighbors_concentric):
+        os.makedirs(config.root_img_neighbors_concentric)
 
     print(
         (
@@ -121,6 +130,7 @@ def create_trip_data():
         steps,
         config.path_region_centers,
         reachability,
+        sorted(list(reachability.keys())),
         root_path=config.root_reachability,
         round_trip=False,
     )
@@ -168,6 +178,46 @@ def create_trip_data():
         replace=False,
     )
 
+    concentric_region_ids, concentric_region_centers = gen.concentric_regions(
+        G,
+        steps,
+        reachability,
+        list(G.nodes()),
+        center=-1,
+        root_reachability=config.root_reachability_concentric,
+    )
+
+    # Distance from centers
+    sorted_neighbors_concentric = gen.get_sorted_neighbors(
+        distance_dic,
+        concentric_region_centers,
+        minimum_distance=0,
+        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
+    )
+
+    print("Plotting region neighbors...")
+    vi.plot_region_neighbors(
+        G,
+        concentric_region_centers,
+        sorted_neighbors_concentric,
+        path=config.root_img_neighbors_concentric,
+        show=False,
+        file_format="png",
+        max_neighbors=4,
+        replace=False,
+    )
+
+    print("Plotting concentric regions...")
+    vi.plot_regions(
+        G,
+        concentric_region_centers,
+        concentric_region_ids,
+        path=config.root_img_regions_concentric,
+        show=False,
+        file_format="png",
+        replace=False,
+    )
+
     if "url_tripdata" in config.tripdata.keys():
 
         print(
@@ -196,15 +246,12 @@ def create_trip_data():
         #  street network node ids (from G) to tripdata
         print("Adding ids...")
         tp.add_ids(
-            config.path_tripdata,
-            config.path_tripdata_ids,
-            G,
-            distance_dic
+            config.path_tripdata, config.path_tripdata_ids, G, distance_dic
         )
-    
+
     # Trip data is saved in external drive
     if "path_tripdata" in config.tripdata.keys():
-        
+
         # Get excerpt (start, stop)
         print("Cleaning trip data...")
 
@@ -214,33 +261,33 @@ def create_trip_data():
 
                 # Cleaned data setup
                 output_cleaned = config.tripdata["output_cleaned_tripdata"]
-                file_name_cleaned = config.get_excerpt_name(
-                    earliest,
-                    latest,
-                    label="cleaned"
-                )+".csv"
+                file_name_cleaned = (
+                    config.get_excerpt_name(earliest, latest, label="cleaned")
+                    + ".csv"
+                )
 
                 dt_tripdata = tp.get_trip_data(
                     f'{config.tripdata["path_tripdata"]}{file_name}',
-                    output_cleaned+file_name_cleaned,
+                    output_cleaned + file_name_cleaned,
                     earliest,
                     latest,
+                    index_col=config.tripdata["index_col"],
+                    filtered_columns=config.tripdata["filtered_columns"],
                 )
 
                 # Cleaned data + graph ids setup
                 output_ids = config.tripdata["output_ids_tripdata"]
-                file_name_ids = config.get_excerpt_name(
-                    earliest,
-                    latest,
-                    label="ids"
-                )+".csv"
+                file_name_ids = (
+                    config.get_excerpt_name(earliest, latest, label="ids")
+                    + ".csv"
+                )
                 #  street network node ids (from G) to tripdata
                 print("Adding ids...")
                 tp.add_ids(
-                    output_cleaned+file_name_cleaned,
-                    output_ids+file_name_ids,
+                    output_cleaned + file_name_cleaned,
+                    output_ids + file_name_ids,
                     G,
-                    distance_dic
+                    distance_dic,
                 )
 
     if "data_gen" in config.tripdata:
