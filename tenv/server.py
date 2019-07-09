@@ -21,6 +21,13 @@ import tenv.demand as tp
 import numpy as np
 import math
 
+REGION_CONCENTRIC = "CONCENTRIC"
+REGION_REGULAR = "REGULAR"
+
+# How regions are sliced?
+region_slice = REGION_CONCENTRIC
+# region_slice = REGION_REGULAR
+
 print(
     "\n###############################################################"
     f"\n# GRAPH = {config.graph_file_name}"
@@ -52,6 +59,7 @@ region_centers = nw.get_region_centers(
     steps,
     config.path_region_centers,
     reachability_dict,
+    list(G.nodes()),
     root_path=config.root_reachability,
     round_trip=True,
 )
@@ -64,14 +72,38 @@ region_id_dict = nw.get_region_ids(
     path_region_ids=config.path_region_center_ids,
 )
 
-node_region_ids = nw.get_node_region_ids(G, region_id_dict)
-
-
 sorted_neighbors = nw.get_sorted_neighbors(
     distance_dic,
     region_centers,
     path_sorted_neighbors=config.path_sorted_neighbors,
 )
+
+node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+
+if region_slice == REGION_CONCENTRIC:
+
+    sorted_neighbors = nw.get_sorted_neighbors(
+        distance_dic,
+        region_centers,
+        path_sorted_neighbors=config.path_sorted_neighbors,
+    )
+
+    region_id_dict, region_centers = nw.concentric_regions(
+        G,
+        steps,
+        reachability_dict,
+        list(G.nodes()),
+        center=-1,
+        root_reachability=config.root_reachability_concentric,
+    )
+
+    node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+
+    sorted_neighbors = nw.get_sorted_neighbors(
+        distance_dic,
+        region_centers,
+        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
+    )
 
 center_nodes = nw.get_center_nodes(region_id_dict)
 
@@ -508,6 +540,7 @@ def get_node_region_ids():
 
     return jsonify(dict(node_region_ids))
 
+
 @functools.lru_cache(maxsize=None)
 @app.route("/node_region_count")
 def get_node_region_count():
@@ -519,7 +552,8 @@ def get_node_region_count():
         Dictionary of maximum reachable time keys and counts.
     """
 
-    return jsonify({k: len(set(n)) for k,n in node_region_ids.items()})
+    return jsonify({k: len(set(n)) for k, n in node_region_ids.items()})
+
 
 @functools.lru_cache(maxsize=None)
 @app.route("/node_region_ids/<int:step>")
@@ -678,6 +712,7 @@ def get_center_neighbors(time_limit, center_id, n_neighbors):
         node_neighbors = list(node_neighbors)
         node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
 
+        # print("a", node_neighbors)
     else:
         node_neighbors = [
             neighbor_id
@@ -686,6 +721,8 @@ def get_center_neighbors(time_limit, center_id, n_neighbors):
             ]
             if distance != 0
         ]
+
+        # print("b", node_neighbors)
 
     # Restrict set of neighbors and return
     return ";".join(list(map(str, node_neighbors))[:n_neighbors])
