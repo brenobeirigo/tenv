@@ -102,12 +102,32 @@ root_reachability = root_map + "/reachability_{}_{}{}".format(
     step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
 )
 
+root_reachability_concentric = (
+    root_map
+    + "/reachability_concentric_{}_{}{}".format(
+        step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
+    )
+)
+
 root_img_regions = root_reachability + "/img_region_centers"
+
+root_img_regions_concentric = (
+    root_reachability_concentric + "/img_region_centers_concentric"
+)
+
 root_img_neighbors = root_reachability + "/img_region_center_neighbors"
+
+root_img_neighbors_concentric = (
+    root_reachability_concentric + "/img_region_center_neighbors"
+)
 
 # Reachability dictionary {o:{max_dist:[d1, d2, d3]}
 path_reachability_dic = "{}/reachability_{}.npy".format(
     root_reachability, graph_name
+)
+
+path_reachability_dic_concentric = "{}/reachability_{}.npy".format(
+    root_reachability_concentric, graph_name
 )
 
 # Region centers dictionary {max_dist:[c1, c2, c3, c4, c5]}
@@ -115,10 +135,23 @@ path_region_centers = "{}/region_centers_{}.npy".format(
     root_reachability, graph_name
 )
 
+# Region centers dictionary {max_dist:[c1, c2, c3, c4, c5]}
+path_region_centers_concentric = "{}/region_centers_{}.npy".format(
+    root_reachability_concentric, graph_name
+)
+
 path_region_center_ids = "{}/region_center_ids_{}.npy".format(
     root_reachability, graph_name
 )
 
+path_region_center_concentric_ids = "{}/region_center_ids_{}.npy".format(
+    root_reachability_concentric, graph_name
+)
+
 path_sorted_neighbors = "{}/sorted_neighbors_region_centers_{}.npy".format(
     root_reachability, graph_name
+)
+
+path_sorted_neighbors_concentric = "{}/sorted_neighbors_region_centers_{}.npy".format(
+    root_reachability_concentric, graph_name
 )
