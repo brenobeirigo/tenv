@@ -275,17 +275,131 @@ def get_sorted_neighbors(
     return neighbors
 
 
+def concentric_regions(
+    G, steps, reachability, nodes, center=None, root_reachability=None
+    ):
+    """[summary]
+    
+    Parameters
+    ----------
+    G : [type]
+        [description]
+    steps : List
+        Steps are sorted in descending order
+    reachability : [type]
+        [description]
+    nodes : [type]
+        [description]
+    path_region_centers : [type], optional
+        [description], by default None
+    root_reachability : [type], optional
+        [description], by default None
+    """
+
+    # Creating region centers for all max. travel durations
+    # in reachability dictionary
+
+    # All steps were processed
+    node_dist_center = defaultdict(lambda: defaultdict(int))
+    region_centers = dict()
+    if not steps:
+        return node_dist_center, region_centers
+
+    # Pop the largest step
+    s = steps.pop()
+
+    print(f"\n## Processing distance {s}")
+
+    # Region centers with step s
+    region_centers = get_region_centers(
+        [s],
+        f"{root_reachability}/region_centers_{s:04}_{center:04}.npy",
+        reachability,
+        nodes,
+        root_path=root_reachability,
+        round_trip=False,
+        parent_center=center
+    )
+
+    # Associate each node within the area determined by the parent
+    # region center with childreen region centers. Return dictionary
+    # with structure: node -> distance -> center
+    region_id_dict = get_region_ids(
+        G,
+        reachability,
+        region_centers,
+        nodes=nodes,
+        path_region_ids=(
+            f"{root_reachability}/"
+            f"region_center_ids_{s:04}_{center:04}.npy"
+        ),
+    )
+
+    # distance -> center -> nodes
+    dist_center_nodes_dict = get_center_nodes(region_id_dict)
+
+    # Get region centers within previously defined regions
+    for c, center_nodes in dist_center_nodes_dict[s].items():
+
+        # Update center ids for nodes in distance s
+        for n in center_nodes:
+            node_dist_center[n][s] = c
+
+        print(f" -- Center {c:>4} = {center_nodes}")
+
+        # The step list is copied before recursion
+        steps_copy = list(steps)
+
+        # Get region centers considering only c nodes
+        node_dist_center_sub, sub_centers = concentric_regions(
+            G,
+            steps_copy,
+            reachability,
+            center_nodes,
+            center=c,
+            root_reachability=root_reachability
+        )
+
+        # Update center ids for nodes one level below
+        for n, dist_center in node_dist_center_sub.items():
+            for dist, center in dist_center.items():
+                node_dist_center[n][dist] = center
+
+        # Append centers of child
+        for d, sub_c in sub_centers.items():
+            if d not in region_centers:
+                region_centers[d] = sub_c
+            else:
+                region_centers[d].extend(sub_c)
+
+    return node_dist_center, region_centers
+
+
 def get_center_nodes(region_id_dict):
+    """Relates a distance to the corresponding centers and each center
+    to the list of nodes belonging to the center.
+    
+    Parameters
+    ----------
+    region_id_dict : dict
+        node -> distance -> center id
+    
+    Returns
+    -------
+    dict
+        distance -> center id -> list of nodes
+    """
 
-    a = defaultdict(lambda: defaultdict(list))
-
+    dist_region_id_nodes = defaultdict(lambda: defaultdict(list))
+    
+    # n -> max_dist -> center_id to max_dist -> center_id -> [nodes]
     for n, max_dist_center_id in region_id_dict.items():
         for max_dist, center_id in max_dist_center_id.items():
-            a[max_dist][center_id].append(n)
-    return a
+            dist_region_id_nodes[max_dist][center_id].append(n)
+    return dist_region_id_nodes
 
 
-def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
+def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None, nodes=[]):
     """Associate each node to its closest region center within a
      maximum reachable time limit.
 
@@ -306,6 +420,9 @@ def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
         centers within each maximum reachable time limit.
     """
 
+    if not nodes:
+        nodes = list(range(get_number_of_nodes(G)))
+
     region_id_dict = None
     if os.path.isfile(path_region_ids):
         region_id_dict = np.load(path_region_ids).item()
@@ -321,7 +438,7 @@ def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None):
         region_id_dict = dict()
 
         # Loop nodes n to find the closest region centers
-        for n in range(get_number_of_nodes(G)):
+        for n in nodes:
 
             region_id_dict[n] = dict()
 
@@ -1126,14 +1243,14 @@ def can_reach(origin, target, max_delay, reachability_dic, round_trip=False):
 
 def ilp_node_reachability(
     reachability_dic,
+    node_set_ids,
     max_delay=180,
     log_path=None,
     time_limit=None,
     round_trip=False
-):
+    ):
 
     # List of nodes ids
-    node_ids = sorted(list(reachability_dic.keys()))
 
     try:
 
@@ -1158,7 +1275,7 @@ def ilp_node_reachability(
 
         # xi = 1, if vertex Vi is used as a region center
         # and 0 otherwise
-        x = m.addVars(node_ids, vtype=GRB.BINARY, name="x")
+        x = m.addVars(node_set_ids, vtype=GRB.BINARY, name="x")
 
         # Ensures that every node in the road network graph is reachable
         # within 'max_delay' travel time by at least one region center
@@ -1166,7 +1283,7 @@ def ilp_node_reachability(
         # To extract the region centers, we select from V all vertices
         # V[i] such that x[i] = 1.
 
-        for origin in node_ids:
+        for origin in node_set_ids:
             m.addConstr(
                 (
                     quicksum(
@@ -1178,7 +1295,7 @@ def ilp_node_reachability(
                             reachability_dic,
                             round_trip=round_trip
                         )
-                        for center in node_ids
+                        for center in node_set_ids
                     )
                     >= 1
                 ),
@@ -1216,7 +1333,7 @@ def ilp_node_reachability(
 
             # Sweep x_n = 1 variables to create list of region centers
             var_x = m.getAttr("x", x)
-            for n in node_ids:
+            for n in node_set_ids:
                 if var_x[n] > 0.0001:
                     region_centers.append(n)
 
@@ -1246,9 +1363,11 @@ def get_region_centers(
     steps,
     path_region_centers,
     reachability_dic,
+    node_set_ids,
     root_path=None,
     time_limit=60,
-    round_trip=False
+    round_trip=False,
+    parent_center="",
 ):
     """Find minimum number of region centers, every 'step'
 
@@ -1322,18 +1441,18 @@ def get_region_centers(
             # Create folder to save intermediate work, that is, previous
             # max_delay steps.
             centers_sub_sols = "{}/mip_region_centers/sub_sols".format(
-                root_path
+                root_path,
             )
 
             if not os.path.exists(centers_sub_sols):
                 os.makedirs(centers_sub_sols)
 
         centers_dic = dict()
-        for max_delay in sorted(steps):
+        for max_delay in sorted(steps, reverse=True):
 
             if centers_sub_sols is not None:
                 # Name of intermediate region centers file for 'max_delay'
-                file_name = "{}/{}.npy".format(centers_sub_sols, max_delay)
+                file_name = "{}/{}_{:04}.npy".format(centers_sub_sols, parent_center, max_delay)
 
                 # Pre-calculated region center is loaded in case it exists.
                 # This helps filling the complete 'centers_dic' without
@@ -1349,10 +1468,11 @@ def get_region_centers(
                 # Find the list of centers for max_delay
                 centers = ilp_node_reachability(
                     reachability_dic,
+                    node_set_ids,
                     max_delay=max_delay,
                     log_path=centers_gurobi_log,
                     time_limit=time_limit,
-                    round_trip=round_trip
+                    round_trip=round_trip,
                 )
             except Exception as e:
                 print(e)
