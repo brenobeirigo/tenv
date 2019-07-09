@@ -38,7 +38,21 @@ def download_file(url, root_path, file_name):
         open(output_file, "wb").write(r.content)
 
 
-def get_trip_data(tripdata_path, output_path, start=None, stop=None):
+def get_trip_data(
+        tripdata_path,
+        output_path,
+        start=None,
+        stop=None,
+        index_col="pickup_datetime",
+        filtered_columns=[
+            "pickup_datetime",
+            "passenger_count",
+            "pickup_longitude",
+            "pickup_latitude",
+            "dropoff_longitude",
+            "dropoff_latitude",
+        ]):
+
     """
     Read raw tripdata csv and filter unnecessary info.
 
@@ -75,28 +89,18 @@ def get_trip_data(tripdata_path, output_path, start=None, stop=None):
 
         # Load tripdata
         tripdata_dt_excerpt = pd.read_csv(
-            output_path, parse_dates=True, index_col="pickup_datetime"
+            output_path, parse_dates=True, index_col=index_col
         )
 
         print("Loading file '{}'.".format(output_path))
 
     except:
 
-        # Columns used
-        filtered_columns = [
-            "pickup_datetime",
-            "passenger_count",
-            "pickup_longitude",
-            "pickup_latitude",
-            "dropoff_longitude",
-            "dropoff_latitude",
-        ]
-
         # Reading file
         tripdata_dt = pd.read_csv(
             tripdata_path,
             parse_dates=True,
-            index_col="pickup_datetime",
+            index_col=index_col,
             usecols=filtered_columns,
             na_values="0",
         )
