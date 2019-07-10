@@ -16,8 +16,27 @@ import tenv.demand as tp
 import numpy as np
 import math
 
+
+REGION_CONCENTRIC = "CONCENTRIC"
+REGION_REGULAR = "REGULAR"
+
+# How regions are sliced?
+region_slice = REGION_CONCENTRIC
+# region_slice = REGION_REGULAR
+
+# print(
+#     "\n###############################################################"
+#     f"\n# GRAPH = {config.graph_file_name}"
+#     "\n###############################################################"
+# )
+
 # Network
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
+# print(
+#     "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
+#         len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
+#     )
+# )
 
 # Creating distance dictionary [o][d] -> distance
 distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
@@ -36,6 +55,7 @@ region_centers = nw.get_region_centers(
     steps,
     config.path_region_centers,
     reachability_dict,
+    list(G.nodes()),
     root_path=config.root_reachability,
     round_trip=True,
 )
@@ -48,14 +68,38 @@ region_id_dict = nw.get_region_ids(
     path_region_ids=config.path_region_center_ids,
 )
 
-node_region_ids = nw.get_node_region_ids(G, region_id_dict)
-
-
 sorted_neighbors = nw.get_sorted_neighbors(
     distance_dic,
     region_centers,
     path_sorted_neighbors=config.path_sorted_neighbors,
 )
+
+node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+
+if region_slice == REGION_CONCENTRIC:
+
+    sorted_neighbors = nw.get_sorted_neighbors(
+        distance_dic,
+        region_centers,
+        path_sorted_neighbors=config.path_sorted_neighbors,
+    )
+
+    region_id_dict, region_centers = nw.concentric_regions(
+        G,
+        steps,
+        reachability_dict,
+        list(G.nodes()),
+        center=-1,
+        root_reachability=config.root_reachability_concentric,
+    )
+
+    node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+
+    sorted_neighbors = nw.get_sorted_neighbors(
+        distance_dic,
+        region_centers,
+        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
+    )
 
 center_nodes = nw.get_center_nodes(region_id_dict)
 
