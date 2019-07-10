@@ -16,13 +16,15 @@ def get_excerpt_name(start, stop, label="excerpt"):
 # root = os.getcwd().replace("\\", "/")
 # root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 root = "C:/Users/breno/Documents/phd/tenv"
+root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+
 ########################################################################
 # Dataset structure ####################################################
 ########################################################################
 
 # Input data
 tripdata = None
-with open(f"{root}/data/in/config_scenario/nyc_external.json") as js:
+with open(f"{root}/data/in/config_scenario/bulk_ny_2011.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
