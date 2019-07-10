@@ -4,8 +4,8 @@ import sys
 from datetime import datetime
 from pprint import pprint
 
-print("SYS PATH:", sys.path)
-print(os.listdir)
+# print("SYS PATH:", sys.path)
+# print(os.listdir)
 
 
 def get_excerpt_name(start, stop, label="excerpt"):
@@ -17,7 +17,8 @@ def get_excerpt_name(start, stop, label="excerpt"):
 
 
 # root = os.getcwd().replace("\\", "/")
-root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
 ########################################################################
 # Dataset structure ####################################################
@@ -25,7 +26,7 @@ root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 
 # Input data
 tripdata = None
-with open(f"{root}/data/in/config_scenario/nyc_external.json") as js:
+with open(f"{root}/data/in/config_scenario/bulk_ny_2011.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
