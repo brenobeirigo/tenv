@@ -9,6 +9,8 @@ import functools
 import random
 from gurobipy import Model, GurobiError, GRB, quicksum
 import math
+import logging
+
 
 # #################################################################### #
 # Create, load, save network ######################################### #
@@ -102,11 +104,11 @@ def load_network(filename, folder=None):
     """
 
     path = "{}/{}".format(folder, filename)
-    print("Loading ", path)
+    logging.info("Loading ", path)
 
     # if file does not exist write header
     if not os.path.isfile("{}/{}".format(folder, filename)):
-        print("Network is not in '{}'".format(path))
+        logging.info("Network is not in '{}'".format(path))
         return None
 
     # Try to load graph
@@ -162,7 +164,7 @@ def get_network_from(region, root_path, graph_name, graph_filename):
             # Save region name
             G.graph["region"] = region
 
-            print(
+            logging.info(
                 "#ORIGINAL -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
                     len(G.nodes()),
                     min(G.nodes()),
@@ -209,9 +211,9 @@ def get_network_from(region, root_path, graph_name, graph_filename):
             ox.save_graphml(G, filename=graph_filename, folder=root_path)
 
         except Exception as e:
-            print("Error loading graph:", e)
+            logging.info("Error loading graph:", e)
 
-    print(
+    logging.info(
         "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
             len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
         )
@@ -244,13 +246,13 @@ def get_sorted_neighbors(
 ):
     neighbors = None
     if os.path.isfile(path_sorted_neighbors):
-        neighbors = np.load(path_sorted_neighbors).item()
-        print(
+        neighbors = np.load(path_sorted_neighbors, allow_pickle=True).item()
+        logging.info(
             f"\nReading region ids dictionary..."
             f"\nSource: '{path_sorted_neighbors}'."
         )
     else:
-        print(
+        logging.info(
             f"\nFinding closest node region center ids..."
             f"\nTarget: '{path_sorted_neighbors}'."
         )
@@ -260,7 +262,7 @@ def get_sorted_neighbors(
             if t < minimum_distance:
                 continue
 
-            print(f"{t:04} - {len(centers)}")
+            logging.info(f"{t:04} - {len(centers)}")
             neighbors[t] = dict()
             for c_o in centers:
                 neighbors[t][c_o] = list()
@@ -308,7 +310,7 @@ def concentric_regions(
     # Pop the largest step
     s = steps.pop()
 
-    # print(f"\n## Processing distance {s}")
+    # logging.info(f"\n## Processing distance {s}")
 
     # Region centers with step s
     region_centers = get_region_centers(
@@ -345,7 +347,7 @@ def concentric_regions(
         for n in center_nodes:
             node_dist_center[n][s] = c
 
-        # print(f" -- Center {c:>4} = {center_nodes}")
+        # logging.info(f" -- Center {c:>4} = {center_nodes}")
 
         # The step list is copied before recursion
         steps_copy = list(steps)
@@ -425,13 +427,13 @@ def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None, n
 
     region_id_dict = None
     if os.path.isfile(path_region_ids):
-        region_id_dict = np.load(path_region_ids).item()
-        print(
+        region_id_dict = np.load(path_region_ids, allow_pickle=True).item()
+        logging.info(
             f"\nReading region ids dictionary..."
             f"\nSource: '{path_region_ids}'."
         )
     else:
-        print(
+        logging.info(
             "\nFinding closest node region center ids..."
             f"\nTarget: '{path_region_ids}'."
         )
@@ -515,8 +517,8 @@ def get_reachability_dic(
     steps_in_range_list = [i for i in range(step, total_range + step, step)]
     
     try:
-        reachability_dict = np.load(root_path).item()
-        print(
+        reachability_dict = np.load(root_path, allow_pickle=True).item()
+        logging.info(
             "\nReading reachability dictionary..." f"\nSource: '{root_path}'."
         )
 
@@ -525,7 +527,7 @@ def get_reachability_dic(
         reachability_dict = defaultdict(lambda: defaultdict(set))
 
 
-        print(
+        logging.info(
             ("Calculating reachability...\n" + "Steps:{}").format(
                 steps_in_range_list
             )
@@ -962,7 +964,7 @@ def get_largest_connected_component(G):
             nx.strongly_connected_components(G), key=len, reverse=True
         )
     ]
-    print("Size of strongly connected components:", s_connected_component)
+    logging.info("Size of strongly connected components:", s_connected_component)
     return set(largest_cc)
 
 
@@ -1068,7 +1070,7 @@ def get_dt_distance_matrix(path, dist_matrix):
         dt = pd.read_csv(path, header=None)
 
     except Exception as e:
-        print(e)
+        logging.info(e)
         dt = pd.DataFrame(dist_matrix)
         dt.to_csv(
             path, index=False, header=False, float_format="%.6f", na_rep="INF"
@@ -1090,22 +1092,22 @@ def get_distance_dic(root_path, G):
     """
     distance_dic_m = None
     try:
-        print(
+        logging.info(
             "\nTrying to read distance data from file:\n'{}'.".format(
                 root_path
             )
         )
-        distance_dic_m = np.load(root_path).item()
+        distance_dic_m = np.load(root_path, allow_pickle=True).item()
 
-    except:
-        print("Reading failed! Calculating shortest paths...")
+    except Exception as e:
+        logging.info(f"Reading failed! Exception: {e} \nCalculating shortest paths...")
         all_dists_gen = nx.all_pairs_dijkstra_path_length(G, weight="length")
 
         # Save with pickle (meters)
         distance_dic_m = dict(all_dists_gen)
         np.save(root_path, distance_dic_m)
 
-    print(
+    logging.info(
         "Distance data loaded successfully. #Nodes:",
         len(distance_dic_m.values()),
     )
@@ -1329,7 +1331,7 @@ def ilp_node_reachability(
         elif found_optimal or found_time_expired:
 
             if found_time_expired:
-                print("TIME LIMIT ({} s) RECHEADED.".format(time_limit))
+                logging.info("TIME LIMIT ({} s) RECHEADED.".format(time_limit))
 
             # Sweep x_n = 1 variables to create list of region centers
             var_x = m.getAttr("x", x)
@@ -1341,7 +1343,7 @@ def ilp_node_reachability(
 
         elif is_unfeasible:
 
-            print("Model is infeasible.")
+            logging.info("Model is infeasible.")
             raise Exception("Model is infeasible.")
             # exit(0)
 
@@ -1349,7 +1351,7 @@ def ilp_node_reachability(
             m.status != GRB.Status.INF_OR_UNBD
             and m.status != GRB.Status.INFEASIBLE
         ):
-            print("Optimization was stopped with status %d" % m.status)
+            logging.info("Optimization was stopped with status %d" % m.status)
             raise Exception("Model is infeasible.")
 
     except GurobiError as e:
@@ -1408,17 +1410,17 @@ def get_region_centers(
     """
 
     centers_dic = None
+    logging.info(
+        "\nReading region center dictionary...\nSource: '{}'.".format(
+            path_region_centers
+    ))
     if os.path.isfile(path_region_centers):
-        centers_dic = np.load(path_region_centers).item()
-        print(
-            "\nReading region center dictionary...\nSource: '{}'.".format(
-                path_region_centers
-            )
-        )
+        centers_dic = np.load(path_region_centers, allow_pickle=True).item()
+        
 
     else:
 
-        print(
+        logging.info(
             (
                 "\nCalculating region center dictionary..."
                 "\nMax. durations: {}"
@@ -1460,8 +1462,8 @@ def get_region_centers(
                 # has occured.
                 if os.path.isfile(file_name):
                     # Load max delay in centers_dic
-                    centers_dic[max_delay] = np.load(file_name)
-                    print(file_name, "already calculated.")
+                    centers_dic[max_delay] = np.load(file_name, allow_pickle=True)
+                    logging.info(f"{file_name} already calculated.")
                     continue
 
             try:
@@ -1475,10 +1477,10 @@ def get_region_centers(
                     round_trip=round_trip,
                 )
             except Exception as e:
-                print(e)
+                logging.info(e)
             else:
                 centers_dic[max_delay] = centers
-                print(
+                logging.info(
                     "Max. delay: {} = # Nodes: {}".format(
                         max_delay, len(centers)
                     )
