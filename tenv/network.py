@@ -308,7 +308,7 @@ def concentric_regions(
     # Pop the largest step
     s = steps.pop()
 
-    print(f"\n## Processing distance {s}")
+    # print(f"\n## Processing distance {s}")
 
     # Region centers with step s
     region_centers = get_region_centers(
@@ -345,7 +345,7 @@ def concentric_regions(
         for n in center_nodes:
             node_dist_center[n][s] = c
 
-        print(f" -- Center {c:>4} = {center_nodes}")
+        # print(f" -- Center {c:>4} = {center_nodes}")
 
         # The step list is copied before recursion
         steps_copy = list(steps)
