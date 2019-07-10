@@ -4,9 +4,6 @@ import sys
 from datetime import datetime
 from pprint import pprint
 
-print("SYS PATH:", sys.path)
-print(os.listdir)
-
 
 def get_excerpt_name(start, stop, label="excerpt"):
     return (
@@ -17,8 +14,8 @@ def get_excerpt_name(start, stop, label="excerpt"):
 
 
 # root = os.getcwd().replace("\\", "/")
-root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
-
+# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+root = "C:/Users/breno/Documents/phd/tenv"
 ########################################################################
 # Dataset structure ####################################################
 ########################################################################
