@@ -40,7 +40,7 @@ region_centers = nw.get_region_centers(
     config.path_region_centers,
     reachability_dic,
     root_path=config.root_reachability,
-    time_limit=600,
+    time_limit=config.ilp_time_limit,
 )
 
 print("# Regions centers/Max. distance(s)")

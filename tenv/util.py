@@ -45,9 +45,9 @@ distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
 reachability_dict, steps = nw.get_reachability_dic(
     config.path_reachability_dic,
     distance_dic,
-    step=30,
-    total_range=600,
-    speed_km_h=30,
+    step=config.step,
+    total_range=config.total_range,
+    speed_km_h=config.speed_km_h,
 )
 
 # All region centers
@@ -57,7 +57,7 @@ region_centers = nw.get_region_centers(
     reachability_dict,
     list(G.nodes()),
     root_path=config.root_reachability,
-    round_trip=True,
+    round_trip=config.round_trip,
 )
 
 # What is the closest region center of every node (given a time limit)?
@@ -335,12 +335,12 @@ def sp_segmented(
             break
 
     return {
-            "len": len(list_coords),
-            "duration": nw.get_duration(dist_m),
-            "distance": dist_m,
-            "step_count": len(step_coords),
-            "sp": step_coords,
-        }
+        "len": len(list_coords),
+        "duration": nw.get_duration(dist_m),
+        "distance": dist_m,
+        "step_count": len(step_coords),
+        "sp": step_coords,
+    }
 
 
 @functools.lru_cache(maxsize=None)

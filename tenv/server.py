@@ -21,25 +21,19 @@ import tenv.demand as tp
 import numpy as np
 import math
 
-REGION_CONCENTRIC = "CONCENTRIC"
-REGION_REGULAR = "REGULAR"
-
-# How regions are sliced?
-region_slice = REGION_CONCENTRIC
-# region_slice = REGION_REGULAR
-
-print(
-    "\n###############################################################"
-    f"\n# GRAPH = {config.graph_file_name}"
-    "\n###############################################################"
-)
 
 # Network
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
+print()
 print(
-    "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
-        len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
-    )
+    "\n###############################################################"
+    f"\n#      Region = {config.region}"
+    f"\n# Aggregation = {config.region_slice}"
+    f"\n#       Speed = {config.speed_km_h}"
+    f"\n#  Step/Total = {config.step}/{config.total_range}"
+    f"\n#       Round = {config.round_trip}"
+    f"\n#     Network =  #nodes = {len(G.nodes())} ({min(G.nodes())} -> {max(G.nodes())}) - #edges = {len(G.edges())}"
+    "\n###############################################################"
 )
 
 # Creating distance dictionary [o][d] -> distance
@@ -49,9 +43,9 @@ distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
 reachability_dict, steps = nw.get_reachability_dic(
     config.path_reachability_dic,
     distance_dic,
-    step=30,
-    total_range=600,
-    speed_km_h=30,
+    step=config.step,
+    total_range=config.total_range,
+    speed_km_h=config.speed_km_h,
 )
 
 # All region centers
@@ -61,7 +55,7 @@ region_centers = nw.get_region_centers(
     reachability_dict,
     list(G.nodes()),
     root_path=config.root_reachability,
-    round_trip=True,
+    round_trip=config.round_trip,
 )
 
 # What is the closest region center of every node (given a time limit)?
@@ -80,7 +74,7 @@ sorted_neighbors = nw.get_sorted_neighbors(
 
 node_region_ids = nw.get_node_region_ids(G, region_id_dict)
 
-if region_slice == REGION_CONCENTRIC:
+if config.region_slice == config.REGION_CONCENTRIC:
 
     sorted_neighbors = nw.get_sorted_neighbors(
         distance_dic,

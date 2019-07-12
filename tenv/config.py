@@ -13,10 +13,17 @@ def get_excerpt_name(start, stop, label="excerpt"):
     )
 
 
+REGION_CONCENTRIC = "CONCENTRIC"
+REGION_REGULAR = "REGULAR"
+
+# How regions are sliced?
+# region_slice = REGION_CONCENTRIC
+region_slice = REGION_REGULAR
+
 # root = os.getcwd().replace("\\", "/")
-# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
-root = "C:/Users/breno/Documents/phd/tenv"
-root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+# root = "C:/Users/breno/Documents/phd/tenv"
+# root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
 ########################################################################
 # Dataset structure ####################################################
@@ -93,9 +100,13 @@ path_dist_dic = "{}/distance_dic_m_{}.npy".format(root_dist, graph_name)
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
 step = 30
-total_range = 600
+total_range = 1200
 # If defined, step and total_range are assumed to be seconds
-speed_km_h = 30
+speed_km_h = 20
+round_trip = False
+
+# Max. time to execute ilp (min)
+ilp_time_limit = 60
 
 root_reachability = root_map + "/reachability_{}_{}{}".format(
     step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")

@@ -132,7 +132,7 @@ def create_trip_data():
         reachability,
         sorted(list(reachability.keys())),
         root_path=config.root_reachability,
-        round_trip=False,
+        round_trip=config.round_trip,
     )
 
     # Distance from centers
