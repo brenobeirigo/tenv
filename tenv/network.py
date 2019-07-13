@@ -104,7 +104,7 @@ def load_network(filename, folder=None):
     """
 
     path = "{}/{}".format(folder, filename)
-    logging.info("Loading ", path)
+    logging.info(f"Loading {path}")
 
     # if file does not exist write header
     if not os.path.isfile("{}/{}".format(folder, filename)):
@@ -211,7 +211,7 @@ def get_network_from(region, root_path, graph_name, graph_filename):
             ox.save_graphml(G, filename=graph_filename, folder=root_path)
 
         except Exception as e:
-            logging.info("Error loading graph:", e)
+            logging.info(f"Error loading graph: {e}")
 
     logging.info(
         "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
@@ -964,7 +964,7 @@ def get_largest_connected_component(G):
             nx.strongly_connected_components(G), key=len, reverse=True
         )
     ]
-    logging.info("Size of strongly connected components:", s_connected_component)
+    logging.info(f"Size of strongly connected components: {s_connected_component}")
     return set(largest_cc)
 
 
@@ -1070,7 +1070,7 @@ def get_dt_distance_matrix(path, dist_matrix):
         dt = pd.read_csv(path, header=None)
 
     except Exception as e:
-        logging.info(e)
+        logging.info(str(e))
         dt = pd.DataFrame(dist_matrix)
         dt.to_csv(
             path, index=False, header=False, float_format="%.6f", na_rep="INF"
@@ -1108,8 +1108,8 @@ def get_distance_dic(root_path, G):
         np.save(root_path, distance_dic_m)
 
     logging.info(
-        "Distance data loaded successfully. #Nodes:",
-        len(distance_dic_m.values()),
+        f"Distance data loaded successfully. "
+        f" #Nodes: {len(distance_dic_m.values())}"
     )
 
     return distance_dic_m
@@ -1477,7 +1477,7 @@ def get_region_centers(
                     round_trip=round_trip,
                 )
             except Exception as e:
-                logging.info(e)
+                logging.info(str(e))
             else:
                 centers_dic[max_delay] = centers
                 logging.info(
