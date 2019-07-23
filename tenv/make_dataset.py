@@ -58,7 +58,7 @@ def create_trip_data():
 
     if not os.path.exists(config.root_img_neighbors):
         os.makedirs(config.root_img_neighbors)
-    
+
     if not os.path.exists(config.root_img_neighbors_concentric):
         os.makedirs(config.root_img_neighbors_concentric)
 
@@ -85,6 +85,8 @@ def create_trip_data():
         config.root_map,
         config.graph_name,
         config.graph_file_name,
+        max_travel_time_edge=60,
+        speed_km_h=20,
     )
 
     gen.save_graph_pic(G, config.root_map)
@@ -177,6 +179,9 @@ def create_trip_data():
         file_format="png",
         replace=False,
     )
+    # ################################################################ #
+    # Creating concentric network #################################### #
+    # ################################################################ #
 
     concentric_region_ids, concentric_region_centers = gen.concentric_regions(
         G,
