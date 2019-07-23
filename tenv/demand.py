@@ -80,8 +80,6 @@ def get_trip_data(
         Dataframe -- Cleaned tripdata dataframe
     """
 
-    print("files:", output_path, tripdata_path)
-
     # Trip data dataframe (Valentine's day)
     tripdata_dt_excerpt = None
 
@@ -96,37 +94,43 @@ def get_trip_data(
 
     except:
 
-        # Reading file
-        tripdata_dt = pd.read_csv(
-            tripdata_path,
-            parse_dates=True,
-            index_col=index_col,
-            usecols=filtered_columns,
-            na_values="0",
-        )
+        print(f"Reading trip data '{tripdata_path}'...")
 
-        tripdata_dt_excerpt = None
-
-        # Get excerpt
-        if start and stop:
-            tw_filter = (tripdata_dt.index >= start) & (
-                tripdata_dt.index <= stop
+        try:
+            # Reading file
+            tripdata_dt = pd.read_csv(
+                tripdata_path,
+                parse_dates=True,
+                index_col=index_col,
+                usecols=filtered_columns,
+                na_values="0",
             )
-            tripdata_dt_excerpt = pd.DataFrame(tripdata_dt.loc[tw_filter])
-        else:
-            tripdata_dt_excerpt = pd.DataFrame(tripdata_dt)
 
-        # Remove None values
-        tripdata_dt_excerpt.dropna(inplace=True)
+            tripdata_dt_excerpt = None
 
-        # Sort
-        tripdata_dt_excerpt.sort_index(inplace=True)
+            # Get excerpt
+            if start and stop:
+                tw_filter = (tripdata_dt.index >= start) & (
+                    tripdata_dt.index <= stop
+                )
+                tripdata_dt_excerpt = pd.DataFrame(tripdata_dt.loc[tw_filter])
+            else:
+                tripdata_dt_excerpt = pd.DataFrame(tripdata_dt)
 
-        # Save day data
-        print(f"Saving {len(tripdata_dt_excerpt)} to '{output_path}'...")
-        tripdata_dt_excerpt.to_csv(output_path)
+            # Remove None values
+            tripdata_dt_excerpt.dropna(inplace=True)
 
-    return tripdata_dt_excerpt
+            # Sort
+            tripdata_dt_excerpt.sort_index(inplace=True)
+
+            # Save day data
+            print(f"Saving {len(tripdata_dt_excerpt)} to '{output_path}'...")
+            tripdata_dt_excerpt.to_csv(output_path)
+
+            return tripdata_dt_excerpt
+
+        except Exception as e:
+            print(f"Exception: {e}")
 
 
 def get_ids(G, pk_lat, pk_lon, dp_lat, dp_lon, distance_dic_m, max_dist=50):
@@ -353,6 +357,7 @@ def add_ids(path_tripdata, path_tripdata_ids, G, distance_dic_m):
 
     print(dt.head())
     print(dt.describe())
+
 
 # #################################################################### #
 # Query request data ################################################# #
