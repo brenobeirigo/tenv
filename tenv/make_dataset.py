@@ -40,16 +40,27 @@ def create_trip_data():
     if not os.path.exists(config.root_map):
         os.makedirs(config.root_map)
 
-    if not os.path.exists(config.root_tripdata):
-        os.makedirs(config.root_tripdata)
-
     if not os.path.exists(config.root_reachability):
         os.makedirs(config.root_reachability)
 
     if not os.path.exists(config.root_reachability_concentric):
         os.makedirs(config.root_reachability_concentric)
 
-    # Plots ############################################################
+    # Trip data ###################################################### #
+
+    if not os.path.exists(config.root_tripdata):
+        os.makedirs(config.root_tripdata)
+
+    if not os.path.exists(config.root_tripdata_raw):
+        os.makedirs(config.root_tripdata_raw)
+
+    if not os.path.exists(config.root_tripdata_cleaned):
+        os.makedirs(config.root_tripdata_cleaned)
+
+    if not os.path.exists(config.root_tripdata_ids):
+        os.makedirs(config.root_tripdata_ids)
+
+    # Plots ########################################################## #
     if not os.path.exists(config.root_img_regions):
         os.makedirs(config.root_img_regions)
 
