@@ -1075,7 +1075,7 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
     # Adding new nodes
     for node in all_nodes_to_add:
         G.add_node(node["id"], **node["attr_dict"])
-    
+
     # Adding new edges
     for edge_attr_od in all_edges_to_add:
         G.add_edge(
@@ -1083,6 +1083,13 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
             edge_attr_od["destination"],
             **edge_attr_od["attr_dict"],
         )
+
+    # Relabel nodes and edges
+    for node in G.nodes():
+        G.node[node]["osmid"] = node
+
+    for i, (o, d) in enumerate(G.edges()):
+        G.edges[o, d, 0]["osmid"] = i
 
     return G
 
