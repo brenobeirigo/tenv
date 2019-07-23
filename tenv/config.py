@@ -31,7 +31,7 @@ root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 
 # Input data
 tripdata = None
-with open(f"{root}/data/in/config_scenario/bulk_ny_2011.json") as js:
+with open(f"{root}/data/in/config_scenario/bulk_ny_2011_local.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
@@ -60,6 +60,9 @@ graph_file_name = "{}.graphml".format(graph_name)
 # -------------------------------------------------------------------- #
 
 root_tripdata = root_path + "/tripdata"
+root_tripdata_cleaned = root_tripdata + "/cleaned"
+root_tripdata_raw = root_tripdata + "/raw"
+root_tripdata_ids = root_tripdata + "/ids"
 
 path_tripdata_ids = None
 tripdata_filename = None
@@ -72,13 +75,13 @@ if "url_tripdata" in tripdata:
     local = tripdata["url_tripdata"]
 
     # Presumably, the last part of the url is the file name
-    tripdata_filename = f'raw_{local.split("/")[-1]}'
-    path_tripdata_source = "{}/{}".format(root_tripdata, tripdata_filename)
+    tripdata_filename = f'{local.split("/")[-1]}'
+    path_tripdata_source = "{}/{}".format(root_tripdata_raw, tripdata_filename)
 
     # Excerpt name shows time interval
     excerpt_name = get_excerpt_name(tripdata["start"], tripdata["stop"])
 
-    path_tripdata_ids = "{}/{}_ids.csv".format(root_tripdata, excerpt_name)
+    path_tripdata_ids = "{}/{}_ids.csv".format(root_tripdata_ids, excerpt_name)
     path_tripdata = "{}/{}.csv".format(root_tripdata, excerpt_name)
 
 
