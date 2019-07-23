@@ -13,6 +13,115 @@ import tenv.network as gen
 import tenv.demand as tp
 import tenv.visuals as vi
 
+def gen_random_data(config, G, distance_dic):
+    print(
+            "\n############################"
+            "## Generating random data ##"
+            "############################"
+        )
+
+    print("Trip data generation settings:")
+    pprint(config.tripdata["data_gen"])
+
+    # Loop all generation function (e.g., clone, cluster)
+    for random_func_name in config.tripdata["data_gen"]["funcs"]:
+
+        if random_func_name == "random_clone":
+
+            data_gen_path_tripdata_ids = "{}/{}_{}_ids.csv".format(
+                config.root_tripdata,
+                random_func_name,
+                config.get_excerpt_name(
+                    config.tripdata["data_gen"]["start"],
+                    config.tripdata["data_gen"]["stop"],
+                ),
+            )
+
+            tp.gen_requests(
+                config.tripdata["data_gen"]["source"],
+                config.tripdata["data_gen"]["max_passenger_count"],
+                G,
+                data_gen_path_tripdata_ids,
+                start_timestamp=config.tripdata["data_gen"]["start"],
+                end_timestamp=config.tripdata["data_gen"]["stop"],
+                distance_dic=distance_dic,
+            )
+def process_tripdata(config, G, distance_dic):
+
+    # Get excerpt (start, stop)
+    print("Cleaning trip data...")
+
+    for file_name, tws in config.tripdata["file_tw"].items():
+        for tw in tws:
+            earliest, latest = tw
+
+            # Cleaned data setup
+            output_cleaned = config.tripdata["output_cleaned_tripdata"]
+            file_name_cleaned = (
+                config.get_excerpt_name(earliest, latest, label="cleaned")
+                + ".csv"
+            )
+
+            dt_tripdata = tp.get_trip_data(
+                f'{config.tripdata["path_tripdata"]}{file_name}',
+                output_cleaned + file_name_cleaned,
+                earliest,
+                latest,
+                index_col=config.tripdata["index_col"],
+                filtered_columns=config.tripdata["filtered_columns"],
+            )
+
+            # Cleaned data + graph ids setup
+            output_ids = config.tripdata["output_ids_tripdata"]
+            file_name_ids = (
+                config.get_excerpt_name(earliest, latest, label="ids")
+                + ".csv"
+            )
+            #  street network node ids (from G) to tripdata
+            print("Adding ids...")
+            tp.add_ids(
+                output_cleaned + file_name_cleaned,
+                output_ids + file_name_ids,
+                G,
+                distance_dic,
+            )
+def download_tripdata(config, G, distance_dic):
+    """ Example .json file:
+        {
+            "region": "Manhattan Island, New York City, New York, USA",
+            "url_tripdata": "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2011-02.csv",
+            "start": "2011-2-01 00:00:00",
+            "stop": "2011-2-01 23:59:59"
+        }
+    """
+    print(
+        "\n############################"
+        "### Processing trip data ###"
+        "############################"
+    )
+    pprint(config.tripdata["url_tripdata"])
+
+    # Try downloading the raw data if not exists (NY)
+    tp.download_file(
+        config.tripdata["url_tripdata"],
+        config.root_tripdata,
+        config.tripdata_filename,
+    )
+
+    # Get excerpt (start, stop)
+    print("Cleaning trip data...")
+    dt_tripdata = tp.get_trip_data(
+        config.path_tripdata_source,
+        config.path_tripdata,
+        start=config.tripdata["start"],
+        stop=config.tripdata["stop"],
+    )
+
+    #  street network node ids (from G) to tripdata
+    print("Adding ids...")
+    tp.add_ids(
+        config.path_tripdata, config.path_tripdata_ids, G, distance_dic
+    )
 
 def create_trip_data():
     print(
@@ -234,113 +343,15 @@ def create_trip_data():
         replace=False,
     )
 
-    if "url_tripdata" in config.tripdata.keys():
-
-        print(
-            "\n############################"
-            "### Processing trip data ###"
-            "############################"
-        )
-        pprint(config.tripdata["url_tripdata"])
-
-        # Try downloading the raw data if not exists (NY)
-        tp.download_file(
-            config.tripdata["url_tripdata"],
-            config.root_tripdata,
-            config.tripdata_filename,
-        )
-
-        # Get excerpt (start, stop)
-        print("Cleaning trip data...")
-        dt_tripdata = tp.get_trip_data(
-            config.path_tripdata_source,
-            config.path_tripdata,
-            start=config.tripdata["start"],
-            stop=config.tripdata["stop"],
-        )
-
-        #  street network node ids (from G) to tripdata
-        print("Adding ids...")
-        tp.add_ids(
-            config.path_tripdata, config.path_tripdata_ids, G, distance_dic
-        )
+    if "url_tripdata" in config.tripdata:
+        download_tripdata(config, G, distance_dic)
 
     # Trip data is saved in external drive
-    if "path_tripdata" in config.tripdata.keys():
-
-        # Get excerpt (start, stop)
-        print("Cleaning trip data...")
-
-        for file_name, tws in config.tripdata["file_tw"].items():
-            for tw in tws:
-                earliest, latest = tw
-
-                # Cleaned data setup
-                output_cleaned = config.tripdata["output_cleaned_tripdata"]
-                file_name_cleaned = (
-                    config.get_excerpt_name(earliest, latest, label="cleaned")
-                    + ".csv"
-                )
-
-                dt_tripdata = tp.get_trip_data(
-                    f'{config.tripdata["path_tripdata"]}{file_name}',
-                    output_cleaned + file_name_cleaned,
-                    earliest,
-                    latest,
-                    index_col=config.tripdata["index_col"],
-                    filtered_columns=config.tripdata["filtered_columns"],
-                )
-
-                # Cleaned data + graph ids setup
-                output_ids = config.tripdata["output_ids_tripdata"]
-                file_name_ids = (
-                    config.get_excerpt_name(earliest, latest, label="ids")
-                    + ".csv"
-                )
-                #  street network node ids (from G) to tripdata
-                print("Adding ids...")
-                tp.add_ids(
-                    output_cleaned + file_name_cleaned,
-                    output_ids + file_name_ids,
-                    G,
-                    distance_dic,
-                )
+    if "path_tripdata" in config.tripdata:
+        process_tripdata(config, G, distance_dic)
 
     if "data_gen" in config.tripdata:
-
-        print(
-            "\n############################"
-            "## Generating random data ##"
-            "############################"
-        )
-
-        print("Trip data generation settings:")
-        pprint(config.tripdata["data_gen"])
-
-        # Loop all generation function (e.g., clone, cluster)
-        for random_func_name in config.tripdata["data_gen"]["funcs"]:
-
-            if random_func_name == "random_clone":
-
-                data_gen_path_tripdata_ids = "{}/{}_{}_ids.csv".format(
-                    config.root_tripdata,
-                    random_func_name,
-                    config.get_excerpt_name(
-                        config.tripdata["data_gen"]["start"],
-                        config.tripdata["data_gen"]["stop"],
-                    ),
-                )
-
-                tp.gen_requests(
-                    config.tripdata["data_gen"]["source"],
-                    config.tripdata["data_gen"]["max_passenger_count"],
-                    G,
-                    data_gen_path_tripdata_ids,
-                    start_timestamp=config.tripdata["data_gen"]["start"],
-                    end_timestamp=config.tripdata["data_gen"]["stop"],
-                    distance_dic=distance_dic,
-                )
-
+        gen_random_data(config, G, distance_dic)
 
 if __name__ == "__main__":
 
