@@ -85,8 +85,8 @@ def create_trip_data():
         config.root_map,
         config.graph_name,
         config.graph_file_name,
-        max_travel_time_edge=60,
-        speed_km_h=20,
+        max_travel_time_edge=config.max_travel_time_edge,
+        speed_km_h=config.speed_km_h,
     )
 
     gen.save_graph_pic(G, config.root_map)

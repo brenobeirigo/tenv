@@ -105,6 +105,9 @@ total_range = 1200
 speed_km_h = 20
 round_trip = False
 
+# Max travel time (seconds) to traverse an edge
+max_travel_time_edge = 60
+
 # Max. time to execute ilp (min)
 ilp_time_limit = 60
 
