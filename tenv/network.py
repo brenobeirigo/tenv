@@ -11,6 +11,10 @@ from gurobipy import Model, GurobiError, GRB, quicksum
 import math
 import logging
 
+from shapely.geometry import Point, LineString
+from copy import deepcopy
+from pprint import pprint
+
 
 # #################################################################### #
 # Create, load, save network ######################################### #
@@ -135,7 +139,14 @@ def download_network(region, network_type):
     return G
 
 
-def get_network_from(region, root_path, graph_name, graph_filename):
+def get_network_from(
+        region,
+        root_path,
+        graph_name,
+        graph_filename,
+        max_travel_time_edge=None,
+        speed_km_h=20
+    ):
     """Download network from region. If exists (check graph_filename),
     try loading.
 
@@ -206,6 +217,16 @@ def get_network_from(region, root_path, graph_name, graph_filename):
             # Relabel nodes
             mapping = {k: i for i, k in enumerate(sorted(G.nodes()))}
             G = nx.relabel_nodes(G, mapping)
+
+            # Add extra nodes to the network such that each edge can
+            # be traveled in at most max_travel_time_edge seconds
+            if max_travel_time_edge is not None:
+                G = enrich_graph(
+                    G,
+                    max_travel_time_edge=max_travel_time_edge,
+                    speed_km_h=speed_km_h,
+                    n_coords=100,
+                )
 
             # Save
             ox.save_graphml(G, filename=graph_filename, folder=root_path)
@@ -279,7 +300,7 @@ def get_sorted_neighbors(
 
 def concentric_regions(
     G, steps, reachability, nodes, center=None, root_reachability=None
-    ):
+):
     """[summary]
     
     Parameters
@@ -320,7 +341,7 @@ def concentric_regions(
         nodes,
         root_path=root_reachability,
         round_trip=False,
-        parent_center=center
+        parent_center=center,
     )
 
     # Associate each node within the area determined by the parent
@@ -332,8 +353,7 @@ def concentric_regions(
         region_centers,
         nodes=nodes,
         path_region_ids=(
-            f"{root_reachability}/"
-            f"region_center_ids_{s:04}_{center:04}.npy"
+            f"{root_reachability}/" f"region_center_ids_{s:04}_{center:04}.npy"
         ),
     )
 
@@ -359,7 +379,7 @@ def concentric_regions(
             reachability,
             center_nodes,
             center=c,
-            root_reachability=root_reachability
+            root_reachability=root_reachability,
         )
 
         # Update center ids for nodes one level below
@@ -393,7 +413,7 @@ def get_center_nodes(region_id_dict):
     """
 
     dist_region_id_nodes = defaultdict(lambda: defaultdict(list))
-    
+
     # n -> max_dist -> center_id to max_dist -> center_id -> [nodes]
     for n, max_dist_center_id in region_id_dict.items():
         for max_dist, center_id in max_dist_center_id.items():
@@ -401,7 +421,9 @@ def get_center_nodes(region_id_dict):
     return dist_region_id_nodes
 
 
-def get_region_ids(G, reachability_dict, region_centers, path_region_ids=None, nodes=[]):
+def get_region_ids(
+    G, reachability_dict, region_centers, path_region_ids=None, nodes=[]
+):
     """Associate each node to its closest region center within a
      maximum reachable time limit.
 
@@ -515,7 +537,7 @@ def get_reachability_dic(
 
     # E.g., [30, 60, 90, ..., 600]
     steps_in_range_list = [i for i in range(step, total_range + step, step)]
-    
+
     try:
         reachability_dict = np.load(root_path, allow_pickle=True).item()
         logging.info(
@@ -525,7 +547,6 @@ def get_reachability_dic(
     except:
 
         reachability_dict = defaultdict(lambda: defaultdict(set))
-
 
         logging.info(
             ("Calculating reachability...\n" + "Steps:{}").format(
@@ -548,7 +569,7 @@ def get_reachability_dic(
                     dist_s = int(3.6 * dist_m / speed_km_h + 0.5)
                     dist = dist_s
 
-                # Find the index of which max_duration box dist_s is in
+                # Find the index of which max_travel_time_edge box dist_s is in
                 step_id = bisect.bisect_left(steps_in_range_list, dist)
 
                 if step_id < len(steps_in_range_list):
@@ -616,7 +637,7 @@ def get_list_coord(G, o, d, projection="GPS"):
         else:
             return [
                 wgs84_to_web_mercator(x, y)
-                for x,y in ox.LineString(edge_data["geometry"]).coords
+                for x, y in ox.LineString(edge_data["geometry"]).coords
             ]
     except:
         if projection == "GPS":
@@ -703,7 +724,7 @@ def get_sp_coords(G, o, d, projection="GPS"):
         list_ids {list} -- List of node ids
 
     Returns:
-        linestring -- Coordinates representing id list
+        linestring -- Coordinates representing id list (including od)
     """
 
     linestring = []
@@ -752,7 +773,10 @@ def get_duration(dist_m, speed_km_h=30):
     dist_s = 3.6 * dist_m / speed_km_h
     return dist_s
 
-def get_intermediate_coords(G, o, d, n_coords, projection="GPS", waypoint=None):
+
+def get_intermediate_coords(
+    G, o, d, n_coords, projection="GPS", waypoint=None, speed_km_h=30
+):
     """Get "n_coords" between origin and destination. Populate segments
     in proportion to legs' distance.
 
@@ -778,11 +802,18 @@ def get_intermediate_coords(G, o, d, n_coords, projection="GPS", waypoint=None):
         sp = get_sp_coords(G, o, waypoint)
         sp = sp[:-1] + get_sp_coords(G, waypoint, d)
     else:
+        # All coordinates (linestring) between od pair (incluseve)
         sp = get_sp_coords(G, o, d)
-    
+
+    # Number of coordinates is at least the shortest path
+    n_coords = max(n_coords, len(sp))
+
+    # print(f"\n\n###### Shortest path (len={len(sp)})")
+    # print(sp)
+
     # If not single point
     if len(sp) > 1:
-        # Coordinate pairs, e.g., [(p1, p2), (p2, p3)]
+        # Coordinate pairs, e.g., [p1, p2, p3] = [(p1, p2), (p2, p3)]
         od_pairs = list(zip(sp[:-1], sp[1:]))
 
         # Distance (euclidian) in meters between each pair
@@ -793,56 +824,66 @@ def get_intermediate_coords(G, o, d, n_coords, projection="GPS", waypoint=None):
 
         # How many points per pair (-1 removes last of the sequence)
         n_points_between_pairs = percentage_pair_distances * (n_coords - 1)
-        n_points_between_pairs = np.ceil(n_points_between_pairs)
+        n_points_between_pairs = np.ceil(n_points_between_pairs).astype(int)
 
-        # Guarantees the right number of points
+        # Guarantees the right number of points by adding/subtracting
         while np.sum(n_points_between_pairs) + 1 > n_coords:
-            n_points_between_pairs[np.argmax(n_points_between_pairs)] -= 1
+            # Remove points from the segment with the more points
+            max_points_i = np.argmax(n_points_between_pairs)
+            n_points_between_pairs[max_points_i] -= 1
 
         while np.sum(n_points_between_pairs) + 1 < n_coords:
-            n_points_between_pairs[np.argmin(n_points_between_pairs)] += 1
+            # Add points to the segment with the fewest points
+            min_points_i = np.argmin(n_points_between_pairs)
+            n_points_between_pairs[min_points_i] += 1
 
         # Tuple (od pair, #points between od - including o)
         intermediate_points = list(zip(od_pairs, n_points_between_pairs))
+        assert (min(n_points_between_pairs) >= 1), f"ERROR!{min(n_points_between_pairs)}"
 
         list_coords = []
         total_distance = 0
-        duration_s = [0]
+        leg_distances = [0]
 
-        for pair, n_intermediate in intermediate_points:
+        # print(n_points_between_pairs, percentage_pair_distances)
 
-            p1, p2 = pair
+        for (p1, p2), n_intermediate in intermediate_points:
 
             list_coords.append(p1)
 
-            # Step fraction (if there are intermediate points)
-            step_fraction = 1.0 / (n_intermediate if n_intermediate > 0 else 1)
-
-            # Start from second point since p1 as already added
-            # Finishes before p2 since it will be added in the next round
-            all_fraction_steps = np.arange(
-                step_fraction,
-                0.9999,
-                step_fraction
-            )
-
             distance_pair = 0
 
-            # Loop all fractions to derive the intermediate lon, lat
-            # coordinates following the line
-            for fraction in all_fraction_steps:
-                lon, lat = intermediate_coord(*p1, *p2, fraction)
+            # Since n_intermediate always include o, it has to be
+            # greater or equal 2 to start adding nodes
+            if n_intermediate >= 2:
 
-                distance_leg = distance(*list_coords[-1], lon, lat)
+                # Step fraction (if there are intermediate points)
+                step_fraction = 1.0 / n_intermediate
 
-                # Update distance between p1 and p2
-                distance_pair += distance_leg
 
-                # Add intermediate coordinate
-                list_coords.append([lon, lat])
+                # Start from second point since p1 as already added
+                # Finishes before p2 since it will be added in the next round
+                all_fraction_steps = np.arange(
+                    step_fraction,
+                    0.9999,
+                    step_fraction
+                )
 
-                # Duration to travel the leg between the current pair
-                duration_s.append(get_duration(distance_leg))
+                # Loop all fractions to derive the intermediate lon, lat
+                # coordinates following the line
+                for fraction in all_fraction_steps:
+                    lon, lat = intermediate_coord(*p1, *p2, fraction)
+
+                    distance_leg = distance(*list_coords[-1], lon, lat)
+
+                    # Update distance between p1 and p2
+                    distance_pair += distance_leg
+
+                    # Add intermediate coordinate
+                    list_coords.append([lon, lat])
+
+                    # Distance to travel the leg between the current pair
+                    leg_distances.append(distance_leg)
 
             # Add last leg distance
             distance_last_leg = distance(*list_coords[-1], *p2)
@@ -850,26 +891,200 @@ def get_intermediate_coords(G, o, d, n_coords, projection="GPS", waypoint=None):
             # Update distance between p1 and p2
             distance_pair += distance_last_leg
 
-            # Duration to travel the last leg (to p2)
-            duration_s.append(get_duration(distance_last_leg))
-
+            # Distance to travel the last leg (to p2)
+            leg_distances.append(distance_last_leg)
             total_distance += distance_pair
 
         # Add last point (last p2)
         list_coords.append(sp[-1])
 
-        # Cumulative durations, distances
-        duration_cum_list = np.cumsum(duration_s)
-    
+        # Get cumulative distances
+        distance_cum_list = np.cumsum(leg_distances)
+        
+        # Get cumulative durations
+        leg_durations = [
+            get_duration(d, speed_km_h=speed_km_h)
+            for d in leg_distances
+        ]
+        duration_cum_list = np.cumsum(leg_durations)
+
     else:
         list_coords = sp
         duration_cum_list = []
-        total_distance=0
+        distance_cum_list = []
+        total_distance = 0
 
     if projection == "MERCATOR":
         list_coords = [wgs84_to_web_mercator(*p) for p in list_coords]
+    # print(f"list_coords len={len(list_coords)}")
+    # pprint(list_coords)
+    # print(f"duration_cum_list len={len(duration_cum_list)}")
+    # pprint(duration_cum_list)
+    # print(f"distance_cum_list len={len(distance_cum_list)}")
+    # pprint(distance_cum_list)
+    # print("Total:", total_distance)
+    return list_coords, duration_cum_list, distance_cum_list, total_distance
 
-    return list_coords, duration_cum_list, total_distance
+
+def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km_h=20):
+    """Receives cleaned up network (ids starting from 0) and add extra
+    points between edges. Points are at least max_travel_time_edge
+    apart.
+
+    Parameters
+    ----------
+    G : networkx
+        Graph to enrich
+    max_dist : int, optional
+        [description], by default 50
+    max_travel_time_edge : int, optional
+        [description], by default 60
+    n_coords_between_od : int, optional
+        [description], by default 100
+    speed_km_h : int, optional
+        [description], by default 20
+
+    Returns
+    -------
+    networkx
+        Enriched graph of max_travel_time_edge edges
+    """
+
+    G = G.copy()
+
+    all_edges_to_add = list()
+    all_nodes_to_add = list()
+
+    # Node ids start from last id
+    node_id = len(G.nodes())
+
+    # Loop edges and break them in sub edges
+    for o, d in G.edges():
+
+        # Get min_coords_edge coordinates in edge id (od inclusive)
+        (
+            intermediate_coords,
+            cumsum_duration,
+            cumsum_dist,
+            total_distance,
+        ) = get_intermediate_coords(
+            G, o, d, n_coords, speed_km_h=speed_km_h
+        )
+
+        distance_od = cumsum_dist[-1]
+        duration_od = cumsum_duration[-1]
+
+        # Number of sub edges
+        n_subedges = int(np.ceil(duration_od / max_travel_time_edge))
+
+        # If edge
+        if n_subedges > 1:
+
+            # Percentual of each sub edge
+            step = 1 / n_subedges
+
+            # print(
+            #     "\n###### "
+            #     f"{o:04}({G.nodes[o]['x']:11.7f},{G.nodes[o]['y']:11.7f}) -> "
+            #     f"{d:04}({G.nodes[d]['x']:11.7f},{G.nodes[d]['y']:11.7f}) - "
+            #     f"dist={distance_od:7.2f} - duration={duration_od:7.2f} - "
+            #     f"points={n_subedges}"
+            # )
+            # # pprint(G[o][d])
+            # print("COORDS:")
+            # pprint(intermediate_coords)
+
+            # od_pairs = list(zip(sp[:-1], sp[1:]))
+
+            # print(
+            #     f"cumsum={len(cumsum_distance)} - intermediate={len(intermediate_coords)}"
+            # )
+
+            # lon1, lat1 = G.node[o]['x'], G.node[o]['y']
+
+            # Get all edge attributes and broadcast them to all sub edges
+            edge_attr_od = G.edges[o, d, 0]
+
+            sub_o_idx = 0
+            lo_node_id = o
+            # Guarantee last fraction is always the full distance
+            cum_leg_fraction_list = list(np.arange(step, 0.999999, step)) + [1]
+            for cum_leg_fraction in cum_leg_fraction_list:
+
+                # Copy od attributes
+                edge_attributes = deepcopy(edge_attr_od)
+
+                # Distance and duration where edge will be cut
+                partial_dist = cum_leg_fraction * distance_od
+                partial_duration = cum_leg_fraction * duration_od
+
+                # Find position of leftmost coordinate whose partial
+                # duration is lower than or equal to partial_dist
+                sub_d_idx = bisect.bisect_left(cumsum_duration, partial_duration)
+                # print(f"Partial duration={partial_duration} n_coords={len(intermediate_coords)}, sub_o_idx={sub_o_idx}, sub_d_idx={sub_d_idx}")
+
+                if sub_o_idx == sub_d_idx:
+                    continue
+
+                # Add node if different than destination d
+                if cum_leg_fraction < 1:
+                    destination_id = node_id
+                    x, y = intermediate_coords[sub_d_idx]
+                    all_nodes_to_add.append(
+                        {
+                            "id": destination_id,
+                            "attr_dict": {"x": x, "y": y}
+                        }
+                    )
+                    # Increment number of nodes
+                    node_id += 1
+                else:
+                    destination_id = d
+
+                # Construct the geometry of points covered by subedge
+                edge_attributes["geometry"] = LineString(
+                    [
+                        Point(lon, lat)
+                        for lon, lat in intermediate_coords[sub_o_idx: sub_d_idx+1]
+                    ]
+                )
+
+                # Length of subedge
+                edge_attributes["length"] = (
+                    cumsum_dist[sub_d_idx] - cumsum_dist[sub_o_idx]
+                )
+
+                all_edges_to_add.append(
+                    {
+                        "origin": lo_node_id,
+                        "destination": destination_id,
+                        "attr_dict": edge_attributes,
+                    }
+                )
+
+                # print(
+                #     f"##### leg={cum_leg_fraction} - {sub_o_idx}({lo_node_id}) -- {sub_d_idx}({destination_id}) - length={edge_attributes['length']} ############"
+                # )
+                # print(cumsum_duration[sub_o_idx : sub_d_idx])
+                # print("len.:", len(intermediate_coords[sub_o_idx : sub_d_idx+1]))
+                # pprint(intermediate_coords[sub_o_idx : sub_d_idx+1])
+
+                sub_o_idx = sub_d_idx
+                lo_node_id = destination_id
+
+    # Adding new nodes
+    for node in all_nodes_to_add:
+        G.add_node(node["id"], **node["attr_dict"])
+    
+    # Adding new edges
+    for edge_attr_od in all_edges_to_add:
+        G.add_edge(
+            edge_attr_od["origin"],
+            edge_attr_od["destination"],
+            **edge_attr_od["attr_dict"],
+        )
+
+    return G
 
 
 def get_sp_linestring_durations(G, o, d, speed):
@@ -922,7 +1137,7 @@ def get_sp(G, o, d):
     Returns:
         list -- List of nodes between o and d (included)
     """
-    return nx.shortest_path(G, source=o, target=d)
+    return nx.shortest_path(G, source=o, target=d, weight="length")
 
 
 def get_random_node(G):
@@ -964,7 +1179,9 @@ def get_largest_connected_component(G):
             nx.strongly_connected_components(G), key=len, reverse=True
         )
     ]
-    logging.info(f"Size of strongly connected components: {s_connected_component}")
+    logging.info(
+        f"Size of strongly connected components: {s_connected_component}"
+    )
     return set(largest_cc)
 
 
@@ -974,6 +1191,25 @@ def get_largest_connected_component(G):
 
 
 def distance(lon1, lat1, lon2, lat2):
+    """Return the great-circle distance (meters) between two points
+    using haversine.
+    
+    Parameters
+    ----------
+    lon1 : float
+        Longitude point 1
+    lat1 : float
+        Latitude point 1
+    lon2 : float
+        Longitude point 2
+    lat2 : float
+        Latitude point 2
+    
+    Returns
+    -------
+    Float
+        Distance in meters
+    """
 
     return ox.great_circle_vec(lat1, lon1, lat2, lon2)
 
@@ -1002,14 +1238,12 @@ def intermediate_coord(lon1, lat1, lon2, lat2, fraction):
     A = math.sin((1 - fraction) * delta) / math.sin(delta)
     B = math.sin(fraction * delta) / math.sin(delta)
 
-    x = (
-        A * math.cos(rad_lat_o) * math.cos(rad_lon_o)
-        + B * math.cos(rad_lat_d) * math.cos(rad_lon_d)
-    )
-    y = (
-        A * math.cos(rad_lat_o) * math.sin(rad_lon_o)
-        + B * math.cos(rad_lat_d) * math.sin(rad_lon_d)
-    )
+    x = A * math.cos(rad_lat_o) * math.cos(rad_lon_o) + B * math.cos(
+        rad_lat_d
+    ) * math.cos(rad_lon_d)
+    y = A * math.cos(rad_lat_o) * math.sin(rad_lon_o) + B * math.cos(
+        rad_lat_d
+    ) * math.sin(rad_lon_d)
     z = A * math.sin(rad_lat_o) + B * math.sin(rad_lat_d)
 
     lat_atan2 = math.atan2(z, math.sqrt(x * x + y * y))
@@ -1019,6 +1253,7 @@ def intermediate_coord(lon1, lat1, lon2, lat2, fraction):
     lon = math.degrees(lon_atan2)
 
     return lon, lat
+
 
 def get_distance_matrix(G, distance_dic_m):
     """Return distance matrix (n x n). Value is 'None' when path does
@@ -1100,7 +1335,9 @@ def get_distance_dic(root_path, G):
         distance_dic_m = np.load(root_path, allow_pickle=True).item()
 
     except Exception as e:
-        logging.info(f"Reading failed! Exception: {e} \nCalculating shortest paths...")
+        logging.info(
+            f"Reading failed! Exception: {e} \nCalculating shortest paths..."
+        )
         all_dists_gen = nx.all_pairs_dijkstra_path_length(G, weight="length")
 
         # Save with pickle (meters)
@@ -1207,7 +1444,6 @@ def can_reach(origin, target, max_delay, reachability_dic, round_trip=False):
     1 # node 1 can be reached from node 2 in <= 90s and node 2 CAN be reached from node 2 in 30s
     """
 
-
     # Target can be reached from origin
     origin_target = False
 
@@ -1235,10 +1471,9 @@ def can_reach(origin, target, max_delay, reachability_dic, round_trip=False):
             # If one way reachability exists (i.e., 'target' can be
             # reached from 'origin' in less than 'max_delay' time steps)
             elif origin_target:
-                    return 1
+                return 1
 
     # e.g., reachability[n1][30] = {n1,n2,n3,n4}
-
 
     return 0
 
@@ -1249,8 +1484,8 @@ def ilp_node_reachability(
     max_delay=180,
     log_path=None,
     time_limit=None,
-    round_trip=False
-    ):
+    round_trip=False,
+):
 
     # List of nodes ids
 
@@ -1264,8 +1499,8 @@ def ilp_node_reachability(
             # Create log path if not exists
             if not os.path.exists(log_path):
                 os.makedirs(log_path)
-            
-            round_trip_label = ("_round_trip" if round_trip else "")
+
+            round_trip_label = "_round_trip" if round_trip else ""
 
             m.Params.LogFile = "{}/region_centers{}_{}.log".format(
                 log_path, round_trip_label, max_delay
@@ -1295,7 +1530,7 @@ def ilp_node_reachability(
                             origin,
                             max_delay,
                             reachability_dic,
-                            round_trip=round_trip
+                            round_trip=round_trip,
                         )
                         for center in node_set_ids
                     )
@@ -1413,10 +1648,10 @@ def get_region_centers(
     logging.info(
         "\nReading region center dictionary...\nSource: '{}'.".format(
             path_region_centers
-    ))
+        )
+    )
     if os.path.isfile(path_region_centers):
         centers_dic = np.load(path_region_centers, allow_pickle=True).item()
-        
 
     else:
 
@@ -1443,7 +1678,7 @@ def get_region_centers(
             # Create folder to save intermediate work, that is, previous
             # max_delay steps.
             centers_sub_sols = "{}/mip_region_centers/sub_sols".format(
-                root_path,
+                root_path
             )
 
             if not os.path.exists(centers_sub_sols):
@@ -1454,7 +1689,9 @@ def get_region_centers(
 
             if centers_sub_sols is not None:
                 # Name of intermediate region centers file for 'max_delay'
-                file_name = "{}/{}_{:04}.npy".format(centers_sub_sols, parent_center, max_delay)
+                file_name = "{}/{}_{:04}.npy".format(
+                    centers_sub_sols, parent_center, max_delay
+                )
 
                 # Pre-calculated region center is loaded in case it exists.
                 # This helps filling the complete 'centers_dic' without
@@ -1462,7 +1699,9 @@ def get_region_centers(
                 # has occured.
                 if os.path.isfile(file_name):
                     # Load max delay in centers_dic
-                    centers_dic[max_delay] = np.load(file_name, allow_pickle=True)
+                    centers_dic[max_delay] = np.load(
+                        file_name, allow_pickle=True
+                    )
                     logging.info(f"{file_name} already calculated.")
                     continue
 
