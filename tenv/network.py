@@ -138,6 +138,42 @@ def download_network(region, network_type):
 
     return G
 
+def clean_network(G):
+
+    G = G.copy()
+
+    G = ox.remove_isolated_nodes(G)
+
+    # Set of nodes with low connectivity (end points)
+    # Must be eliminated to avoid stuch vehicles
+    # (enter but cannot leave)
+    not_reachable = set()
+
+    for node in G.nodes():
+        # Node must be accessible by at least 10 nodes
+        # forward and backward
+        # e.g.: 1--2--3--4--5 -- node --6--7--8--9--10
+        if not is_reachable(G, node, 10):
+            not_reachable.add(node)
+
+        for target in G.neighbors(node):
+            edge_data = G.get_edge_data(node, target)
+            keys = len(edge_data.keys())
+            try:
+                for i in range(1, keys):
+                    del edge_data[i]
+            except:
+                pass
+
+    for node in not_reachable:
+        G.remove_node(node)
+
+    # Only the strongest connected component is kept
+    disconnected = G.nodes() - get_largest_connected_component(G)
+    G.remove_nodes_from(disconnected)
+
+    return G
+
 
 def get_network_from(
         region,
@@ -175,8 +211,9 @@ def get_network_from(
             # Save region name
             G.graph["region"] = region
 
+            logging.info("# Downloaded graph")
             logging.info(
-                "#ORIGINAL -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
+                "NODES: {} ({} -> {}) -- #EDGES: {}".format(
                     len(G.nodes()),
                     min(G.nodes()),
                     max(G.nodes()),
@@ -184,35 +221,16 @@ def get_network_from(
                 )
             )
 
-            G = ox.remove_isolated_nodes(G)
-
-            # Set of nodes with low connectivity (end points)
-            # Must be eliminated to avoid stuch vehicles
-            # (enter but cannot leave)
-            not_reachable = set()
-
-            for node in G.nodes():
-                # Node must be accessible by at least 10 nodes
-                # forward and backward
-                # e.g.: 1--2--3--4--5 -- node --6--7--8--9--10
-                if not is_reachable(G, node, 10):
-                    not_reachable.add(node)
-
-                for target in G.neighbors(node):
-                    edge_data = G.get_edge_data(node, target)
-                    keys = len(edge_data.keys())
-                    try:
-                        for i in range(1, keys):
-                            del edge_data[i]
-                    except:
-                        pass
-
-            for node in not_reachable:
-                G.remove_node(node)
-
-            # Only the strongest connected component is kept
-            disconnected = G.nodes() - get_largest_connected_component(G)
-            G.remove_nodes_from(disconnected)
+            logging.info("# Cleaned graph")
+            G = clean_network(G)
+            logging.info(
+                "#NODES: {} ({} -> {}) -- #EDGES: {}".format(
+                    len(G.nodes()),
+                    min(G.nodes()),
+                    max(G.nodes()),
+                    len(G.edges()),
+                )
+            )
 
             # Relabel nodes
             mapping = {k: i for i, k in enumerate(sorted(G.nodes()))}
@@ -226,6 +244,27 @@ def get_network_from(
                     max_travel_time_edge=max_travel_time_edge,
                     speed_km_h=speed_km_h,
                     n_coords=100,
+                )
+
+                logging.info("# Enriched graph")
+                logging.info(
+                    "NODES: {} ({} -> {}) -- #EDGES: {}".format(
+                        len(G.nodes()),
+                        min(G.nodes()),
+                        max(G.nodes()),
+                        len(G.edges()),
+                    )
+                )
+
+                G = clean_network(G)
+
+                logging.info(
+                    "NODES: {} ({} -> {}) -- #EDGES: {}".format(
+                        len(G.nodes()),
+                        min(G.nodes()),
+                        max(G.nodes()),
+                        len(G.edges()),
+                    )
                 )
 
             # Save
