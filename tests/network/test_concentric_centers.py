@@ -33,7 +33,11 @@ if __name__ == "__main__":
 
     # Try to load from path, if does't exist generate
     reachability_dict, steps_in_range_list = nw.get_reachability_dic(
-        config.path_reachability_dic, distance_dic, step=60, total_range=600
+        config.path_reachability_dic,
+        distance_dic,
+        step=60,
+        total_range=600,
+        step_list=None,
     )
 
     steps = sorted(steps_in_range_list)

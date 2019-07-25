@@ -45,6 +45,7 @@ reachability_dict, steps = nw.get_reachability_dic(
     step=config.step,
     total_range=config.total_range,
     speed_km_h=config.speed_km_h,
+    step_list=config.step_list,
 )
 
 if config.region_slice == config.REGION_REGULAR:

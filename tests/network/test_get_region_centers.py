@@ -34,6 +34,7 @@ reachability_dic = nw.get_reachability_dic(
     step=steps_sec,
     total_range=total_sec,
     speed_km_h=speed_km_h,
+    step_list=None,
 )
 
 region_centers = nw.get_region_centers(
