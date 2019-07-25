@@ -726,11 +726,15 @@ def plot_graph_routes(G, routes, bbox=None, fig_height=6, fig_width=None,
     for route in routes:
         edge_nodes = list(zip(route[:-1], route[1:]))
         for u, v in edge_nodes:
-            # if there are parallel edges, select the shortest in length
-            data = min(G.get_edge_data(u, v).values(), key=lambda x: x['length'])
+            data = None
+            try:
+                # if there are parallel edges, select the shortest in length
+                data = min(G.get_edge_data(u, v).values(), key=lambda x: x['length'])
+            except:
+                pass
 
             # if it has a geometry attribute (ie, a list of line segments)
-            if 'geometry' in data and use_geom:
+            if  data and 'geometry' in data and use_geom:
                 # add them to the list of lines to plot
                 xs, ys = data['geometry'].xy
                 lines.append(list(zip(xs, ys)))
