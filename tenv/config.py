@@ -18,12 +18,13 @@ REGION_REGULAR = "REGULAR"
 
 # How regions are sliced?
 # region_slice = REGION_CONCENTRIC
-region_slice = REGION_REGULAR
+region_slice = REGION_CONCENTRIC
+label_exp = "CON"
 
 # root = os.getcwd().replace("\\", "/")
-root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 # root = "C:/Users/breno/Documents/phd/tenv"
-# root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
 ########################################################################
 # Dataset structure ####################################################
@@ -31,7 +32,7 @@ root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 
 # Input data
 tripdata = None
-with open(f"{root}/data/in/config_scenario/bulk_ny_2011_local.json") as js:
+with open(f"{root}/data/in/config_scenario/bulk_ny_2011.json") as js:
     tripdata = json.load(js)
 
 region = tripdata["region"]
@@ -40,7 +41,7 @@ region = tripdata["region"]
 graph_name = tripdata["region"].lower().replace(" ", "-").replace(",", "")
 
 # Where dataset is saved
-root_path = root + "/data/out/{}".format(graph_name)
+root_path = root + "/data/out/{}{}".format(label_exp, graph_name)
 
 # -------------------------------------------------------------------- #
 # Map ##################################################################
@@ -103,25 +104,28 @@ path_dist_dic = "{}/distance_dic_m_{}.npy".format(root_dist, graph_name)
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
 step = 30
-total_range = 1200
+total_range = 300
 # If defined, step and total_range are assumed to be seconds
 speed_km_h = 20
 round_trip = False
+step_list = [0, 60, 120, 300]
 
 # Max travel time (seconds) to traverse an edge
-max_travel_time_edge = 60
+max_travel_time_edge = 30
 
 # Max. time to execute ilp (min)
 ilp_time_limit = 60
 
-root_reachability = root_map + "/reachability_{}_{}{}".format(
-    step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
+round_trip_label = ("_roundtrip" if round_trip else "")
+
+root_reachability = root_map + "/reachability{}_{}_{}{}".format(
+    round_trip_label, step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
 )
 
 root_reachability_concentric = (
     root_map
-    + "/reachability_concentric_{}_{}{}".format(
-        step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
+    + "/reachability_concentric{}_{}_{}{}".format(
+        round_trip_label, step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
     )
 )
 

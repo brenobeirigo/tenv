@@ -488,7 +488,7 @@ def get_region_ids(
 
 
 def get_reachability_dic(
-    root_path, distance_dic, step=30, total_range=600, speed_km_h=30
+    root_path, distance_dic, step=30, total_range=600, speed_km_h=30, step_list=None
 ):
     """Which nodes are reachable from one another in "step" steps?
     E.g.:
@@ -535,8 +535,11 @@ def get_reachability_dic(
 
     reachability_dict = None
 
-    # E.g., [30, 60, 90, ..., 600]
-    steps_in_range_list = [i for i in range(step, total_range + step, step)]
+    if step_list:
+        steps_in_range_list = step_list
+    else:
+        # E.g., [30, 60, 90, ..., 600]
+        steps_in_range_list = [i for i in range(step, total_range + step, step)]
 
     try:
         reachability_dict = np.load(root_path, allow_pickle=True).item()

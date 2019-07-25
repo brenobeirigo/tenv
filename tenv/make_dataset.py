@@ -13,6 +13,9 @@ import tenv.network as gen
 import tenv.demand as tp
 import tenv.visuals as vi
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 def gen_random_data(config, G, distance_dic):
     print(
             "\n############################"
@@ -242,6 +245,7 @@ def create_trip_data():
         distance_dic,
         step=config.step,
         total_range=config.total_range,
+        step_list=config.step_list,
         speed_km_h=config.speed_km_h,
     )
 

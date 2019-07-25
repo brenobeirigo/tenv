@@ -26,7 +26,9 @@ print(
     f"\n# Aggregation = {config.region_slice}"
     f"\n#       Speed = {config.speed_km_h}"
     f"\n#  Step/Total = {config.step}/{config.total_range}"
+    f"\n#       Steps = {config.step_list}"
     f"\n#       Round = {config.round_trip}"
+    f"\n#      Source = {config.root_path}"
     f"\n#     Network = # nodes = {len(G.nodes())} ({min(G.nodes())} -> {max(G.nodes())}) - #edges = {len(G.edges())}"
     "\n###############################################################"
 )
