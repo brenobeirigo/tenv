@@ -659,7 +659,7 @@ def get_can_reach_set(n, reach_dic, max_trip_duration=150):
     return can_reach_target
 
 
-def get_list_coord(G, o, d, projection="GPS"):
+def get_list_coord(G, o, d, projection="GPS", edge_index=0):
     """Get the list of intermediate coordinates between
     nodes o and d (inclusive).
 
@@ -672,7 +672,7 @@ def get_list_coord(G, o, d, projection="GPS"):
         list -- E.g.: [(x1, y1), (x2, y2)]
     """
 
-    edge_data = G.get_edge_data(o, d)[0]
+    edge_data = G.get_edge_data(o, d)[edge_index]
     try:
         if projection == "GPS":
             return ox.LineString(edge_data["geometry"]).coords
@@ -831,7 +831,7 @@ def get_intermediate_coords(
     d : int
         Destination i
     n_coords : int
-        Number of coordinates between o and d (inclusive)
+        Number of desired coordinates between o and d (inclusive)
 
     Returns
     -------
