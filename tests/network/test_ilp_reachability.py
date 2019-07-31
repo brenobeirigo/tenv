@@ -44,6 +44,7 @@ if __name__ == "__main__":
 
     min_center_set = nw.ilp_node_reachability(
         reachability_dic,
+        list(G.nodes()),
         max_delay=MAX_TRIP_TIME,
         log_path=config.root_test_network + "/reachability_log",
     )
