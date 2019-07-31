@@ -3,6 +3,7 @@ import json
 import sys
 from datetime import datetime
 from pprint import pprint
+import tenv.network as nw
 
 
 def get_excerpt_name(start, stop, label="excerpt"):
@@ -18,13 +19,14 @@ REGION_REGULAR = "REGULAR"
 
 # How regions are sliced?
 # region_slice = REGION_CONCENTRIC
-region_slice = REGION_CONCENTRIC
-label_exp = "CON"
+region_slice = REGION_REGULAR
+# label_exp = "CON"
+label_exp = "15"
 
 # root = os.getcwd().replace("\\", "/")
-# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 # root = "C:/Users/breno/Documents/phd/tenv"
-root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+# root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
 ########################################################################
 # Dataset structure ####################################################
@@ -103,29 +105,37 @@ path_dist_dic = "{}/distance_dic_m_{}.npy".format(root_dist, graph_name)
 
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
-step = 30
-total_range = 300
+step = 15
+total_range = 600
 # If defined, step and total_range are assumed to be seconds
 speed_km_h = 20
 round_trip = False
-step_list = [0, 60, 120, 300]
+# step_list = [60, 120, 300]
+step_list = []
 
-# Max travel time (seconds) to traverse an edge
+# Max travel time (seconds) to traverse an edge, i.e., if = 30, every
+# edge can be traveled in 30 seconds
 max_travel_time_edge = 30
 
 # Max. time to execute ilp (min)
 ilp_time_limit = 60
 
-round_trip_label = ("_roundtrip" if round_trip else "")
+round_trip_label = "_roundtrip" if round_trip else ""
 
 root_reachability = root_map + "/reachability{}_{}_{}{}".format(
-    round_trip_label, step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
+    round_trip_label,
+    step,
+    total_range,
+    ("_kmh{}".format(speed_km_h) if speed_km_h else ""),
 )
 
 root_reachability_concentric = (
     root_map
     + "/reachability_concentric{}_{}_{}{}".format(
-        round_trip_label, step, total_range, ("_kmh{}".format(speed_km_h) if speed_km_h else "")
+        round_trip_label,
+        step,
+        total_range,
+        ("_kmh{}".format(speed_km_h) if speed_km_h else ""),
     )
 )
 
@@ -175,3 +185,24 @@ path_sorted_neighbors = "{}/sorted_neighbors_region_centers_{}.npy".format(
 path_sorted_neighbors_concentric = "{}/sorted_neighbors_region_centers_{}.npy".format(
     root_reachability_concentric, graph_name
 )
+
+
+# Network
+G = nw.load_network(graph_file_name, folder=root_map)
+
+
+def info():
+    return (
+        "\n###############################################################"
+        f"\n#      Region = {region}"
+        f"\n# Aggregation = {region_slice}"
+        f"\n#       Speed = {speed_km_h}"
+        f"\n#  Step/Total = {step}/{total_range}"
+        f"\n#       Steps = {step_list}"
+        f"\n#       Round = {round_trip}"
+        f"\n#      Source = {root_path}"
+        f"\n#     Network = # nodes = {len(G.nodes())} "
+        f"({min(G.nodes())} -> {max(G.nodes())}) - #edges = {len(G.edges())}"
+        "\n###############################################################"
+    )
+

@@ -17,21 +17,10 @@ import numpy as np
 import math
 
 
+print(config.info())
+
 # Network
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
-
-print(
-    "\n###############################################################"
-    f"\n#      Region = {config.region}"
-    f"\n# Aggregation = {config.region_slice}"
-    f"\n#       Speed = {config.speed_km_h}"
-    f"\n#  Step/Total = {config.step}/{config.total_range}"
-    f"\n#       Steps = {config.step_list}"
-    f"\n#       Round = {config.round_trip}"
-    f"\n#      Source = {config.root_path}"
-    f"\n#     Network = # nodes = {len(G.nodes())} ({min(G.nodes())} -> {max(G.nodes())}) - #edges = {len(G.edges())}"
-    "\n###############################################################"
-)
 
 # Creating distance dictionary [o][d] -> distance
 distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
@@ -176,7 +165,8 @@ def get_info():
         "node_count": len(G.nodes()),
         "edge_count": len(G.edges()),
         "centers": {
-            dist: len(center_ids) for dist, center_ids in center_nodes.items()
+            dist: len(center_ids)
+            for dist, center_ids in center_nodes.items()
         },
         "region_type": config.region_slice,
     }
@@ -243,7 +233,7 @@ def sp_sliced(o, d, waypoint, total_points, step_count, projection="GPS"):
         }
     """
 
-    list_coords, cum_duration, dist_m = nw.get_intermediate_coords(
+    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
@@ -293,7 +283,7 @@ def sp_segmented(
         }
     """
 
-    list_coords, cum_duration, dist_m = nw.get_intermediate_coords(
+    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
