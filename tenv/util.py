@@ -23,13 +23,12 @@ print(config.info())
 # Network
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
 
-# Creating distance dictionary [o][d] -> distance
-distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
+distance_matrix = nw.get_distance_matrix(config.path_dist_matrix_npy, G)
 
 # Reachability dictionary
 reachability_dict, steps = nw.get_reachability_dic(
     config.path_reachability_dic,
-    distance_dic,
+    distance_matrix,
     step=config.step,
     total_range=config.total_range,
     speed_km_h=config.speed_km_h,
@@ -56,7 +55,7 @@ if config.region_slice == config.REGION_REGULAR:
     )
 
     sorted_neighbors = nw.get_sorted_neighbors(
-        distance_dic,
+        distance_matrix,
         region_centers,
         path_sorted_neighbors=config.path_sorted_neighbors,
     )
@@ -73,7 +72,7 @@ elif config.region_slice == config.REGION_CONCENTRIC:
     )
 
     sorted_neighbors = nw.get_sorted_neighbors(
-        distance_dic,
+        distance_matrix,
         region_centers,
         path_sorted_neighbors=config.path_sorted_neighbors_concentric,
     )
@@ -83,9 +82,9 @@ center_nodes = nw.get_center_nodes(region_id_dict)
 
 if config.step_list:
     # ##### Discarding centers to save memory ######################## #
-    # A higher number of centers might have been processed before (e.g., 
+    # A higher number of centers might have been processed before (e.g.,
     # every 15 seconds) but end up not being used in the end. Hence,
-    # their previously loaded information become superfluous and can be 
+    # their previously loaded information become superfluous and can be
     # excluded.
     superfluous = set(region_centers.keys()).difference(config.step_list)
     print(f"Removing superfluous centers {superfluous}.")
@@ -102,7 +101,7 @@ if config.step_list:
     for c, n_neighbors in sorted_neighbors.items():
         for n, neighbors in n_neighbors.items():
             lean_sorted_neighbors[c][n] = [
-                i for i, d in neighbors[1:config.max_neighbors+1]
+                i for i, d in neighbors[1 : config.max_neighbors + 1]
             ]
 
     sorted_neighbors = lean_sorted_neighbors
@@ -117,7 +116,7 @@ if config.step_list:
         # Sort neighbors by distance
         node_neighbors = list(node_neighbors)
         node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
-        sorted_neighbors[0][center_id] = node_neighbors[:config.max_neighbors]
+        sorted_neighbors[0][center_id] = node_neighbors[: config.max_neighbors]
 
 
 @functools.lru_cache(maxsize=None)
@@ -169,7 +168,7 @@ def sp_coords(o, d):
 
 
 def get_distance(o, d):
-    return distance_dic[o][d]
+    return distance_matrix[o][d]
 
 
 @functools.lru_cache(maxsize=None)
@@ -571,9 +570,11 @@ def get_region_id(time_limit, node_id):
 
     return region_id_dict[node_id][time_limit]
 
+
 @functools.lru_cache(maxsize=None)
 def get_center_neighbors(time_limit, center_id, n_neighbors):
     return sorted_neighbors[time_limit][center_id][:n_neighbors]
+
 
 @functools.lru_cache(maxsize=None)
 def get_center_neighbors2(time_limit, center_id, n_neighbors):

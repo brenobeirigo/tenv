@@ -98,6 +98,9 @@ path_dist_matrix = "{}/distance_matrix_m_{}.csv".format(root_dist, graph_name)
 # Distance dictionary (meters)
 path_dist_dic = "{}/distance_dic_m_{}.npy".format(root_dist, graph_name)
 
+path_dist_matrix_npy = "{}/distance_matrix_m_{}.npy".format(
+    root_dist, graph_name
+)
 
 ########################################################################
 # Reachability #########################################################
@@ -110,10 +113,9 @@ total_range = 600
 # If defined, step and total_range are assumed to be seconds
 speed_km_h = 20
 round_trip = False
-step_list = [0, 30, 60, 120, 150, 240, 600]
 # Maximum number of node neighbors queried by application
 max_neighbors = 4
-# step_list = []
+step_list = [0, 30, 60, 120, 150, 240, 600]
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds

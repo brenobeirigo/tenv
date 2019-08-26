@@ -1304,13 +1304,13 @@ def intermediate_coord(lon1, lat1, lon2, lat2, fraction):
     return lon, lat
 
 
-def get_distance_matrix(G, distance_dic_m):
+def get_distance_matrix(root_path, G, distance_dic_m=None):
     """Return distance matrix (n x n). Value is 'None' when path does
     not exist
 
     Arguments:
         G {networkx} -- Graph to loop nodes
-        distance_dic_m {dic} -- previosly calculated distance dictionary
+        distance_dic_m {dic} -- previously calculated distance dictionary
 
     Returns:
         [list[list[float]]] -- Distance matrix
@@ -1320,17 +1320,39 @@ def get_distance_matrix(G, distance_dic_m):
 
     # Creating distance matrix
     dist_matrix = []
-    for from_node in range(0, get_number_of_nodes(G)):
-        to_distance_list = []
-        for to_node in range(0, get_number_of_nodes(G)):
+    try:
+        logging.info(
+            "\nTrying to read distance matrix from file:\n'{}'.".format(
+                root_path
+            )
+        )
+        dist_matrix = np.load(root_path)
 
-            try:
-                dist_km = distance_dic_m[from_node][to_node]
-                to_distance_list.append(dist_km)
-            except:
-                to_distance_list.append(None)
+    except Exception as e:
+        logging.info(
+            f"Reading failed! Exception: {e} \nCalculating shortest paths..."
+        )
 
-        dist_matrix.append(to_distance_list)
+        for from_node in range(0, get_number_of_nodes(G)):
+            to_distance_list = []
+            for to_node in range(0, get_number_of_nodes(G)):
+
+                try:
+                    dist_km = distance_dic_m[from_node][to_node]
+                    to_distance_list.append(dist_km)
+                except:
+                    to_distance_list.append(None)
+
+            dist_matrix.append(to_distance_list)
+        
+        dist_matrix = np.array(dist_matrix)
+
+        np.save(root_path, dist_matrix)
+
+    logging.info(
+        f"Distance data loaded successfully. "
+        f" #Nodes: {dist_matrix.shape}"
+    )
 
     return dist_matrix
 
