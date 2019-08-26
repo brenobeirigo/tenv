@@ -5,6 +5,7 @@ import os
 from pprint import pprint
 from bisect import bisect_right, bisect_left
 import copy
+from collections import defaultdict
 
 # Adding project folder
 root = os.getcwd().replace("\\", "/")
@@ -86,7 +87,9 @@ if config.step_list:
     # every 15 seconds) but end up not being used in the end. Hence,
     # their previously loaded information become superfluous and can be 
     # excluded.
-    for c in set(region_centers.keys()).difference(config.step_list):
+    superfluous = set(region_centers.keys()).difference(config.step_list)
+    print(f"Removing superfluous centers {superfluous}.")
+    for c in superfluous:
         del region_centers[c]
         for n in region_id_dict:
             del region_id_dict[n][c]
@@ -94,6 +97,28 @@ if config.step_list:
         del node_region_ids[c]
         del center_nodes[c]
         del reachability_dict[c]
+
+    lean_sorted_neighbors = defaultdict(lambda: defaultdict(list))
+    for c, n_neighbors in sorted_neighbors.items():
+        for n, neighbors in n_neighbors.items():
+            lean_sorted_neighbors[c][n] = [
+                i for i, d in neighbors[1:config.max_neighbors+1]
+            ]
+
+    sorted_neighbors = lean_sorted_neighbors
+
+    # Adding immediate forward neighbors (level 0)
+    for center_id in G.nodes:
+        node_neighbors = nw.node_access(G, center_id, degree=1)
+
+        # Node is not its own neighbor
+        node_neighbors.discard(center_id)
+
+        # Sort neighbors by distance
+        node_neighbors = list(node_neighbors)
+        node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
+        sorted_neighbors[0][center_id] = node_neighbors[:config.max_neighbors]
+
 
 @functools.lru_cache(maxsize=None)
 def sp(o, d):
@@ -546,9 +571,12 @@ def get_region_id(time_limit, node_id):
 
     return region_id_dict[node_id][time_limit]
 
-
 @functools.lru_cache(maxsize=None)
 def get_center_neighbors(time_limit, center_id, n_neighbors):
+    return sorted_neighbors[time_limit][center_id][:n_neighbors]
+
+@functools.lru_cache(maxsize=None)
+def get_center_neighbors2(time_limit, center_id, n_neighbors):
     """Get the closest 'n_neighbors' neighbors from region center.
 
     Parameters

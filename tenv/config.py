@@ -111,6 +111,8 @@ total_range = 600
 speed_km_h = 20
 round_trip = False
 step_list = [0, 30, 60, 120, 150, 240, 600]
+# Maximum number of node neighbors queried by application
+max_neighbors = 4
 # step_list = []
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
