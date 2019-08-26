@@ -95,7 +95,11 @@ if config.step_list:
         del sorted_neighbors[c]
         del node_region_ids[c]
         del center_nodes[c]
-        del reachability_dict[c]
+        for n in reachability_dict:
+            try:
+                del reachability_dict[n][c]
+            except:
+                pass
 
     lean_sorted_neighbors = defaultdict(lambda: defaultdict(list))
     for c, n_neighbors in sorted_neighbors.items():
