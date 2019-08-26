@@ -80,6 +80,20 @@ elif config.region_slice == config.REGION_CONCENTRIC:
 node_region_ids = nw.get_node_region_ids(G, region_id_dict)
 center_nodes = nw.get_center_nodes(region_id_dict)
 
+if config.step_list:
+    # ##### Discarding centers to save memory ######################## #
+    # A higher number of centers might have been processed before (e.g., 
+    # every 15 seconds) but end up not being used in the end. Hence,
+    # their previously loaded information become superfluous and can be 
+    # excluded.
+    for c in set(region_centers.keys()).difference(config.step_list):
+        del region_centers[c]
+        for n in region_id_dict:
+            del region_id_dict[n][c]
+        del sorted_neighbors[c]
+        del node_region_ids[c]
+        del center_nodes[c]
+        del reachability_dict[c]
 
 @functools.lru_cache(maxsize=None)
 def sp(o, d):
@@ -165,8 +179,7 @@ def get_info():
         "node_count": len(G.nodes()),
         "edge_count": len(G.edges()),
         "centers": {
-            dist: len(center_ids)
-            for dist, center_ids in center_nodes.items()
+            dist: len(center_ids) for dist, center_ids in center_nodes.items()
         },
         "region_type": config.region_slice,
     }
