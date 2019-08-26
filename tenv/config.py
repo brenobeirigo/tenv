@@ -110,8 +110,8 @@ total_range = 600
 # If defined, step and total_range are assumed to be seconds
 speed_km_h = 20
 round_trip = False
-# step_list = [60, 120, 300]
-step_list = []
+step_list = [0, 30, 60, 120, 150, 240, 600]
+# step_list = []
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds
