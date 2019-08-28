@@ -122,6 +122,9 @@ if config.step_list:
         node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
         sorted_neighbors[0][center_id] = node_neighbors[: config.max_neighbors]
 
+    # Client application uses distances in kilometers
+    distance_matrix = distance_matrix / 1000
+
 
 @functools.lru_cache(maxsize=None)
 def sp(o, d):
