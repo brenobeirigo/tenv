@@ -14,14 +14,16 @@ import tenv.demand as tp
 import tenv.visuals as vi
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
+
 
 def gen_random_data(config, G, distance_dic):
     print(
-            "\n############################"
-            "## Generating random data ##"
-            "############################"
-        )
+        "\n############################"
+        "## Generating random data ##"
+        "############################"
+    )
 
     print("Trip data generation settings:")
     pprint(config.tripdata["data_gen"])
@@ -49,6 +51,8 @@ def gen_random_data(config, G, distance_dic):
                 end_timestamp=config.tripdata["data_gen"]["stop"],
                 distance_dic=distance_dic,
             )
+
+
 def process_tripdata(config, G, distance_dic):
 
     # Get excerpt (start, stop)
@@ -77,8 +81,7 @@ def process_tripdata(config, G, distance_dic):
             # Cleaned data + graph ids setup
             output_ids = config.tripdata["output_ids_tripdata"]
             file_name_ids = (
-                config.get_excerpt_name(earliest, latest, label="ids")
-                + ".csv"
+                config.get_excerpt_name(earliest, latest, label="ids") + ".csv"
             )
             #  street network node ids (from G) to tripdata
             print("Adding ids...")
@@ -88,6 +91,8 @@ def process_tripdata(config, G, distance_dic):
                 G,
                 distance_dic,
             )
+
+
 def download_tripdata(config, G, distance_dic):
     """ Example .json file:
         {
@@ -122,9 +127,8 @@ def download_tripdata(config, G, distance_dic):
 
     #  street network node ids (from G) to tripdata
     print("Adding ids...")
-    tp.add_ids(
-        config.path_tripdata, config.path_tripdata_ids, G, distance_dic
-    )
+    tp.add_ids(config.path_tripdata, config.path_tripdata_ids, G, distance_dic)
+
 
 def create_trip_data():
     print(
@@ -224,7 +228,9 @@ def create_trip_data():
     distance_dic = gen.get_distance_dic(config.path_dist_dic, G)
 
     # Creating distance matrix (n X n) from dictionary
-    distance_matrix = gen.get_distance_matrix(G, distance_dic)
+    distance_matrix = gen.get_distance_matrix(
+        config.path_dist_matrix_npy, G, distance_dic_m=distance_dic
+    )
 
     # Distance matrix as dataframe
     dt_distance_matrix = gen.get_dt_distance_matrix(
@@ -356,6 +362,7 @@ def create_trip_data():
 
     if "data_gen" in config.tripdata:
         gen_random_data(config, G, distance_dic)
+
 
 if __name__ == "__main__":
 

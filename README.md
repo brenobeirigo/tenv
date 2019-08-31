@@ -28,6 +28,7 @@ Clone an existing repository
 Create a new local repository
     
     git init
+
 ### Update & Publish
 
 List all currently  configured remotes
