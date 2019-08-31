@@ -15,7 +15,7 @@ from shapely.geometry import Point, LineString
 from copy import deepcopy
 from pprint import pprint
 
-
+np.set_printoptions(precision=2)
 # #################################################################### #
 # Create, load, save network ######################################### #
 # #################################################################### #
@@ -174,6 +174,14 @@ def clean_network(G):
 
     return G
 
+def get_graph_info(G):
+    return "NODES: {} ({} -> {}) -- #EDGES: {}".format(
+        len(G.nodes()),
+        min(G.nodes()),
+        max(G.nodes()),
+        len(G.edges()),
+    )
+
 
 def get_network_from(
         region,
@@ -243,7 +251,7 @@ def get_network_from(
                     G,
                     max_travel_time_edge=max_travel_time_edge,
                     speed_km_h=speed_km_h,
-                    n_coords=100,
+                    n_coords=4000,
                 )
 
                 logging.info("# Enriched graph")
@@ -282,22 +290,27 @@ def get_network_from(
     return G
 
 
-def save_graph_pic(G, path):
+def save_graph_pic(G, path, config=dict(), label=""):
     """Save a picture (svg) of graph G.
 
     Arguments:
         G {networkx} -- Working graph
     """
-
-    fig, ax = ox.plot_graph(
-        G,
+    default_attrib = dict(
         fig_height=15,
         node_size=0.5,
         edge_linewidth=0.3,
         save=True,
         show=False,
         file_format="svg",
-        filename="{}/{}".format(path, G.graph["name"]),
+        filename="{}/{}{}".format(path, label, G.graph["name"])
+    )
+
+    default_attrib.update(config)
+
+    fig, ax = ox.plot_graph(
+        G,
+        **default_attrib
     )
 
 
@@ -870,7 +883,7 @@ def get_intermediate_coords(
 
         # Guarantees the right number of points by adding/subtracting
         while np.sum(n_points_between_pairs) + 1 > n_coords:
-            # Remove points from the segment with the more points
+            # Remove points from the segment with the most points
             max_points_i = np.argmax(n_points_between_pairs)
             n_points_between_pairs[max_points_i] -= 1
 
@@ -995,6 +1008,7 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
     G = G.copy()
 
     all_edges_to_add = list()
+    all_edges_to_remove = list()
     all_nodes_to_add = list()
 
     # Node ids start from last id
@@ -1062,7 +1076,16 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
 
                 # Find position of leftmost coordinate whose partial
                 # duration is lower than or equal to partial_dist
-                sub_d_idx = bisect.bisect_left(cumsum_duration, partial_duration)
+                sub_d_idx = bisect.bisect_left(
+                    cumsum_duration,
+                    partial_duration
+                )
+
+                # Guarantee edge length does not surpass max travel time
+                while (
+                    cumsum_duration[sub_d_idx]
+                    - cumsum_duration[sub_o_idx] > max_travel_time_edge):
+                    sub_d_idx-= 1
                 # print(f"Partial duration={partial_duration} n_coords={len(intermediate_coords)}, sub_o_idx={sub_o_idx}, sub_d_idx={sub_d_idx}")
 
                 if sub_o_idx == sub_d_idx:
@@ -1104,6 +1127,10 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
                     }
                 )
 
+                # dur = get_duration(edge_attributes["length"], speed_km_h=speed_km_h) 
+                # if dur > max_travel_time_edge:
+                #     print(f"Duration={dur:.2f}, o={sub_o_idx}, d={sub_d_idx}, fraction={cum_leg_fraction:.2f}, fractions={np.array(cum_leg_fraction_list)}, partial={partial_duration:.2f}, cumsum_sub={cumsum_duration[sub_d_idx] - cumsum_duration[sub_o_idx]:.2f},\n  cumsum_array={cumsum_duration[sub_o_idx:sub_d_idx+1]},\ncumsum_array_0={cumsum_duration[sub_o_idx:sub_d_idx+1]-cumsum_duration[sub_o_idx]}")
+
                 # print(
                 #     f"##### leg={cum_leg_fraction} - {sub_o_idx}({lo_node_id}) -- {sub_d_idx}({destination_id}) - length={edge_attributes['length']} ############"
                 # )
@@ -1113,6 +1140,8 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
 
                 sub_o_idx = sub_d_idx
                 lo_node_id = destination_id
+
+            all_edges_to_remove.append((o, d))
 
     # Adding new nodes
     for node in all_nodes_to_add:
@@ -1125,6 +1154,10 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
             edge_attr_od["destination"],
             **edge_attr_od["attr_dict"],
         )
+
+    # Removing old edges
+    G.remove_edges_from(all_edges_to_remove)
+
 
     # Relabel nodes and edges
     for node in G.nodes():
