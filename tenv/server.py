@@ -20,7 +20,7 @@ import tenv.network as nw
 import tenv.demand as tp
 import numpy as np
 import math
-
+import tenv.util as util
 
 print(config.info())
 
@@ -135,7 +135,7 @@ def sp(o, d):
     input = http://localhost:4999/sp/1/900
     output = 1;2;67;800;900
     """
-    return ";".join(map(str, nw.get_sp(G, o, d)))
+    return ";".join(map(str, util.sp(o, d)))
 
 
 @app.route("/sp_coords/<int:o>/<int:d>")
@@ -160,7 +160,7 @@ def sp_coords(o, d):
     input = http://localhost:4999/sp_coords/1/3
     output = 1;2;67;800;900
     """
-    return ";".join(map(str, nw.get_sp_coords(G, o, d)))
+    return ";".join(map(str, util.sp_coords(o, d)))
 
 
 @app.route("/distance_meters/<int:o>/<int:d>")
@@ -196,15 +196,7 @@ def sp_json(o, d, projection="GPS"):
 @app.route("/info/")
 def get_info():
     """Return network info"""
-    info = {
-        "region": config.region,
-        "label": config.graph_name,
-        "node_count": len(G.nodes()),
-        "edge_count": len(G.edges()),
-        "centers": {
-            dist: len(center_ids) for dist, center_ids in center_nodes.items()
-        },
-    }
+    info = util.get_info()
 
     return jsonify(info)
 
@@ -516,7 +508,7 @@ def get_node_region_ids():
         Dictionary of maximum reachable time keys and node id lists.
     """
 
-    return jsonify(dict(node_region_ids))
+    return jsonify(util.node_region_ids)
 
 
 @functools.lru_cache(maxsize=None)
@@ -530,7 +522,7 @@ def get_node_region_count():
         Dictionary of maximum reachable time keys and counts.
     """
 
-    return jsonify({k: len(set(n)) for k, n in node_region_ids.items()})
+    return jsonify(util.get_node_region_count())
 
 
 @functools.lru_cache(maxsize=None)
@@ -544,18 +536,7 @@ def get_node_region_ids_step(step):
     dict
         Dictionary of max. reachable time keys and node id lists.
     """
-    cut_node_region_ids = copy.deepcopy(node_region_ids)
-    min_reachable_time = list(cut_node_region_ids.keys())
-
-    # When no levels are defined, region corresponds to all nodes
-    if step == 0:
-        return jsonify({0: cut_node_region_ids[0]})
-
-    # Removing distances which are not multiples of "step"
-    for k in min_reachable_time:
-        if k % step != 0:
-            del cut_node_region_ids[k]
-    return jsonify(dict(cut_node_region_ids))
+    return jsonify(util.get_node_region_ids_step(step))
 
 
 @functools.lru_cache(maxsize=None)
@@ -657,53 +638,11 @@ def get_region_id(time_limit, node_id):
     "/center_neighbors/<int:time_limit>/<int:center_id>/<int:n_neighbors>"
 )
 def get_center_neighbors(time_limit, center_id, n_neighbors):
-    """Get the closest 'n_neighbors' neighbors from region center.
-
-    Parameters
-    ----------
-    time_limit : int
-        Max. distance driving creation of region centers
-    center_id : int
-        Region center id
-    n_neighbors : int
-        Max. number of neighbors
-
-    Returns
-    -------
-    int
-        Region center neighbors
-
-    Example
-    -------
-        input = http://localhost:4999/center_neighbors/120/74/4
-        output = 2061;1125;2034;968
-    """
-
-    # When time limit is zero, return immediate neighbors
-    if time_limit == 0:
-        node_neighbors = nw.node_access(G, center_id, degree=1)
-
-        # Node is not its own neighbor
-        node_neighbors.discard(center_id)
-
-        # Sort neighbors by distance
-        node_neighbors = list(node_neighbors)
-        node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
-
-        # print("a", node_neighbors)
-    else:
-        node_neighbors = [
-            neighbor_id
-            for neighbor_id, distance in sorted_neighbors[time_limit][
-                center_id
-            ]
-            if distance != 0
-        ]
-
-        # print("b", node_neighbors)
-
+    node_neighbors = util.get_center_neighbors(
+        time_limit, center_id, n_neighbors
+    )
     # Restrict set of neighbors and return
-    return ";".join(list(map(str, node_neighbors))[:n_neighbors])
+    return ";".join(list(map(str, node_neighbors)))
 
 
 @app.route(
