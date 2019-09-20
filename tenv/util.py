@@ -6,6 +6,7 @@ from pprint import pprint
 from bisect import bisect_right, bisect_left
 import copy
 from collections import defaultdict
+import pandas as pd
 
 # Adding project folder
 root = os.getcwd().replace("\\", "/")
@@ -79,6 +80,19 @@ elif config.region_slice == config.REGION_CONCENTRIC:
 
 node_region_ids = nw.get_node_region_ids(G, region_id_dict)
 center_nodes = nw.get_center_nodes(region_id_dict)
+
+# Saving number of centers per maximal delay
+maximal_dist_center_count = {
+    m: len(centers)
+    for m, centers in center_nodes.items()
+}
+maximal_dist_center_count[0] = len(G.nodes())
+
+dists, centers = list(zip(*(maximal_dist_center_count.items())))
+
+df = pd.DataFrame({'Maximal delay (s)': dists, "#Centers": centers})
+df.sort_values(by=['Maximal delay (s)'], inplace=True)
+df.to_csv("center_count.csv", index=False)
 
 if config.step_list:
     # ##### Discarding centers to save memory ######################## #
