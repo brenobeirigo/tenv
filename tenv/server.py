@@ -24,68 +24,6 @@ import tenv.util as util
 
 print(config.info())
 
-# Network
-G = nw.load_network(config.graph_file_name, folder=config.root_map)
-
-# Creating distance dictionary [o][d] -> distance
-distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
-
-# Reachability dictionary
-reachability_dict, steps = nw.get_reachability_dic(
-    config.path_reachability_dic,
-    distance_dic,
-    step=config.step,
-    total_range=config.total_range,
-    speed_km_h=config.speed_km_h,
-    step_list=config.step_list,
-)
-
-if config.region_slice == config.REGION_REGULAR:
-    # All region centers
-    region_centers = nw.get_region_centers(
-        steps,
-        config.path_region_centers,
-        reachability_dict,
-        list(G.nodes()),
-        root_path=config.root_reachability,
-        round_trip=config.round_trip,
-    )
-
-    # What is the closest region center of every node (given a time limit)?
-    region_id_dict = nw.get_region_ids(
-        G,
-        reachability_dict,
-        region_centers,
-        path_region_ids=config.path_region_center_ids,
-    )
-
-    sorted_neighbors = nw.get_sorted_neighbors(
-        distance_dic,
-        region_centers,
-        path_sorted_neighbors=config.path_sorted_neighbors,
-    )
-
-elif config.region_slice == config.REGION_CONCENTRIC:
-
-    region_id_dict, region_centers = nw.concentric_regions(
-        G,
-        steps,
-        reachability_dict,
-        list(G.nodes()),
-        center=-1,
-        root_reachability=config.root_reachability_concentric,
-    )
-
-    sorted_neighbors = nw.get_sorted_neighbors(
-        distance_dic,
-        region_centers,
-        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
-    )
-
-node_region_ids = nw.get_node_region_ids(G, region_id_dict)
-center_nodes = nw.get_center_nodes(region_id_dict)
-
-
 # print("\n##### Distance dictionary ###################################")
 # # pprint(distance_dic)
 
@@ -609,7 +547,7 @@ def get_centers(time_limit):
     output = 1042;1077;1097;1117;1854
     """
 
-    return ";".join(map(str, region_centers[time_limit]))
+    return ";".join(map(str, util.region_centers[time_limit]))
 
 
 @functools.lru_cache(maxsize=None)
@@ -630,7 +568,7 @@ def get_region_id(time_limit, node_id):
         Region id of node
     """
 
-    return str(region_id_dict[node_id][time_limit])
+    return str(util.region_id_dict[node_id][time_limit])
 
 
 @functools.lru_cache(maxsize=None)
