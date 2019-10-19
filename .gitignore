@@ -3,6 +3,7 @@ data/out/
 
 # Python
 __pycache__/
+*.pyc
 
 # Images
 *.png
