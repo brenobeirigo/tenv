@@ -1,8 +1,0 @@
-{
-  "region": "Manhattan Island, New York City, New York, USA",
-  "path_tripdata": "O:/phd/nyc_trips/raw/yellow_tripdata_2011-01.csv",
-  "output_cleaned_tripdata": "O:/phd/nyc_trips/cleaned/",
-  "output_ids_tripdata": "O:/phd/nyc_trips/ids/",
-  "start": "2011-1-04 00:00:00",
-  "stop": "2011-1-04 23:59:59 "
-}
