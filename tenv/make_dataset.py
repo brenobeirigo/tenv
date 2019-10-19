@@ -90,6 +90,7 @@ def process_tripdata(config, G, distance_dic):
                 output_ids + file_name_ids,
                 G,
                 distance_dic,
+                filtered_columns=config.tripdata["filtered_columns"]
             )
 
 
