@@ -1,5 +1,25 @@
 # Trip data sandbox
 
+## Donwload trip data
+
+1. Access `data\in\tripdata\download_tripdata.ipynb`
+2. Set trip link sources. E.g.:
+
+        path_trip_list = "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/in/trip_data/nyc_tripdata.csv"
+
+
+3. Set the taget folder where files will be saved. E.g.:
+
+        target_path = "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/in/trip_data/"
+
+## Clear and match ids
+
+Execute `make_dataset.py` to create:
+1. Street network map `.graphml`;
+2. Reachability dictionary (regular and concentric);
+3. Region centers;
+4. Matched tripdata (coordinates to street network ids).
+
 
 ## Installing Gurobi on Anaconda
 
@@ -8,8 +28,6 @@ This project implements an ILP model to determine the smallest set of region cen
 1. Download and install Gurobi ([link](http://www.gurobi.com/downloads/download-center));
 2. Request a free academic license ([link](https://user.gurobi.com/download/licenses/free-academic));
 3. Add Gurobi to Anaconda ([link](http://www.gurobi.com/downloads/get-anaconda)).
-
-
 
 ## Using GIT
 
