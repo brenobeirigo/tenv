@@ -1,9 +1,23 @@
 {
     "region": "Manhattan Island, New York City, New York, USA",
-    "path_tripdata": "O:/phd/nyc_trips/raw/",
-    "output_cleaned_tripdata": "O:/phd/nyc_trips/cleaned/",
-    "output_ids_tripdata": "O:/phd/nyc_trips/ids/",
-    "raw_file_tw": {
+    "path_tripdata": "E:/breno/nyc_2011/",
+    "output_cleaned_tripdata": "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/out/manhattan-island-new-york-city-new-york-usa/tripdata/cleaned/",
+    "output_ids_tripdata": "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/out/manhattan-island-new-york-city-new-york-usa/tripdata/ids/",
+    "index_col": "pickup_datetime",
+    "filtered_columns": [
+        "pickup_datetime",
+        "passenger_count",
+        "pickup_longitude",
+        "pickup_latitude",
+        "dropoff_longitude",
+        "dropoff_latitude",
+        "fare_amount",
+        "payment_type",
+        "total_amount",
+        "tip_amount",
+        "trip_distance"
+    ],
+    "file_tw": {
         "yellow_tripdata_2011-01.csv": [
             [
                 "2011-01-04 00:00:00",
@@ -216,6 +230,24 @@
             [
                 "2011-11-29 00:00:00",
                 "2011-11-29 23:59:59"
+            ]
+        ],
+        "yellow_tripdata_2011-12.csv": [
+            [
+                "2011-12-06 00:00:00",
+                "2011-12-06 23:59:59"
+            ],
+            [
+                "2011-12-13 00:00:00",
+                "2011-12-13 23:59:59"
+            ],
+            [
+                "2011-12-20 00:00:00",
+                "2011-12-20 23:59:59"
+            ],
+            [
+                "2011-12-27 00:00:00",
+                "2011-12-27 23:59:59"
             ]
         ]
     }
