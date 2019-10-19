@@ -92,7 +92,7 @@ dists, centers = list(zip(*(maximal_dist_center_count.items())))
 
 df = pd.DataFrame({'Maximal delay (s)': dists, "#Centers": centers})
 df.sort_values(by=['Maximal delay (s)'], inplace=True)
-df.to_csv("center_count.csv", index=False)
+df.to_csv(config.root_map + "/center_count.csv", index=False)
 
 if config.step_list:
     # ##### Discarding centers to save memory ######################## #
