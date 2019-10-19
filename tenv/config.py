@@ -21,7 +21,7 @@ REGION_REGULAR = "REGULAR"
 # region_slice = REGION_CONCENTRIC
 region_slice = REGION_REGULAR
 # label_exp = "CON"
-label_exp = "15"
+label_exp = "GIANT"
 
 # root = os.getcwd().replace("\\", "/")
 root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
@@ -109,13 +109,13 @@ path_dist_matrix_npy = "{}/distance_matrix_m_{}.npy".format(
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
 step = 15
-total_range = 600
+total_range = 1200
 # If defined, step and total_range are assumed to be seconds
 speed_km_h = 20
 round_trip = False
 # Maximum number of node neighbors queried by application
 max_neighbors = 4
-step_list = [0, 30, 60, 120, 150, 240, 600]
+step_list = [0, 30, 60, 180, 300, 600, 1200]
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds

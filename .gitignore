@@ -16,3 +16,6 @@ __pycache__/
 
 # IDE
 .vscode/
+
+# IPython
+.ipynb_checkpoints/

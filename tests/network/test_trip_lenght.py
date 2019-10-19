@@ -62,7 +62,7 @@ yrange = [1, 10, 100, 1000, 3500]
 bins = list(range(0, 355, 5))
 sns.distplot(list_durations_g1, bins=bins, kde=False, color="r", ax=ax1)
 ax1.set_yscale("log")
-ax1.set_ylabel("#Nodes")
+ax1.set_ylabel("#Edges")
 ax1.set_yticks(yrange)
 ax1.set_yticklabels(yrange)
 ax1.set_xlabel("Seconds")
