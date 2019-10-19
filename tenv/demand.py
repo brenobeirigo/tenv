@@ -117,8 +117,17 @@ def get_trip_data(
             else:
                 tripdata_dt_excerpt = pd.DataFrame(tripdata_dt)
 
-            # Remove None values
-            tripdata_dt_excerpt.dropna(inplace=True)
+            # Remove None values - Don't remove None data related to payment
+            filter_valid_ods = (
+                pd.notnull(tripdata_dt_excerpt["passenger_count"]) &
+                pd.notnull(tripdata_dt_excerpt["trip_distance"]) &
+                pd.notnull(tripdata_dt_excerpt["pickup_longitude"]) &
+                pd.notnull(tripdata_dt_excerpt["pickup_latitude"]) &
+                pd.notnull(tripdata_dt_excerpt["dropoff_longitude"]) &
+                pd.notnull(tripdata_dt_excerpt["dropoff_latitude"])
+            )
+
+            tripdata_dt_excerpt = tripdata_dt_excerpt[filter_valid_ods]
 
             # Sort
             tripdata_dt_excerpt.sort_index(inplace=True)
@@ -167,7 +176,7 @@ def get_ids(G, pk_lat, pk_lon, dp_lat, dp_lon, distance_dic_m, max_dist=50):
         return [None, None]
 
 
-def add_ids_chunk(G, distance_dic_m, info):
+def add_ids_chunk(G, distance_dic_m,  order, info):
     """Receive a dataframe chunk with tripdata and try adding node ids
     to the pickup and delivery points.
 
@@ -202,7 +211,8 @@ def add_ids_chunk(G, distance_dic_m, info):
     original_chunk_size = len(info)
 
     # Remove trip data outside street network in G
-    info.dropna(inplace=True)
+    filter_valid_ods = pd.notnull(info["pk_id"]) & pd.notnull(info["dp_id"])
+    info = info[filter_valid_ods]
 
     print("Adding ", len(info), "/", original_chunk_size)
 
@@ -211,24 +221,26 @@ def add_ids_chunk(G, distance_dic_m, info):
         ["passenger_count", "pk_id", "dp_id"]
     ].astype(int)
 
-    # Reorder columns
-    order = [
-        "pickup_datetime",
-        "passenger_count",
-        "pk_id",
-        "dp_id",
-        "pickup_latitude",
-        "pickup_longitude",
-        "dropoff_latitude",
-        "dropoff_longitude",
-    ]
-
     info = info[order]
 
     return info
 
 
-def add_ids(path_tripdata, path_tripdata_ids, G, distance_dic_m):
+def add_ids(
+        path_tripdata,
+        path_tripdata_ids,
+        G,
+        distance_dic_m,
+        filtered_columns = [
+            "pickup_datetime",
+            "passenger_count",
+            "pk_id",
+            "dp_id",
+            "pickup_latitude",
+            "pickup_longitude",
+            "dropoff_latitude",
+            "dropoff_longitude",
+    ]):
     """Read large dataframe in chunks of trip data and associate
     node ids from graph G to pickup and delivery coordinates
     (within 50 meters).
@@ -244,6 +256,11 @@ def add_ids(path_tripdata, path_tripdata_ids, G, distance_dic_m):
         distance_dic_m {dict{int:dict{int:float}}} -- Shortest distances
             between ODs in G (usage: distance_dic_m[o][d] = dist).
     """
+
+    # Create local instance and add od ids to list of columns
+    filtered_columns = list(filtered_columns)
+    filtered_columns.insert(2, "pk_id")
+    filtered_columns.insert(3, "dp_id")
 
     dt = None
 
@@ -268,7 +285,7 @@ def add_ids(path_tripdata, path_tripdata_ids, G, distance_dic_m):
         chunksize = 2000
 
         # Redefine function to add graph and distances
-        func = partial(add_ids_chunk, G, distance_dic_m)
+        func = partial(add_ids_chunk, G, distance_dic_m, filtered_columns)
 
         # Total number of chunks to process
         togo = int(len(tripdata) / chunksize)
