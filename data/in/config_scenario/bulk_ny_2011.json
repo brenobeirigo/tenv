@@ -3,7 +3,19 @@
     "path_tripdata": "O:/phd/nyc_trips/raw/",
     "output_cleaned_tripdata": "O:/phd/nyc_trips/cleaned/",
     "output_ids_tripdata": "O:/phd/nyc_trips/ids/",
-    "raw_file_tw": {
+    "index_col": "pickup_datetime",
+    "filtered_columns": [
+        "pickup_datetime",
+        "passenger_count",
+        "pickup_longitude",
+        "pickup_latitude",
+        "dropoff_longitude",
+        "dropoff_latitude",
+        "fare_amount",
+        "tip_amount",
+        "trip_distance"
+    ],
+    "file_tw": {
         "yellow_tripdata_2011-01.csv": [
             [
                 "2011-01-04 00:00:00",
