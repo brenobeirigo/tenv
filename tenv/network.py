@@ -894,7 +894,7 @@ def get_intermediate_coords(
 
         # Tuple (od pair, #points between od - including o)
         intermediate_points = list(zip(od_pairs, n_points_between_pairs))
-        assert (min(n_points_between_pairs) >= 1), f"ERROR!{min(n_points_between_pairs)}"
+        #assert (min(n_points_between_pairs) >= 1), f"ERROR!{min(n_points_between_pairs)}"
 
         list_coords = []
         total_distance = 0
