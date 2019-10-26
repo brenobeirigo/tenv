@@ -65,7 +65,7 @@ elif config.region_slice == config.REGION_CONCENTRIC:
 
     region_id_dict, region_centers = nw.concentric_regions(
         G,
-        steps,
+        config.step_list_concentric,
         reachability_dict,
         list(G.nodes()),
         center=-1,
@@ -666,3 +666,26 @@ def location(id):
     """
 
     return {"location": {"x": G.node[id]["x"], "y": G.node[id]["y"]}}
+
+
+@functools.lru_cache(maxsize=None)
+def lonlat(id):
+    """Return location (lon, lat) of point with node id
+
+    Parameters
+    ----------
+    id : int
+        Node id
+
+    Returns
+    -------
+    tuple
+        Longitude and latitude
+
+    Example
+    -------
+    http://localhost:4999/location/1
+
+    """
+
+    return (G.node[id]["x"], G.node[id]["y"])

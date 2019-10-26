@@ -19,7 +19,7 @@ REGION_REGULAR = "REGULAR"
 
 # How regions are sliced?
 # region_slice = REGION_CONCENTRIC
-region_slice = REGION_REGULAR
+region_slice = REGION_CONCENTRIC
 # label_exp = "CON"
 label_exp = "GIANT"
 
@@ -116,6 +116,7 @@ round_trip = False
 # Maximum number of node neighbors queried by application
 max_neighbors = 4
 step_list = [0, 30, 60, 180, 300, 600, 1200]
+step_list_concentric = [60, 300, 600]
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds
