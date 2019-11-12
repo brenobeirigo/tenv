@@ -380,8 +380,9 @@ def concentric_regions(
     if not steps:
         return node_dist_center, region_centers
 
-    # Pop the largest step
-    s = steps.pop()
+    # Pop the largest step (copy to guarantee step list is not modified)
+    sorted_steps = sorted(steps)
+    s = sorted_steps.pop()
 
     # logging.info(f"\n## Processing distance {s}")
 
@@ -421,13 +422,10 @@ def concentric_regions(
 
         # logging.info(f" -- Center {c:>4} = {center_nodes}")
 
-        # The step list is copied before recursion
-        steps_copy = list(steps)
-
         # Get region centers considering only c nodes
         node_dist_center_sub, sub_centers = concentric_regions(
             G,
-            steps_copy,
+            sorted_steps,
             reachability,
             center_nodes,
             center=c,
@@ -540,7 +538,7 @@ def get_region_ids(
 
 
 def get_reachability_dic(
-    root_path, distance_dic, step=30, total_range=600, speed_km_h=30, step_list=None
+    root_path, distances, step=30, total_range=600, speed_km_h=30, step_list=None, outbound=False
 ):
     """Which nodes are reachable from one another in "step" steps?
     E.g.:
@@ -562,7 +560,7 @@ def get_reachability_dic(
     reachable[d][s], then d can be reached from o in t steps.
 
     Arguments:
-        distance_dic {dict{float}} -- Distance dictionary
+        distances {dict{float}} -- Distance dictionary/matrix
             (dic[o][d] = dist(o,d))
         root_path {str} -- Where to save reachability dictionary
 
@@ -575,6 +573,8 @@ def get_reachability_dic(
         speed_kh_h {int} -- in km/h to convert distance
             (default: {30} km_h). If different of None, 'step' and
             'total_range' are considered in seconds.
+        step_list {list} -- Ad-hoc step list.
+        outbound {bool} -- If True, get outbound reachability.
 
     Returns:
         [dict] -- Reachability structure.
@@ -609,25 +609,35 @@ def get_reachability_dic(
             )
         )
 
-        for o in distance_dic.keys():
-            for d in distance_dic[o].keys():
+        # Select generator for different structures (dict or matrix)
+        if isinstance(distances, dict):
+            ods = ((o, d) for o in distances.keys() for d in distances[o].keys())
+        else:
+            ods = ((o, d) for o in range(len(distances)) for d in range(len(distances)))
 
-                # Dictionary contains only valid distances
-                dist_m = distance_dic[o][d]
+        for o, d in ods:
+            # Dictionary contains only valid distances
+            dist_m = distances[o][d]
 
-                # So far, we are using distance in meters
-                dist = dist_m
+            # So far, we are using distance in meters
+            dist = dist_m
 
-                # If speed is provided, convert distance to seconds
-                # Steps are assumed to be in seconds too
-                if speed_km_h:
-                    dist_s = int(3.6 * dist_m / speed_km_h + 0.5)
-                    dist = dist_s
+            # If speed is provided, convert distance to seconds
+            # Steps are assumed to be in seconds too
+            if speed_km_h:
+                dist_s = int(3.6 * dist_m / speed_km_h + 0.5)
+                dist = dist_s
 
-                # Find the index of which max_travel_time_edge box dist_s is in
-                step_id = bisect.bisect_left(steps_in_range_list, dist)
+            # Find the index of which max_travel_time_edge box dist_s is in
+            step_id = bisect.bisect_left(steps_in_range_list, dist)
 
-                if step_id < len(steps_in_range_list):
+            if step_id < len(steps_in_range_list):
+
+                if outbound:
+                    # Which nodes can o access?
+                    reachability_dict[o][steps_in_range_list[step_id]].add(d)
+                else:
+                    # Which nodes can access d?
                     reachability_dict[d][steps_in_range_list[step_id]].add(o)
 
         np.save(root_path, dict(reachability_dict))
@@ -636,7 +646,7 @@ def get_reachability_dic(
 
 
 def get_can_reach_set(n, reach_dic, max_trip_duration=150):
-    """Return the set of all nodes whose trip to node n takes
+    """Return the set of all nodes whose trip to/from node n takes
     less than "max_trip_duration" seconds.
 
     Parameters
