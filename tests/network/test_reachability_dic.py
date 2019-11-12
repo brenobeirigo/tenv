@@ -11,7 +11,7 @@ import tenv.network as nw
 if __name__ == "__main__":
 
     # Max trip time to test reachability dictionary
-    MAX_TRIP_TIME = 180
+    MAX_TRIP_TIME = 300
 
     # Get network graph and save
     G = nw.get_network_from(
@@ -21,13 +21,19 @@ if __name__ == "__main__":
         config.graph_file_name,
     )
 
+    print("Graph loaded.")
+
     # Creating distance dictionary [o][d] -> distance
     distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
 
+    print("Distance dictionary loaded.")
+
     # Try to load from path, if does't exist generate
-    reachability_dic = nw.get_reachability_dic(
+    reachability_dic, steps_in_range_list = nw.get_reachability_dic(
         config.path_reachability_dic, distance_dic
     )
+
+    print(f"Reachability dictionary loaded.")
 
     # Check which nodes can reach target in less than "MAX_TIME" seconds
     for target, origin_dic in distance_dic.items():
