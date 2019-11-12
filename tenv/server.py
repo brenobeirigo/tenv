@@ -28,7 +28,7 @@ print(config.info())
 # # pprint(distance_dic)
 
 # print("\n##### Reachability dictionary ###############################")
-# pprint(reachability_dict)
+# pprint(util.reachability_dict)
 
 # print("\n##### Centers per trip duration #############################")
 # print(" - Count: ")
@@ -101,9 +101,13 @@ def sp_coords(o, d):
     return ";".join(map(str, util.sp_coords(o, d)))
 
 
-@app.route("/distance_meters/<int:o>/<int:d>")
+@app.route("/distance_km/<int:o>/<int:d>")
 def get_distance(o, d):
-    return str(distance_dic[o][d])
+    return str(util.get_distance(o,d))
+
+@app.route("/distance_sec/<int:o>/<int:d>")
+def get_distance_sec(o, d):
+    return str(util.get_distance_sec(o,d))
 
 
 @app.route("/sp/<int:o>/<int:d>/<projection>")
@@ -138,6 +142,75 @@ def get_info():
 
     return jsonify(info)
 
+@app.route("/all_neighbors/<int:n>/<int:t>/<int:limit>")
+@functools.lru_cache(maxsize=None)
+def all_neighbors(n, t, limit):
+    """Return list of nodes that can reach node n in t seconds.
+
+    Parameters
+    ----------
+    n : int
+        Node id
+    t : int
+        Time in seconds
+
+    Returns
+    -------
+    str
+        List of nodes that can reach n in t seconds (separated by ";")
+
+    Example
+    -------
+    input = http://localhost:4999/can_reach/1/30
+    output = 0;1;3720;3721;4112;3152;3092;1754;1309;928;929;1572;3623;
+        3624;169;1897;1901;751;1841;308
+    """
+
+    return ";".join(
+        map(str, util.all_neighbors(n, t, limit))
+    )
+
+
+
+@app.route("/reachable_neighbors/<int:n>/<int:t>/<int:limit>")
+@functools.lru_cache(maxsize=None)
+def reachable_neighbors(n, t, limit):
+    return str(util.reachable_neighbors(n, t, limit))
+
+
+@app.route("/all_neighbors_dist_sec/<int:n>/<int:t>/<int:limit>")
+@functools.lru_cache(maxsize=None)
+def all_neighbors_dist(n, t, limit):
+    """Return "limit" nodes that can be reached from n within t seconds.
+
+    Parameters
+    ----------
+    n : int
+        Node id
+    t : int
+        Time in seconds
+    limit: int
+        Max. number of neighbors.
+
+    Returns
+    -------
+    str
+        Nodes that can be reached from n within t seconds. (separated by ";")
+
+    Example
+    -------
+    input = http://localhost:4999/can_reach/1/30
+    output = 0;1;3720;3721;4112;3152;3092;1754;1309;928;929;1572;3623;
+        3624;169;1897;1901;751;1841;308
+    """
+
+    n_target = [
+        (target, util.get_distance_sec(n, target))
+        for target in util.reachable_neighbors(n, t, limit)
+    ]
+
+    n_target.sort(key=lambda tup: tup[1])
+    return str(n_target[:limit])
 
 @app.route("/can_reach/<int:n>/<int:t>")
 @functools.lru_cache(maxsize=None)
@@ -163,7 +236,9 @@ def can_reach(n, t):
         3624;169;1897;1901;751;1841;308
     """
 
-    return ";".join(map(str, nw.get_can_reach_set(n, reachability_dict, t)))
+    return ";".join(
+        map(str, nw.get_can_reach_set(n, util.reachability_dict, t))
+    )
 
 
 @app.route(
@@ -474,7 +549,7 @@ def get_node_region_ids_step(step):
     dict
         Dictionary of max. reachable time keys and node id lists.
     """
-    return jsonify(util.get_node_region_ids_step(step))
+    return jsonify(util.get_node_region_ids_step)
 
 
 @functools.lru_cache(maxsize=None)
@@ -601,7 +676,7 @@ def point_info(
     # E.g.: http://127.0.0.1:4999/point_style/1/%23FF0000/small/circle
     return jsonify(
         nw.get_point(
-            G,
+            util.G,
             p,
             **{
                 "marker-color": color,
@@ -638,7 +713,9 @@ def location(id):
 
     """
 
-    return jsonify({"location": {"x": G.node[id]["x"], "y": G.node[id]["y"]}})
+    return jsonify(
+        {"location": {"x": util.G.node[id]["x"], "y": util.G.node[id]["y"]}}
+    )
 
 
 if __name__ == "__main__":
