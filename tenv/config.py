@@ -13,14 +13,14 @@ def get_excerpt_name(start, stop, label="excerpt"):
         .replace(" ", "_")
     )
 
-
+# TODO create dictionary of paths indexed by the region type
 REGION_CONCENTRIC = "CONCENTRIC"
-REGION_REGULAR = "REGULAR"
+REGION_REGULAR = "MINCOVERSET"
 
 # How regions are sliced?
-# region_slice = REGION_CONCENTRIC
 region_slice = REGION_CONCENTRIC
-# label_exp = "CON"
+# region_slice = REGION_REGULAR
+
 label_exp = "GIANT"
 
 # root = os.getcwd().replace("\\", "/")
@@ -115,7 +115,7 @@ speed_km_h = 20
 round_trip = False
 # Maximum number of node neighbors queried by application
 max_neighbors = 4
-step_list = [0, 30, 60, 180, 300, 600, 1200]
+step_list = [0, 60, 300, 600]
 step_list_concentric = [60, 300, 600]
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
@@ -127,42 +127,26 @@ ilp_time_limit = 60
 
 round_trip_label = "_roundtrip" if round_trip else ""
 
-root_reachability = root_map + "/reachability{}_{}_{}{}".format(
+root_reachability = root_map + "/reachability_{}{}_{}_{}{}".format(
+    region_slice,
     round_trip_label,
     step,
     total_range,
     ("_kmh{}".format(speed_km_h) if speed_km_h else ""),
 )
 
-root_reachability_concentric = (
-    root_map
-    + "/reachability_concentric{}_{}_{}{}".format(
-        round_trip_label,
-        step,
-        total_range,
-        ("_kmh{}".format(speed_km_h) if speed_km_h else ""),
-    )
-)
-
 root_img_regions = root_reachability + "/img_region_centers"
 
-root_img_regions_concentric = (
-    root_reachability_concentric + "/img_region_centers_concentric"
-)
-
 root_img_neighbors = root_reachability + "/img_region_center_neighbors"
-
-root_img_neighbors_concentric = (
-    root_reachability_concentric + "/img_region_center_neighbors"
-)
 
 # Reachability dictionary {o:{max_dist:[d1, d2, d3]}
 path_reachability_dic = "{}/reachability_{}.npy".format(
     root_reachability, graph_name
 )
 
-path_reachability_dic_concentric = "{}/reachability_{}.npy".format(
-    root_reachability_concentric, graph_name
+# Reachability dictionary round trip {o:{max_dist:[d1, d2, d3]}
+path_reachability_r_dic = "{}/reachability_r_{}.npy".format(
+    root_reachability, graph_name
 )
 
 # Region centers dictionary {max_dist:[c1, c2, c3, c4, c5]}
@@ -170,27 +154,17 @@ path_region_centers = "{}/region_centers_{}.npy".format(
     root_reachability, graph_name
 )
 
-# Region centers dictionary {max_dist:[c1, c2, c3, c4, c5]}
-path_region_centers_concentric = "{}/region_centers_{}.npy".format(
-    root_reachability_concentric, graph_name
-)
-
 path_region_center_ids = "{}/region_center_ids_{}.npy".format(
     root_reachability, graph_name
-)
-
-path_region_center_concentric_ids = "{}/region_center_ids_{}.npy".format(
-    root_reachability_concentric, graph_name
 )
 
 path_sorted_neighbors = "{}/sorted_neighbors_region_centers_{}.npy".format(
     root_reachability, graph_name
 )
 
-path_sorted_neighbors_concentric = "{}/sorted_neighbors_region_centers_{}.npy".format(
-    root_reachability_concentric, graph_name
+path_recheable_neighbors = "{}/sorted_recheable_neighbors_{}.npy".format(
+    root_reachability, graph_name
 )
-
 
 # Network
 G = nw.load_network(graph_file_name, folder=root_map)
