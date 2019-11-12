@@ -26,7 +26,7 @@ G = nw.load_network(config.graph_file_name, folder=config.root_map)
 
 distance_matrix = nw.get_distance_matrix(config.path_dist_matrix_npy, G)
 
-# Reachability dictionary
+# Inbound reachability dictionary: Which nodes can access node n?
 reachability_dict, steps = nw.get_reachability_dic(
     config.path_reachability_dic,
     distance_matrix,
@@ -34,6 +34,17 @@ reachability_dict, steps = nw.get_reachability_dic(
     total_range=config.total_range,
     speed_km_h=config.speed_km_h,
     step_list=config.step_list,
+)
+
+# Outbound reachability dictionary: Which nodes node n can access?
+reachability_r_dict, steps = nw.get_reachability_dic(
+    config.path_reachability_r_dic,
+    distance_matrix,
+    step=config.step,
+    total_range=config.total_range,
+    speed_km_h=config.speed_km_h,
+    step_list=config.step_list,
+    outbound=True,
 )
 
 if config.region_slice == config.REGION_REGULAR:
@@ -55,11 +66,6 @@ if config.region_slice == config.REGION_REGULAR:
         path_region_ids=config.path_region_center_ids,
     )
 
-    sorted_neighbors = nw.get_sorted_neighbors(
-        distance_matrix,
-        region_centers,
-        path_sorted_neighbors=config.path_sorted_neighbors,
-    )
 
 elif config.region_slice == config.REGION_CONCENTRIC:
 
@@ -69,29 +75,28 @@ elif config.region_slice == config.REGION_CONCENTRIC:
         reachability_dict,
         list(G.nodes()),
         center=-1,
-        root_reachability=config.root_reachability_concentric,
+        root_reachability=config.root_reachability,
     )
 
-    sorted_neighbors = nw.get_sorted_neighbors(
-        distance_matrix,
-        region_centers,
-        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
-    )
+sorted_neighbors = nw.get_sorted_neighbors(
+    distance_matrix,
+    region_centers,
+    path_sorted_neighbors=config.path_sorted_neighbors,
+)
 
 node_region_ids = nw.get_node_region_ids(G, region_id_dict)
 center_nodes = nw.get_center_nodes(region_id_dict)
 
 # Saving number of centers per maximal delay
 maximal_dist_center_count = {
-    m: len(centers)
-    for m, centers in center_nodes.items()
+    m: len(centers) for m, centers in center_nodes.items()
 }
 maximal_dist_center_count[0] = len(G.nodes())
 
 dists, centers = list(zip(*(maximal_dist_center_count.items())))
 
-df = pd.DataFrame({'Maximal delay (s)': dists, "#Centers": centers})
-df.sort_values(by=['Maximal delay (s)'], inplace=True)
+df = pd.DataFrame({"Maximal delay (s)": dists, "#Centers": centers})
+df.sort_values(by=["Maximal delay (s)"], inplace=True)
 df.to_csv(config.root_map + "/center_count.csv", index=False)
 
 if config.step_list:
@@ -192,6 +197,11 @@ def get_distance(o, d):
     return distance_matrix[o][d]
 
 
+def get_distance_sec(o, d):
+    dist_s = int(3600 * distance_matrix[o][d] / config.speed_km_h + 0.5)
+    return dist_s
+
+
 @functools.lru_cache(maxsize=None)
 def sp_json(o, d, projection="GPS"):
     """Shortest path between origin and destination (inclusive)
@@ -259,12 +269,31 @@ def can_reach(n, t):
 
 
 @functools.lru_cache(maxsize=None)
+def reachable_neighbors(n, t, limit):
+    """Return list of nodes that can reach node n in t seconds.
+
+    Parameters
+    ----------
+    n : int
+        Node id
+    t : int
+        Time in seconds
+
+    Returns
+    -------
+    set
+        Nodes that n can reach in t seconds (inclusive)
+    """
+    # TODO Remove limit
+    return nw.get_can_reach_set(n, reachability_r_dict, t)
+
+
+@functools.lru_cache(maxsize=None)
 def sp_sliced(o, d, waypoint, total_points, step_count, projection="GPS"):
     """Return "total_points" coordinates between origin and destination.
 
     Break coordinates acoording to "step_duration"
 
-    
     Parameters
     ----------
     o : int
