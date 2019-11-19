@@ -267,9 +267,26 @@ def can_reach(n, t):
 
     return nw.get_can_reach_set(n, reachability_dict, t)
 
+@functools.lru_cache(maxsize=None)
+def reachable_neighbors(n, t):
+    """Return list of nodes that node n can reach in t seconds.
+
+    Parameters
+    ----------
+    n : int
+        Node id
+    t : int
+        Time in seconds
+
+    Returns
+    -------
+    set
+        Nodes that n can reach in t seconds (inclusive)
+    """
+    return nw.get_can_reach_set(n, reachability_r_dict, t)
 
 @functools.lru_cache(maxsize=None)
-def reachable_neighbors(n, t, limit):
+def reachable_neighbors_l(n, t, limit):
     """Return list of nodes that can reach node n in t seconds.
 
     Parameters
@@ -284,7 +301,6 @@ def reachable_neighbors(n, t, limit):
     set
         Nodes that n can reach in t seconds (inclusive)
     """
-    # TODO Remove limit
     return nw.get_can_reach_set(n, reachability_r_dict, t)
 
 
