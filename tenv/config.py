@@ -13,13 +13,14 @@ def get_excerpt_name(start, stop, label="excerpt"):
         .replace(" ", "_")
     )
 
+
 # TODO create dictionary of paths indexed by the region type
 REGION_CONCENTRIC = "CONCENTRIC"
 REGION_REGULAR = "MINCOVERSET"
 
 # How regions are sliced?
-region_slice = REGION_CONCENTRIC
-# region_slice = REGION_REGULAR
+# region_slice = REGION_CONCENTRIC
+region_slice = REGION_REGULAR
 
 label_exp = "GIANT"
 
@@ -51,6 +52,9 @@ root_path = root + "/data/out/{}{}".format(label_exp, graph_name)
 
 # Transportation network (.graphml and .svg)
 root_map = root_path + "/map"
+
+# Get remove superflous data
+root_lean = root_path + "/lean_data/"
 
 # Tests
 root_test_network = root + "/tests/network"
@@ -160,6 +164,10 @@ path_region_center_ids = "{}/region_center_ids_{}.npy".format(
 
 path_sorted_neighbors = "{}/sorted_neighbors_region_centers_{}.npy".format(
     root_reachability, graph_name
+)
+
+path_sorted_neighbors_lean = "{}/sorted_neighbors_region_centers_{}_{}.npy".format(
+    root_reachability, graph_name, "_".join([str(t) for t in step_list])
 )
 
 path_recheable_neighbors = "{}/sorted_recheable_neighbors_{}.npy".format(

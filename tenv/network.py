@@ -462,11 +462,15 @@ def get_center_nodes(region_id_dict):
         distance -> center id -> list of nodes
     """
 
-    dist_region_id_nodes = defaultdict(lambda: defaultdict(list))
+    dist_region_id_nodes = dict()
 
     # n -> max_dist -> center_id to max_dist -> center_id -> [nodes]
     for n, max_dist_center_id in region_id_dict.items():
         for max_dist, center_id in max_dist_center_id.items():
+            if max_dist not in dist_region_id_nodes:
+                dist_region_id_nodes[max_dist] = dict()
+            if center_id not in dist_region_id_nodes[max_dist]:
+                dist_region_id_nodes[max_dist][center_id] = list()
             dist_region_id_nodes[max_dist][center_id].append(n)
     return dist_region_id_nodes
 
