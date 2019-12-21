@@ -160,9 +160,6 @@ def create_trip_data():
     if not os.path.exists(config.root_reachability):
         os.makedirs(config.root_reachability)
 
-    if not os.path.exists(config.root_reachability_concentric):
-        os.makedirs(config.root_reachability_concentric)
-
     # Trip data ###################################################### #
 
     if not os.path.exists(config.root_tripdata):
@@ -181,14 +178,8 @@ def create_trip_data():
     if not os.path.exists(config.root_img_regions):
         os.makedirs(config.root_img_regions)
 
-    if not os.path.exists(config.root_img_regions_concentric):
-        os.makedirs(config.root_img_regions_concentric)
-
     if not os.path.exists(config.root_img_neighbors):
         os.makedirs(config.root_img_neighbors)
-
-    if not os.path.exists(config.root_img_neighbors_concentric):
-        os.makedirs(config.root_img_neighbors_concentric)
 
     print(
         (
