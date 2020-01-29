@@ -51,6 +51,15 @@ if os.path.exists(config.root_lean):
     ).item()
     distance_matrix = np.load(f"{config.root_lean}distance_matrix_km.npy")
 
+    reachability_dict, steps = nw.get_reachability_dic(
+        config.path_reachability_dic,
+        distance_matrix,
+        step=config.step,
+        total_range=config.total_range,
+        speed_km_h=config.speed_km_h,
+        step_list=config.step_list,
+    )
+
 else:
     t_start = time.time()
     distance_matrix = nw.get_distance_matrix(config.path_dist_matrix_npy, G)
@@ -304,6 +313,9 @@ def sp_json(o, d, projection="GPS"):
     """
     return nw.get_sp_coords(G, o, d, projection=projection)
 
+
+def get_node_count():
+    return len(G.nodes())
 
 def get_info():
     """Return network info"""
