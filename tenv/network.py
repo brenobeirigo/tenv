@@ -16,6 +16,63 @@ from copy import deepcopy
 from pprint import pprint
 
 np.set_printoptions(precision=2)
+
+
+def remove_edges(G_old, sample_size=3):
+    """Shrink graph file size (and complexity) by removing internal
+    nodes that integrate segments.
+
+    Parameters
+    ----------
+    G_old : Networkx
+        Old street network (edge geometry featuring several nodes)
+    sample_size : int, optional
+        Max. number of nodes per edge (apart from first and last),
+        by default 3
+    
+    Returns
+    -------
+    Networkx
+        Smaller graph with fewer edge nodes.
+    """
+
+    G = deepcopy(G_old)
+
+    for o, d in G_old.edges():
+
+        # Get all edge attributes and broadcast them to all sub edges
+        edge_attr_od = G.edges[o, d, 0]
+        sp = edge_attr_od.get("geometry", LineString([]))
+
+        try:
+            sp_list = list(sp.coords)
+            # First node
+            a = sp_list.pop(0)
+            # Last node
+            b = sp_list.pop()
+            # Remaining nodes
+            m = list(sp.coords)
+
+            # Select random sample of indexes and sort unique
+            sam = random.sample(
+                list(np.arange(len(m))), min(len(m), sample_size)
+            )
+            indexes = sorted(set(sam))
+
+            # Get the points corresponding to the indexes
+            values = [m[v] for v in indexes]
+
+            # Set up the new edge (fewer nodes)
+            coords = [a] + values + [b]
+            G.edges[o, d, 0]["geometry"] = LineString(coords)
+
+        except Exception as e:
+            logging.info(f"Error! Can't remove node. Exception:'{e}'.")
+            pass
+            # print(f"{e}-{sp_list}{a}{b}")
+    return G
+
+
 # #################################################################### #
 # Create, load, save network ######################################### #
 # #################################################################### #
@@ -138,15 +195,26 @@ def download_network(region, network_type):
 
     return G
 
+
 def clean_network(G):
+    """Set of nodes with low connectivity (end points) must be 
+    eliminated to avoid stuck vehicles (enter but cannot leave).
+    
+    Parameters
+    ----------
+    G : networkx
+        Graph to be cleaned (e.g., isolated nodes)
+    
+    Returns
+    -------
+    networkx
+        Cleaned graph
+    """
 
     G = G.copy()
 
     G = ox.remove_isolated_nodes(G)
 
-    # Set of nodes with low connectivity (end points)
-    # Must be eliminated to avoid stuch vehicles
-    # (enter but cannot leave)
     not_reachable = set()
 
     for node in G.nodes():
@@ -174,36 +242,48 @@ def clean_network(G):
 
     return G
 
+
 def get_graph_info(G):
     return "NODES: {} ({} -> {}) -- #EDGES: {}".format(
-        len(G.nodes()),
-        min(G.nodes()),
-        max(G.nodes()),
-        len(G.edges()),
+        len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
     )
 
 
 def get_network_from(
-        region,
-        root_path,
-        graph_name,
-        graph_filename,
-        max_travel_time_edge=None,
-        speed_km_h=20
-    ):
+    region,
+    root_path,
+    graph_name,
+    graph_filename,
+    max_travel_time_edge=None,
+    speed_km_h=20,
+    n_points_edges=3,
+):
     """Download network from region. If exists (check graph_filename),
     try loading.
 
-    Arguments:
-        region {string} -- Location. E.g., "Manhattan Island,
-            New York City, New York, USA"
-        root_path {string} -- Path where graph is going to saved
-        graph_name {string} -- Name to be stored in graph structure
-        graph_filename {string} -- File name .graphml to be saved
-            in root_path
-
-    Returns:
-        [networkx] -- Graph loaeded or downloaded
+    Parameters
+    ----------
+    region : str
+        Location. E.g., "Manhattan Island, New York City, New York, USA"
+    root_path : str
+        Path where graph is going to saved
+    graph_name : str
+        Name to be stored in graph structure
+    graph_filename : str
+        File name .graphml to be saved in root_path
+    max_travel_time_edge : int, optional
+        Add extra nodes to the network such that each edge can be
+        traveled in at most max_travel_time_edge seconds, by default None
+    speed_km_h : int, optional
+        Used in tandem with max_travel_time_edge to enrich node set,
+        by default 20
+    n_points_edges : int, optional
+        Max. number of nodes in each edge (excluding o and d), by default 3
+    
+    Returns
+    -------
+    networkx
+        Processed graph (enriched, relabed nodes, and compressed)
     """
     # Street network
     G = load_network(graph_filename, folder=root_path)
@@ -211,15 +291,9 @@ def get_network_from(
     if G is None:
         # Try to download
         try:
+            logging.info(f"# Downloading graph from '{region}'.")
             G = download_network(region, "drive")
 
-            # Create and store graph name
-            G.graph["name"] = graph_name
-
-            # Save region name
-            G.graph["region"] = region
-
-            logging.info("# Downloaded graph")
             logging.info(
                 "NODES: {} ({} -> {}) -- #EDGES: {}".format(
                     len(G.nodes()),
@@ -228,6 +302,14 @@ def get_network_from(
                     len(G.edges()),
                 )
             )
+
+            # Create and store graph name
+            G.graph["name"] = graph_name
+
+            # Save region name
+            G.graph["region"] = region
+
+            logging.info("# Downloaded graph")
 
             logging.info("# Cleaned graph")
             G = clean_network(G)
@@ -275,6 +357,10 @@ def get_network_from(
                     )
                 )
 
+            # Compress graph by removing nodes within edges
+            logging.info(f"Removing internal points (max.:{n_points_edges})")
+            G = remove_edges(G, sample_size=n_points_edges)
+
             # Save
             ox.save_graphml(G, filename=graph_filename, folder=root_path)
 
@@ -303,15 +389,12 @@ def save_graph_pic(G, path, config=dict(), label=""):
         save=True,
         show=False,
         file_format="svg",
-        filename="{}/{}{}".format(path, label, G.graph["name"])
+        filename="{}/{}{}".format(path, label, G.graph["name"]),
     )
 
     default_attrib.update(config)
 
-    fig, ax = ox.plot_graph(
-        G,
-        **default_attrib
-    )
+    fig, ax = ox.plot_graph(G, **default_attrib)
 
 
 def get_sorted_neighbors(
@@ -542,7 +625,13 @@ def get_region_ids(
 
 
 def get_reachability_dic(
-    root_path, distances, step=30, total_range=600, speed_km_h=30, step_list=None, outbound=False
+    root_path,
+    distances,
+    step=30,
+    total_range=600,
+    speed_km_h=30,
+    step_list=None,
+    outbound=False,
 ):
     """Which nodes are reachable from one another in "step" steps?
     E.g.:
@@ -595,7 +684,9 @@ def get_reachability_dic(
         steps_in_range_list = step_list
     else:
         # E.g., [30, 60, 90, ..., 600]
-        steps_in_range_list = [i for i in range(step, total_range + step, step)]
+        steps_in_range_list = [
+            i for i in range(step, total_range + step, step)
+        ]
 
     try:
         reachability_dict = np.load(root_path, allow_pickle=True).item()
@@ -615,9 +706,15 @@ def get_reachability_dic(
 
         # Select generator for different structures (dict or matrix)
         if isinstance(distances, dict):
-            ods = ((o, d) for o in distances.keys() for d in distances[o].keys())
+            ods = (
+                (o, d) for o in distances.keys() for d in distances[o].keys()
+            )
         else:
-            ods = ((o, d) for o in range(len(distances)) for d in range(len(distances)))
+            ods = (
+                (o, d)
+                for o in range(len(distances))
+                for d in range(len(distances))
+            )
 
         for o, d in ods:
             # Dictionary contains only valid distances
@@ -908,7 +1005,7 @@ def get_intermediate_coords(
 
         # Tuple (od pair, #points between od - including o)
         intermediate_points = list(zip(od_pairs, n_points_between_pairs))
-        #assert (min(n_points_between_pairs) >= 1), f"ERROR!{min(n_points_between_pairs)}"
+        # assert (min(n_points_between_pairs) >= 1), f"ERROR!{min(n_points_between_pairs)}"
 
         list_coords = []
         total_distance = 0
@@ -929,13 +1026,10 @@ def get_intermediate_coords(
                 # Step fraction (if there are intermediate points)
                 step_fraction = 1.0 / n_intermediate
 
-
                 # Start from second point since p1 as already added
                 # Finishes before p2 since it will be added in the next round
                 all_fraction_steps = np.arange(
-                    step_fraction,
-                    0.9999,
-                    step_fraction
+                    step_fraction, 0.9999, step_fraction
                 )
 
                 # Loop all fractions to derive the intermediate lon, lat
@@ -969,11 +1063,10 @@ def get_intermediate_coords(
 
         # Get cumulative distances
         distance_cum_list = np.cumsum(leg_distances)
-        
+
         # Get cumulative durations
         leg_durations = [
-            get_duration(d, speed_km_h=speed_km_h)
-            for d in leg_distances
+            get_duration(d, speed_km_h=speed_km_h) for d in leg_distances
         ]
         duration_cum_list = np.cumsum(leg_durations)
 
@@ -995,7 +1088,9 @@ def get_intermediate_coords(
     return list_coords, duration_cum_list, distance_cum_list, total_distance
 
 
-def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km_h=20):
+def enrich_graph(
+    G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km_h=20
+):
     """Receives cleaned up network (ids starting from 0) and add extra
     points between edges. Points are at least max_travel_time_edge
     apart.
@@ -1037,9 +1132,7 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
             cumsum_duration,
             cumsum_dist,
             total_distance,
-        ) = get_intermediate_coords(
-            G, o, d, n_coords, speed_km_h=speed_km_h
-        )
+        ) = get_intermediate_coords(G, o, d, n_coords, speed_km_h=speed_km_h)
 
         distance_od = cumsum_dist[-1]
         duration_od = cumsum_duration[-1]
@@ -1091,15 +1184,15 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
                 # Find position of leftmost coordinate whose partial
                 # duration is lower than or equal to partial_dist
                 sub_d_idx = bisect.bisect_left(
-                    cumsum_duration,
-                    partial_duration
+                    cumsum_duration, partial_duration
                 )
 
                 # Guarantee edge length does not surpass max travel time
                 while (
-                    cumsum_duration[sub_d_idx]
-                    - cumsum_duration[sub_o_idx] > max_travel_time_edge):
-                    sub_d_idx-= 1
+                    cumsum_duration[sub_d_idx] - cumsum_duration[sub_o_idx]
+                    > max_travel_time_edge
+                ):
+                    sub_d_idx -= 1
                 # print(f"Partial duration={partial_duration} n_coords={len(intermediate_coords)}, sub_o_idx={sub_o_idx}, sub_d_idx={sub_d_idx}")
 
                 if sub_o_idx == sub_d_idx:
@@ -1110,10 +1203,7 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
                     destination_id = node_id
                     x, y = intermediate_coords[sub_d_idx]
                     all_nodes_to_add.append(
-                        {
-                            "id": destination_id,
-                            "attr_dict": {"x": x, "y": y}
-                        }
+                        {"id": destination_id, "attr_dict": {"x": x, "y": y}}
                     )
                     # Increment number of nodes
                     node_id += 1
@@ -1124,7 +1214,9 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
                 edge_attributes["geometry"] = LineString(
                     [
                         Point(lon, lat)
-                        for lon, lat in intermediate_coords[sub_o_idx: sub_d_idx+1]
+                        for lon, lat in intermediate_coords[
+                            sub_o_idx : sub_d_idx + 1
+                        ]
                     ]
                 )
 
@@ -1141,7 +1233,7 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
                     }
                 )
 
-                # dur = get_duration(edge_attributes["length"], speed_km_h=speed_km_h) 
+                # dur = get_duration(edge_attributes["length"], speed_km_h=speed_km_h)
                 # if dur > max_travel_time_edge:
                 #     print(f"Duration={dur:.2f}, o={sub_o_idx}, d={sub_d_idx}, fraction={cum_leg_fraction:.2f}, fractions={np.array(cum_leg_fraction_list)}, partial={partial_duration:.2f}, cumsum_sub={cumsum_duration[sub_d_idx] - cumsum_duration[sub_o_idx]:.2f},\n  cumsum_array={cumsum_duration[sub_o_idx:sub_d_idx+1]},\ncumsum_array_0={cumsum_duration[sub_o_idx:sub_d_idx+1]-cumsum_duration[sub_o_idx]}")
 
@@ -1171,7 +1263,6 @@ def enrich_graph(G, max_dist=50, max_travel_time_edge=60, n_coords=100, speed_km
 
     # Removing old edges
     G.remove_edges_from(all_edges_to_remove)
-
 
     # Relabel nodes and edges
     for node in G.nodes():
@@ -1380,25 +1471,30 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
             f"Reading failed! Exception: {e} \nCalculating shortest paths..."
         )
 
-        for from_node in range(0, get_number_of_nodes(G)):
-            to_distance_list = []
-            for to_node in range(0, get_number_of_nodes(G)):
+        try:
 
-                try:
-                    dist_km = distance_dic_m[from_node][to_node]
-                    to_distance_list.append(dist_km)
-                except:
-                    to_distance_list.append(None)
+            for from_node in range(0, get_number_of_nodes(G)):
+                to_distance_list = []
+                for to_node in range(0, get_number_of_nodes(G)):
 
-            dist_matrix.append(to_distance_list)
-        
-        dist_matrix = np.array(dist_matrix)
+                    try:
+                        dist_km = distance_dic_m[from_node][to_node]
+                        to_distance_list.append(dist_km)
+                    except:
+                        to_distance_list.append(None)
 
-        np.save(root_path, dist_matrix)
+                dist_matrix.append(to_distance_list)
+
+            dist_matrix = np.array(dist_matrix)
+
+            np.save(root_path, dist_matrix)
+
+        except Exception as e:
+            logging.info(f"Creating distance matrix failed! Exception: {e}.")
+            exit(0)
 
     logging.info(
-        f"Distance data loaded successfully. "
-        f" #Nodes: {dist_matrix.shape}"
+        f"Distance data loaded successfully. " f" #Nodes: {dist_matrix.shape}"
     )
 
     return dist_matrix
@@ -1504,6 +1600,35 @@ def get_node_region_ids(G, region_id_dict):
         for time_limit, region_id in region_id_dict[node_id].items():
             node_level_id[time_limit].append(region_id)
     return node_level_id
+
+
+def get_node_delay_center_id(G, region_id_dict):
+    """Get dictionary associating node ids to center ids according to
+    delays.
+
+    Parameters
+    ----------
+    G : networkx
+        Transportation network
+    region_id_dict : dict
+        Dictionary associating each id to its region id
+
+    Returns
+    -------
+    dict
+        Dictionary of max. reachable time keys and node id lists.
+    """
+
+    node_delay_center_id = dict()
+    for node_id in G.nodes():
+        delay_center_id = dict()
+        for time_limit, region_id in region_id_dict[node_id].items():
+
+            delay_center_id[time_limit] = region_id
+
+        node_delay_center_id[node_id] = delay_center_id
+
+    return delay_center_id
 
 
 def can_reach(origin, target, max_delay, reachability_dic, round_trip=False):
