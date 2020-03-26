@@ -1564,9 +1564,14 @@ def get_distance_dic(root_path, G):
             logging.info(
                 f"Reading failed! Exception: {e} \nCalculating shortest paths..."
             )
-            all_dists_gen = nx.all_pairs_dijkstra_path_length(
-                G, weight="length"
-            )
+            try:
+                all_dists_gen = nx.all_pairs_dijkstra_path_length(
+                    G, weight="length"
+                )
+            except Exception as e2:
+                logging.info(
+                    f"Can't calculate shortest paths! Exception: {e2}."
+                )
 
             # Save with pickle (meters)
             distance_dic_m = dict(all_dists_gen)
