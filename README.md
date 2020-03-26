@@ -29,6 +29,22 @@ This project implements an ILP model to determine the smallest set of region cen
 2. Request a free academic license ([link](https://user.gurobi.com/download/licenses/free-academic));
 3. Add Gurobi to Anaconda ([link](http://www.gurobi.com/downloads/get-anaconda)).
 
+WARNING: When creating the environment, check python version. Gurobi call only be installed with python 3.7:
+
+    conda create -n yourenvname python=x.x
+
+## Installing OSMNX
+
+Adding `--strict-channel-priority` is essencial to ensure that all the dependencies will come from the conda-forge channel.
+    conda config --prepend channels conda-forge
+    conda create -n ox --strict-channel-priority osmnx
+
+## Istalling H3 (Uber)
+
+Uber geoindexing with hexagons:
+
+    conda install h3
+
 ## Using GIT
 
 Use this project remote:

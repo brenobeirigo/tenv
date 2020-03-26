@@ -39,19 +39,20 @@ def download_file(url, root_path, file_name):
 
 
 def get_trip_data(
-        tripdata_path,
-        output_path,
-        start=None,
-        stop=None,
-        index_col="pickup_datetime",
-        filtered_columns=[
-            "pickup_datetime",
-            "passenger_count",
-            "pickup_longitude",
-            "pickup_latitude",
-            "dropoff_longitude",
-            "dropoff_latitude",
-        ]):
+    tripdata_path,
+    output_path,
+    start=None,
+    stop=None,
+    index_col="pickup_datetime",
+    filtered_columns=[
+        "pickup_datetime",
+        "passenger_count",
+        "pickup_longitude",
+        "pickup_latitude",
+        "dropoff_longitude",
+        "dropoff_latitude",
+    ],
+):
 
     """
     Read raw tripdata csv and filter unnecessary info.
@@ -119,12 +120,12 @@ def get_trip_data(
 
             # Remove None values - Don't remove None data related to payment
             filter_valid_ods = (
-                pd.notnull(tripdata_dt_excerpt["passenger_count"]) &
-                pd.notnull(tripdata_dt_excerpt["trip_distance"]) &
-                pd.notnull(tripdata_dt_excerpt["pickup_longitude"]) &
-                pd.notnull(tripdata_dt_excerpt["pickup_latitude"]) &
-                pd.notnull(tripdata_dt_excerpt["dropoff_longitude"]) &
-                pd.notnull(tripdata_dt_excerpt["dropoff_latitude"])
+                pd.notnull(tripdata_dt_excerpt["passenger_count"])
+                & pd.notnull(tripdata_dt_excerpt["trip_distance"])
+                & pd.notnull(tripdata_dt_excerpt["pickup_longitude"])
+                & pd.notnull(tripdata_dt_excerpt["pickup_latitude"])
+                & pd.notnull(tripdata_dt_excerpt["dropoff_longitude"])
+                & pd.notnull(tripdata_dt_excerpt["dropoff_latitude"])
             )
 
             tripdata_dt_excerpt = tripdata_dt_excerpt[filter_valid_ods]
@@ -176,7 +177,7 @@ def get_ids(G, pk_lat, pk_lon, dp_lat, dp_lon, distance_dic_m, max_dist=50):
         return [None, None]
 
 
-def add_ids_chunk(G, distance_dic_m,  order, info):
+def add_ids_chunk(G, distance_dic_m, order, info):
     """Receive a dataframe chunk with tripdata and try adding node ids
     to the pickup and delivery points.
 
@@ -227,20 +228,21 @@ def add_ids_chunk(G, distance_dic_m,  order, info):
 
 
 def add_ids(
-        path_tripdata,
-        path_tripdata_ids,
-        G,
-        distance_dic_m,
-        filtered_columns = [
-            "pickup_datetime",
-            "passenger_count",
-            "pk_id",
-            "dp_id",
-            "pickup_latitude",
-            "pickup_longitude",
-            "dropoff_latitude",
-            "dropoff_longitude",
-    ]):
+    path_tripdata,
+    path_tripdata_ids,
+    G,
+    distance_dic_m,
+    filtered_columns=[
+        "pickup_datetime",
+        "passenger_count",
+        "pk_id",
+        "dp_id",
+        "pickup_latitude",
+        "pickup_longitude",
+        "dropoff_latitude",
+        "dropoff_longitude",
+    ],
+):
     """Read large dataframe in chunks of trip data and associate
     node ids from graph G to pickup and delivery coordinates
     (within 50 meters).
@@ -569,10 +571,10 @@ def gen_random_request_od(
         if o != d and dist >= min_dist and dist <= max_dist:
             break
 
-    x_from = G.node[o]["x"]
-    y_from = G.node[o]["y"]
-    x_to = G.node[d]["x"]
-    y_to = G.node[d]["y"]
+    x_from = G.nodes[o]["x"]
+    y_from = G.nodes[o]["y"]
+    x_to = G.nodes[d]["x"]
+    y_to = G.nodes[d]["y"]
 
     req = {
         "pickup_longitude": x_from,

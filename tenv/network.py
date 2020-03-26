@@ -10,6 +10,7 @@ import random
 from gurobipy import Model, GurobiError, GRB, quicksum
 import math
 import logging
+import traceback
 
 from shapely.geometry import Point, LineString
 from copy import deepcopy
@@ -366,6 +367,7 @@ def get_network_from(
 
         except Exception as e:
             logging.info(f"Error loading graph: {e}")
+            traceback.print_exc()
 
     logging.info(
         "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
@@ -805,16 +807,24 @@ def get_list_coord(G, o, d, projection="GPS", edge_index=0):
                 wgs84_to_web_mercator(x, y)
                 for x, y in ox.LineString(edge_data["geometry"]).coords
             ]
-    except:
+
+    # No intermendiate coordinates return (o,d)
+    except Exception as e:
+        # print(
+        #     f"Cant get edge linestring! o={o}, d={d}, "
+        #     f"projection={projection}, "
+        #     f"edge_index={edge_index}. Exception: '{e}'."
+        # )
+
         if projection == "GPS":
             return [
-                (G.node[o]["x"], G.node[o]["y"]),
-                (G.node[d]["x"], G.node[d]["y"]),
+                (G.nodes[o]["x"], G.nodes[o]["y"]),
+                (G.nodes[d]["x"], G.nodes[d]["y"]),
             ]
         else:
             return [
-                wgs84_to_web_mercator(G.node[o]["x"], G.node[o]["y"]),
-                wgs84_to_web_mercator(G.node[d]["x"], G.node[d]["y"]),
+                wgs84_to_web_mercator(G.nodes[o]["x"], G.nodes[o]["y"]),
+                wgs84_to_web_mercator(G.nodes[d]["x"], G.nodes[d]["y"]),
             ]
 
 
@@ -839,7 +849,7 @@ def get_point(G, p, **kwargs):
         "properties": kwargs,
         "geometry": {
             "type": "Point",
-            "coordinates": [G.node[p]["x"], G.node[p]["y"]],
+            "coordinates": [G.nodes[p]["x"], G.nodes[p]["y"]],
         },
     }
 
@@ -867,7 +877,7 @@ def get_linestring(G, o, d, **kwargs):
         linestring = linestring[:-1]
 
     # Add last node (excluded in for loop)
-    linestring.append((G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"]))
+    linestring.append((G.nodes[list_ids[-1]]["x"], G.nodes[list_ids[-1]]["y"]))
 
     # List of points (x y) connection from_id and to_id
     coords = [[u, v] for u, v in linestring]
@@ -909,7 +919,7 @@ def get_sp_coords(G, o, d, projection="GPS"):
 
         # Add last node coordinate (excluded in for loop)
         linestring.append(
-            (G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"])
+            (G.nodes[list_ids[-1]]["x"], G.nodes[list_ids[-1]]["y"])
         )
 
     else:
@@ -925,7 +935,7 @@ def get_sp_coords(G, o, d, projection="GPS"):
         # Add last node coordinate (excluded in for loop)
         linestring.append(
             wgs84_to_web_mercator(
-                G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"]
+                G.nodes[list_ids[-1]]["x"], G.nodes[list_ids[-1]]["y"]
             )
         )
 
@@ -1163,7 +1173,7 @@ def enrich_graph(
             #     f"cumsum={len(cumsum_distance)} - intermediate={len(intermediate_coords)}"
             # )
 
-            # lon1, lat1 = G.node[o]['x'], G.node[o]['y']
+            # lon1, lat1 = G.nodes[o]['x'], G.nodes[o]['y']
 
             # Get all edge attributes and broadcast them to all sub edges
             edge_attr_od = G.edges[o, d, 0]
@@ -1266,7 +1276,7 @@ def enrich_graph(
 
     # Relabel nodes and edges
     for node in G.nodes():
-        G.node[node]["osmid"] = node
+        G.nodes[node]["osmid"] = node
 
     for i, (o, d) in enumerate(G.edges()):
         G.edges[o, d, 0]["osmid"] = i
@@ -1295,7 +1305,7 @@ def get_sp_linestring_durations(G, o, d, speed):
         linestring = linestring[:-1]
 
     # Add last node (excluded in for loop)
-    linestring.append((G.node[list_ids[-1]]["x"], G.node[list_ids[-1]]["y"]))
+    linestring.append((G.nodes[list_ids[-1]]["x"], G.nodes[list_ids[-1]]["y"]))
 
     # List of points (x y) connection from_id and to_id
     coords = [[u, v] for u, v in linestring]
@@ -1337,11 +1347,11 @@ def get_random_node(G):
         [tuple] -- node id, lon, lat
     """
     random_node = random.randint(0, nx.number_of_nodes(G) - 1)
-    return random_node, G.node[random_node]["x"], G.node[random_node]["y"]
+    return random_node, G.nodes[random_node]["x"], G.nodes[random_node]["y"]
 
 
 def get_coords_node(n, G):
-    return G.node[n]["x"], G.node[n]["y"]
+    return G.nodes[n]["x"], G.nodes[n]["y"]
 
 
 @functools.lru_cache(maxsize=None)
@@ -1549,14 +1559,21 @@ def get_distance_dic(root_path, G):
         distance_dic_m = np.load(root_path, allow_pickle=True).item()
 
     except Exception as e:
-        logging.info(
-            f"Reading failed! Exception: {e} \nCalculating shortest paths..."
-        )
-        all_dists_gen = nx.all_pairs_dijkstra_path_length(G, weight="length")
 
-        # Save with pickle (meters)
-        distance_dic_m = dict(all_dists_gen)
-        np.save(root_path, distance_dic_m)
+        try:
+            logging.info(
+                f"Reading failed! Exception: {e} \nCalculating shortest paths..."
+            )
+            all_dists_gen = nx.all_pairs_dijkstra_path_length(
+                G, weight="length"
+            )
+
+            # Save with pickle (meters)
+            distance_dic_m = dict(all_dists_gen)
+            np.save(root_path, distance_dic_m)
+
+        except Exception as e2:
+            print(f"Exception {e2}.")
 
     logging.info(
         f"Distance data loaded successfully. "

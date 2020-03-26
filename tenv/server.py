@@ -103,11 +103,12 @@ def sp_coords(o, d):
 
 @app.route("/distance_km/<int:o>/<int:d>")
 def get_distance(o, d):
-    return str(util.get_distance(o,d))
+    return str(util.get_distance(o, d))
+
 
 @app.route("/distance_sec/<int:o>/<int:d>")
 def get_distance_sec(o, d):
-    return str(util.get_distance_sec(o,d))
+    return str(util.get_distance_sec(o, d))
 
 
 @app.route("/sp/<int:o>/<int:d>/<projection>")
@@ -142,6 +143,7 @@ def get_info():
 
     return jsonify(info)
 
+
 @app.route("/all_neighbors/<int:n>/<int:t>/<int:limit>")
 @functools.lru_cache(maxsize=None)
 def all_neighbors(n, t, limit):
@@ -166,10 +168,7 @@ def all_neighbors(n, t, limit):
         3624;169;1897;1901;751;1841;308
     """
 
-    return ";".join(
-        map(str, util.all_neighbors(n, t, limit))
-    )
-
+    return ";".join(map(str, util.all_neighbors(n, t, limit)))
 
 
 @app.route("/reachable_neighbors/<int:n>/<int:t>/<int:limit>")
@@ -211,6 +210,7 @@ def all_neighbors_dist(n, t, limit):
 
     n_target.sort(key=lambda tup: tup[1])
     return str(n_target[:limit])
+
 
 @app.route("/can_reach/<int:n>/<int:t>")
 @functools.lru_cache(maxsize=None)
@@ -278,7 +278,12 @@ def sp_sliced(o, d, waypoint, total_points, step_count, projection="GPS"):
         }
     """
 
-    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
+    (
+        list_coords,
+        cum_duration,
+        cum_distance,
+        dist_m,
+    ) = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
@@ -332,7 +337,12 @@ def sp_segmented(
         }
     """
 
-    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
+    (
+        list_coords,
+        cum_duration,
+        cum_distance,
+        dist_m,
+    ) = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
@@ -420,6 +430,17 @@ def linestring_style(o, d, stroke, width, opacity):
     )
 
 
+# @app.route("/nodes")
+# def nodes():
+#     G = util.G
+#     nodes = [
+#         {"id": id, "x": G.nodes[id]["x"], "y": G.nodes[id]["y"]}
+#         for id in G.nodes()
+#     ]
+#     dic = dict(nodes=nodes)
+#     return jsonify(dic)
+
+
 @functools.lru_cache(maxsize=None)
 @app.route("/nodes/<projection>")
 def nodes(projection):
@@ -436,9 +457,10 @@ def nodes(projection):
     output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
 
     """
+    G = util.G
     if projection == "GPS":
         nodes = [
-            {"id": id, "x": G.node[id]["x"], "y": G.node[id]["y"]}
+            {"id": id, "x": G.nodes[id]["x"], "y": G.nodes[id]["y"]}
             for id in G.nodes()
         ]
 
@@ -449,7 +471,7 @@ def nodes(projection):
                 (
                     id,
                     *nw.wgs84_to_web_mercator(
-                        G.node[id]["x"], G.node[id]["y"]
+                        G.nodes[id]["x"], G.nodes[id]["y"]
                     ),
                 )
                 for id in G.nodes()
@@ -714,7 +736,7 @@ def location(id):
     """
 
     return jsonify(
-        {"location": {"x": util.G.node[id]["x"], "y": util.G.node[id]["y"]}}
+        {"location": {"x": util.G.nodes[id]["x"], "y": util.G.nodes[id]["y"]}}
     )
 
 

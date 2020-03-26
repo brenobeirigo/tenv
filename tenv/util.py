@@ -17,37 +17,76 @@ import tenv.config as config
 import tenv.network as nw
 import tenv.demand as tp
 import numpy as np
+import tenv.visuals as vi
 import math
+import logging
 
+logging.getLogger().setLevel(logging.INFO)
 
 print(config.info())
 time_dict = dict()
 
-# Network
+# Network time
 t_start = time.time()
+
+print("Loading network...")
 G = nw.load_network(config.graph_file_name, folder=config.root_map)
+
+if G is None:
+    print("Creating data network data.")
+
+    # Create all folders
+    config.make_folders()
+
+    print(
+        (
+            "\n>>>>> Target folders:\n"
+            + "\n - Distance matrix (csv) and dictionary (npy): {}"
+            + "\n -   Data excerpt from NYC taxi dataset (csv): {}"
+            + "\n -  Reachability (npy) & region centers (npy): {}.\n"
+        ).format(
+            config.root_dist, config.root_tripdata, config.root_reachability
+        )
+    )
+
+    print(
+        "\n############################"
+        "##### Loading network ######"
+        "############################"
+    )
+
+    # Get network graph and save
+    G = nw.get_network_from(
+        config.region,
+        config.root_map,
+        config.graph_name,
+        config.graph_file_name,
+        max_travel_time_edge=config.max_travel_time_edge,
+        speed_km_h=config.speed_km_h,
+    )
+
+    nw.save_graph_pic(G, config.root_map)
+
 time_dict["graph"] = time.time() - t_start
 
 if os.path.exists(config.root_lean):
     region_centers = np.load(
-        f"{config.root_lean}region_centers.npy",
-        allow_pickle=True
+        f"{config.root_lean}region_centers.npy", allow_pickle=True
     ).item()
     region_id_dict = np.load(
-        f"{config.root_lean}region_id_dict.npy",
-        allow_pickle=True
+        f"{config.root_lean}region_id_dict.npy", allow_pickle=True
     ).item()
     sorted_neighbors = np.load(
-        f"{config.root_lean}sorted_neighbors.npy",
-        allow_pickle=True
+        f"{config.root_lean}sorted_neighbors.npy", allow_pickle=True
     ).item()
     node_region_ids = np.load(
-        f"{config.root_lean}node_region_ids.npy",
-        allow_pickle=True
+        f"{config.root_lean}node_region_ids.npy", allow_pickle=True
+    ).item()
+    node_delay_center_id = np.load(
+        f"{config.root_lean}node_region_ids.npy", allow_pickle=True
     ).item()
     center_nodes = np.load(
-        f"{config.root_lean}center_nodes.npy",
-        allow_pickle=True
+        f"{config.root_lean}center_nodes.npy", allow_pickle=True
     ).item()
     distance_matrix = np.load(f"{config.root_lean}distance_matrix_km.npy")
 
@@ -61,8 +100,18 @@ if os.path.exists(config.root_lean):
     )
 
 else:
+
+    config.make_folders()
+
     t_start = time.time()
-    distance_matrix = nw.get_distance_matrix(config.path_dist_matrix_npy, G)
+
+    # Creating distance dictionary [o][d] -> distance
+    distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
+
+    # Creating distance matrix from dictionary
+    distance_matrix = nw.get_distance_matrix(
+        config.path_dist_matrix_npy, G, distance_dic_m=distance_dic
+    )
     time_dict["distance_matrix"] = time.time() - t_start
 
     # Inbound reachability dictionary: Which nodes can access node n?
@@ -93,6 +142,7 @@ else:
     if config.region_slice == config.REGION_REGULAR:
         # All region centers
         t_start = time.time()
+
         region_centers = nw.get_region_centers(
             steps,
             config.path_region_centers,
@@ -102,6 +152,7 @@ else:
             round_trip=config.round_trip,
         )
         time_dict["region_centers_REG"] = time.time() - t_start
+        print("Regions", region_centers)
 
         # What is the closest region center of every node (given a time limit)?
         t_start = time.time()
@@ -112,6 +163,18 @@ else:
             path_region_ids=config.path_region_center_ids,
         )
         time_dict["region_id_REG"] = time.time() - t_start
+
+        # Plot region centers (blue) and associated nodes
+        print("Plotting regions...")
+        vi.plot_regions(
+            G,
+            region_centers,
+            region_id_dict,
+            path=config.root_img_regions,
+            show=False,
+            file_format="png",
+            replace=False,
+        )
 
     elif config.region_slice == config.REGION_CONCENTRIC:
 
@@ -138,6 +201,10 @@ else:
     t_start = time.time()
     node_region_ids = nw.get_node_region_ids(G, region_id_dict)
     time_dict["node_region_ids"] = time.time() - t_start
+
+    t_start = time.time()
+    node_delay_center_id = nw.get_node_delay_center_id(G, region_id_dict)
+    time_dict["node_delay_center_id"] = time.time() - t_start
 
     t_start = time.time()
     center_nodes = nw.get_center_nodes(region_id_dict)
@@ -226,6 +293,9 @@ else:
         np.save(f"{config.root_lean}region_id_dict.npy", region_id_dict)
         np.save(f"{config.root_lean}sorted_neighbors.npy", sorted_neighbors)
         np.save(f"{config.root_lean}node_region_ids.npy", node_region_ids)
+        np.save(
+            f"{config.root_lean}node_delay_center_id.npy", node_delay_center_id
+        )
         np.save(f"{config.root_lean}center_nodes.npy", center_nodes)
         np.save(f"{config.root_lean}distance_matrix_km.npy", distance_matrix)
 
@@ -316,6 +386,7 @@ def sp_json(o, d, projection="GPS"):
 
 def get_node_count():
     return len(G.nodes())
+
 
 def get_info():
     """Return network info"""
@@ -429,7 +500,12 @@ def sp_sliced(o, d, waypoint, total_points, step_count, projection="GPS"):
         }
     """
 
-    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
+    (
+        list_coords,
+        cum_duration,
+        cum_distance,
+        dist_m,
+    ) = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
@@ -479,7 +555,12 @@ def sp_segmented(
         }
     """
 
-    list_coords, cum_duration, cum_distance, dist_m = nw.get_intermediate_coords(
+    (
+        list_coords,
+        cum_duration,
+        cum_distance,
+        dist_m,
+    ) = nw.get_intermediate_coords(
         G, o, d, total_points, projection=projection, waypoint=waypoint
     )
 
@@ -535,7 +616,7 @@ def nodes(projection):
     """
     if projection == "GPS":
         nodes = [
-            {"id": id, "x": G.node[id]["x"], "y": G.node[id]["y"]}
+            {"id": id, "x": G.nodes[id]["x"], "y": G.nodes[id]["y"]}
             for id in G.nodes()
         ]
 
@@ -546,7 +627,7 @@ def nodes(projection):
                 (
                     id,
                     *nw.wgs84_to_web_mercator(
-                        G.node[id]["x"], G.node[id]["y"]
+                        G.nodes[id]["x"], G.nodes[id]["y"]
                     ),
                 )
                 for id in G.nodes()
@@ -803,7 +884,7 @@ def location(id):
 
     """
 
-    return {"location": {"x": G.node[id]["x"], "y": G.node[id]["y"]}}
+    return {"location": {"x": G.nodes[id]["x"], "y": G.nodes[id]["y"]}}
 
 
 @functools.lru_cache(maxsize=None)
@@ -826,4 +907,4 @@ def lonlat(id):
 
     """
 
-    return (G.node[id]["x"], G.node[id]["y"])
+    return (G.nodes[id]["x"], G.nodes[id]["y"])
