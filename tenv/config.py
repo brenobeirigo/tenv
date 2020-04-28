@@ -23,9 +23,12 @@ REGION_REGULAR = "reg"
 region_slice = REGION_REGULAR
 
 label_exp = ""
+# label_exp = "GIANT"
+# label_exp = "N"
 short_path = False
 # root = os.getcwd().replace("\\", "/")
 root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+# root = "d:/bb/tenv"
 # root = "C:/Users/breno/Documents/phd/tenv"
 # root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
@@ -189,8 +192,8 @@ def info():
         f"\n#       Steps = {step_list}"
         f"\n#       Round = {round_trip}"
         f"\n#      Source = {root_path}"
-        f"\n#     Network = # nodes = {(len(G.nodes()) if G else '')}"
-        # (f"({min(G.nodes())} -> {max(G.nodes())}) - #edges = {len(G.edges())}" if G else "")
+        f"\n#     Network = #nodes = {(len(G.nodes()) if G else '')} - "
+        f"#edges = {len(G.edges()) if G else ''}"
         "\n###############################################################"
     )
 

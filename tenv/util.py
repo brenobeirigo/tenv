@@ -70,6 +70,7 @@ if G is None:
 time_dict["graph"] = time.time() - t_start
 
 if os.path.exists(config.root_lean):
+    print("Loading preprocessed data...")
     region_centers = np.load(
         f"{config.root_lean}region_centers.npy", allow_pickle=True
     ).item()
@@ -100,7 +101,7 @@ if os.path.exists(config.root_lean):
     )
 
 else:
-
+    print("Precalculated data couldn't be created!")
     config.make_folders()
 
     t_start = time.time()
