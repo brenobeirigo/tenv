@@ -696,8 +696,10 @@ def get_reachability_dic(
             "\nReading reachability dictionary..." f"\nSource: '{root_path}'."
         )
 
-    except:
-
+    except Exception as e:
+        logging.info(
+            f'Failed to read reachability dictionary! Exception: "{e}"'
+        )
         reachability_dict = defaultdict(lambda: defaultdict(set))
 
         logging.info(

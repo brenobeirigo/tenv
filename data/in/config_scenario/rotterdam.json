@@ -1,5 +1,6 @@
 {
     "region": "Rotterdam, The Netherlands",
+    "label": "rotterdam_nl",
     "data_gen": {
         "source": "C:\\Users\\LocalAdmin\\OneDrive\\leap_forward\\street_network_server\\input_tripdata\\data\\manhattan-island-new-york-city-new-york-usa\\tripdata\\tripdata_excerpt_2011-2-1_2011-2-28_ids.csv",
         "funcs": [
@@ -9,5 +10,17 @@
         "url_tripdata": "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2011-02.csv",
         "start": "2011-02-01 00:00:00",
         "stop": "2011-02-02 00:00:00"
-    }
+    },
+    "reachability": {
+        "step": 15,
+        "total_range": 1200,
+        "speed_km_h": 20,
+        "step_list": [
+            0,
+            150,
+            300,
+            600
+        ]
+    },
+    "max_travel_time_edge": 30
 }
