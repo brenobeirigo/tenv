@@ -6,9 +6,11 @@ import requests
 from functools import partial
 from datetime import datetime, timedelta
 import random
-from pprint import pprint
 
+import logging
 import tenv.network as nw
+
+logging.basicConfig(level=logging.INFO)
 
 # Stores in key = 'name of experiment' the generator used to
 # read trip data in file.
@@ -29,13 +31,14 @@ def download_file(url, root_path, file_name):
 
     output_file = "{}/{}".format(root_path, file_name)
 
-    print("Loading  '{}'".format(output_file))
+    logging.info(f"Loading  '{output_file}'")
 
     if not os.path.exists(output_file):
         # TODO action when url does not exist
-        print("Downloading {}".format(url))
+        logging.info("Downloading {}".format(url))
         r = requests.get(url, allow_redirects=True)
         open(output_file, "wb").write(r.content)
+        logging.info(f"File downloaded successfully to '{output_file}'.")
 
 
 def get_trip_data(
@@ -86,16 +89,16 @@ def get_trip_data(
 
     try:
 
+        logging.info("Loading file '{}'...".format(output_path))
+
         # Load tripdata
         tripdata_dt_excerpt = pd.read_csv(
             output_path, parse_dates=True, index_col=index_col
         )
 
-        print("Loading file '{}'.".format(output_path))
-
     except:
 
-        print(f"Reading trip data '{tripdata_path}'...")
+        logging.info(f"Load failed! Reading trip data '{tripdata_path}'...")
 
         try:
             # Reading file
@@ -134,50 +137,59 @@ def get_trip_data(
             tripdata_dt_excerpt.sort_index(inplace=True)
 
             # Save day data
-            print(f"Saving {len(tripdata_dt_excerpt)} to '{output_path}'...")
+            logging.info(
+                f"Saving {len(tripdata_dt_excerpt)} to '{output_path}'..."
+            )
             tripdata_dt_excerpt.to_csv(output_path)
 
             return tripdata_dt_excerpt
 
         except Exception as e:
-            print(f"Exception: {e}")
+            logging.info(f"Exception: {e}")
 
 
-def get_ids(G, pk_lat, pk_lon, dp_lat, dp_lon, distance_dic_m, max_dist=50):
+def get_ids(
+    G, pk_lat, pk_lon, dp_lat, dp_lon, distance_dic_m, max_dist_km=0.05
+):
 
     try:
         # Get pick-up and drop-off coordinates of request
         pk = (pk_lat, pk_lon)
         dp = (dp_lat, dp_lon)
 
+        # TODO add distance to nearest node
         # Get nearest node in graph from coordinates
-        n_pk = ox.get_nearest_node(G, pk, return_dist=True)
-        n_dp = ox.get_nearest_node(G, dp, return_dist=True)
-
-        # print("Nearest:",n_pk, n_dp)
+        pk_node_dist_m = ox.get_nearest_node(G, pk, return_dist=True)
+        dp_node_dist_m = ox.get_nearest_node(G, dp, return_dist=True)
+        # logging.info(pk, dp, n_pk_km, n_dp_km, max_dist_km)
 
         # If nearest node is "max_dist" meters far from point, request
         # is discarded
-        if n_pk[1] > max_dist or n_dp[1] > max_dist:
+        if (
+            pk_node_dist_m[1] / 1000 > max_dist_km
+            or dp_node_dist_m[1] / 1000 > max_dist_km
+        ):
             return [None, None]
 
         # pk must be different of dp
-        if n_pk[0] == n_dp[0]:
+        if pk_node_dist_m[0] == dp_node_dist_m[0]:
             return [None, None]
 
-        d = distance_dic_m[n_pk[0]][n_dp[0]]
-        # print("Dist:", d)
+        d = distance_dic_m[pk_node_dist_m[0]][dp_node_dist_m[0]]
+        # logging.info("Dist:", d, max_dist_km)
 
         # Remove short distances
-        if d >= max_dist:
-            return [n_pk[0], n_dp[0]]
+        if d >= max_dist_km:
+            return [pk_node_dist_m[0], dp_node_dist_m[0]]
         else:
             return [None, None]
-    except:
+
+    except Exception as e:
+        logging.error(f"Cannot get ids! Exception: {e}.")
         return [None, None]
 
 
-def add_ids_chunk(G, distance_dic_m, order, info):
+def add_ids_chunk(G, distance_dic_m, order, max_dist_km, info):
     """Receive a dataframe chunk with tripdata and try adding node ids
     to the pickup and delivery points.
 
@@ -204,6 +216,7 @@ def add_ids_chunk(G, distance_dic_m, order, info):
                 row["dropoff_latitude"],
                 row["dropoff_longitude"],
                 distance_dic_m,
+                max_dist_km=max_dist_km,
             )
         ),
         axis=1,
@@ -215,13 +228,11 @@ def add_ids_chunk(G, distance_dic_m, order, info):
     filter_valid_ods = pd.notnull(info["pk_id"]) & pd.notnull(info["dp_id"])
     info = info[filter_valid_ods]
 
-    print("Adding ", len(info), "/", original_chunk_size)
+    logging.info(f"Adding {len(info)} / {original_chunk_size}")
 
-    # Convert node ids and passenger count to int
-    info[["passenger_count", "pk_id", "dp_id"]] = info[
-        ["passenger_count", "pk_id", "dp_id"]
-    ].astype(int)
-
+    info = info.astype(
+        {"passenger_count": "int32", "pk_id": "int32", "dp_id": "int32"}
+    )
     info = info[order]
 
     return info
@@ -231,7 +242,8 @@ def add_ids(
     path_tripdata,
     path_tripdata_ids,
     G,
-    distance_dic_m,
+    distance_dic_km,
+    max_dist_km=0.05,
     filtered_columns=[
         "pickup_datetime",
         "passenger_count",
@@ -242,6 +254,7 @@ def add_ids(
         "dropoff_latitude",
         "dropoff_longitude",
     ],
+    n_mp=2,
 ):
     """Read large dataframe in chunks of trip data and associate
     node ids from graph G to pickup and delivery coordinates
@@ -274,11 +287,16 @@ def add_ids(
             path_tripdata_ids, parse_dates=True, index_col="pickup_datetime"
         )
 
-        print("\nLoading trip data with ids...'{}'.".format(path_tripdata_ids))
+        logging.info(
+            "\nLoading trip data with ids...'{}'.".format(path_tripdata_ids)
+        )
 
     else:
 
-        print("############ NY trip data ", path_tripdata, path_tripdata_ids)
+        logging.info(
+            f"### NY trip data  "
+            f"\n  - {path_tripdata}\n  - {path_tripdata_ids}"
+        )
         tripdata = pd.read_csv(path_tripdata)
 
         tripdata.info()
@@ -287,7 +305,9 @@ def add_ids(
         chunksize = 2000
 
         # Redefine function to add graph and distances
-        func = partial(add_ids_chunk, G, distance_dic_m, filtered_columns)
+        func = partial(
+            add_ids_chunk, G, distance_dic_km, filtered_columns, max_dist_km
+        )
 
         # Total number of chunks to process
         togo = int(len(tripdata) / chunksize)
@@ -297,7 +317,6 @@ def add_ids(
         count_lines = 0
 
         # Multiprocesses
-        n_mp = 8
         p = Pool(n_mp)
 
         # List of chunks of tripdata to process in parallel
@@ -357,7 +376,7 @@ def add_ids(
                 # Clean parallel list to add more chunks
                 list_parallel.clear()
 
-                print(
+                logging.info(
                     (
                         "Chunk progress: {}/{}" " - Dataframe progress: {}/{}"
                     ).format(count, togo, count_lines, len(tripdata))
@@ -368,14 +387,14 @@ def add_ids(
             path_tripdata_ids, parse_dates=True, index_col="pickup_datetime"
         )
 
-        print(
+        logging.info(
             (
                 "\nLoading trip data with ids" " (after processing)...'{}'."
             ).format(path_tripdata_ids)
         )
 
-    print(dt.head())
-    print(dt.describe())
+    logging.info(dt.head())
+    logging.info(dt.describe())
 
 
 # #################################################################### #
@@ -433,15 +452,15 @@ def gen_requests(
     distance_dic=None,
 ):
 
-    print("\nGeneration random requests clone mirror...")
+    logging.info("\nGeneration random requests clone mirror...")
 
     # if file does not exist write header
     if os.path.isfile(output_path):
-        print("\nTrip data already exists in '{}'.".format(output_path))
+        logging.info("\nTrip data already exists in '{}'.".format(output_path))
         return
     else:
 
-        print("Saving at '{}'.".format(output_path))
+        logging.info("Saving at '{}'.".format(output_path))
 
         # Number of lines to read from huge .csv
         chunksize = 2000
@@ -455,7 +474,7 @@ def gen_requests(
         )
 
         count = 0
-        print("Time window:", start_timestamp, "----", end_timestamp)
+        logging.info("Time window:", start_timestamp, "----", end_timestamp)
 
         for chunk_dt_clone in gen_chunks:
 
@@ -478,10 +497,10 @@ def gen_requests(
                 ["passenger_count", "pk_id", "dp_id"]
             ].astype(int)
 
-            # print(chunk_dt.head())
+            # logging.info(chunk_dt.head())
 
             # if file does not exist write header
-            # print("Saving first chunk...")
+            # logging.info("Saving first chunk...")
             if not os.path.isfile(output_path):
 
                 chunk_dt.to_csv(output_path)
@@ -491,7 +510,7 @@ def gen_requests(
                 chunk_dt.to_csv(output_path, mode="a", header=False)
 
             count = count + 1
-            print(
+            logging.info(
                 "Chunk progress: {}----{}".format(
                     chunk_dt.iloc[0].name, chunk_dt.iloc[-1].name
                 )
@@ -505,7 +524,7 @@ def gen_requests(
 
     # while current_dt < dt_end_ts:
     #     current_dt = current_dt + td_batch_duration
-    #     print(dt_start_ts, current_dt, dt_end_ts)
+    #     logging.info(dt_start_ts, current_dt, dt_end_ts)
 
     # TODO Use frequency generation in the future. Example:
     # date_rng = pd.date_range(start='1/1/2018', end='1/08/2018', freq='H')
@@ -638,7 +657,7 @@ def get_next_batch(
     # is being run for the first time
     if experiment_name not in request_base:
 
-        print(
+        logging.info(
             (
                 "\nActivating tripdata generator" " for experiment '{}'..."
             ).format(experiment_name)
@@ -702,7 +721,7 @@ def get_next_batch(
     batch = trips["residual_requests"]
     left_tw = trips["current_time"]
     right_tw = left_tw + trips["batch_size"]
-    # print(left_tw, "--", right_tw)
+    # logging.info(left_tw, "--", right_tw)
     right_tw = min(right_tw, trips["final_time"])
 
     for next_batch in trips["generator"]:
@@ -712,7 +731,7 @@ def get_next_batch(
         if not batch[right_tw:].empty:
             break
 
-        # print('Size batch after:', len(batch))
+        # logging.info('Size batch after:', len(batch))
 
     # Stores requests read (due to the chunk size) but not returned
     trips["residual_requests"] = pd.DataFrame(batch[right_tw:])
@@ -748,7 +767,6 @@ if __name__ == "__main__":
     #                          config.graph_file_name)
     # nw.save_graph_pic(G)
 
-    # print( "\nGetting distance data...")
+    # logging.info( "\nGetting distance data...")
     # # Creating distance dictionary [o][d] -> distance
     # distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
-
