@@ -27,27 +27,39 @@ label_exp = ""
 # label_exp = "N"
 short_path = False
 # root = os.getcwd().replace("\\", "/")
-root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
+# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
 # root = "d:/bb/tenv"
 # root = "C:/Users/breno/Documents/phd/tenv"
 # root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+
+with open("file_info.json") as js:
+    data_paths = json.load(js)
+    root = data_paths["root"]
+    case_study = data_paths["case_study"]
+
+scenario_path = f"{root}/data/in/config_scenario"
+case_study_path = f"{scenario_path}/{case_study}"
+
 
 ########################################################################
 # Dataset structure ####################################################
 ########################################################################
 
 # Input data
+mapdata = None
 tripdata = None
-with open(f"{root}/data/in/config_scenario/rotterdam.json") as js:
-    tripdata = json.load(js)
+with open(case_study_path) as js:
+    data = json.load(js)
+    mapdata = data.get("mapdata", {})
+    tripdata = data.get("tripdata", {})
 
-region = tripdata["region"]
+region = mapdata["region"]
 
 # Create and store graph name
 graph_name = (
-    tripdata["label"]
-    if "label" in tripdata
-    else tripdata["region"].lower().replace(" ", "-").replace(",", "")
+    mapdata["label"]
+    if "label" in mapdata
+    else mapdata["region"].lower().replace(" ", "-").replace(",", "")
 )
 
 if short_path:
@@ -63,6 +75,9 @@ root_path = root + "/data/out/{}{}".format(label_exp, graph_name)
 
 # Transportation network (.graphml and .svg)
 root_map = root_path + "/map"
+
+# .csv network information (centers, neighbors, etc)
+root_network_info = root_path + "/network_info"
 
 # Get remove superflous data
 root_lean = root_path + "/lean_data/"
@@ -91,6 +106,9 @@ path_tripdata_clone = None
 # Path of trip data with ids
 if "url_tripdata" in tripdata:
     local = tripdata["url_tripdata"]
+
+    # Max. distance to match nodes to coordinates
+    max_dist_km = tripdata["max_dist_km"]
 
     # Presumably, the last part of the url is the file name
     tripdata_filename = f'{local.split("/")[-1]}'
@@ -121,22 +139,24 @@ path_dist_matrix_npy = "{}/dist_matrix_m.npy".format(root_dist)
 
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
-step = tripdata["reachability"]["step"]
-total_range = tripdata["reachability"]["total_range"]
+step = mapdata["reachability"]["step"]
+total_range = mapdata["reachability"]["total_range"]
+
 # If defined, step and total_range are assumed to be seconds
-speed_km_h = tripdata["reachability"]["speed_km_h"]
-round_trip = tripdata["reachability"].get("round_trip", False)
+speed_km_h = mapdata["reachability"]["speed_km_h"]
+round_trip = mapdata["reachability"].get("round_trip", False)
 
 # Maximum number of node neighbors queried by application
-max_neighbors = 6
+max_neighbors = mapdata["reachability"].get("max_neighbors", None)
+
 # step_list = [0, 60, 300, 600]
 # step_list = [0, 150, 300, 600]
-step_list = tripdata["reachability"].get("step_list", [])
+step_list = mapdata["reachability"].get("step_list", [])
 step_list_concentric = [60, 300, 600]
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds
-max_travel_time_edge = tripdata.get("max_travel_time_edge", 30)
+max_travel_time_edge = mapdata.get("max_travel_time_edge", 30)
 
 # Max. time to execute ilp (min)
 ilp_time_limit = 60
@@ -208,6 +228,9 @@ def make_folders():
 
     if not os.path.exists(root_map):
         os.makedirs(root_map)
+
+    if not os.path.exists(root_network_info):
+        os.makedirs(root_network_info)
 
     if not os.path.exists(root_reachability):
         os.makedirs(root_reachability)
