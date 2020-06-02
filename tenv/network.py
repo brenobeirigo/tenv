@@ -245,7 +245,7 @@ def clean_network(G):
 
 
 def get_graph_info(G):
-    return "NODES: {} ({} -> {}) -- #EDGES: {}".format(
+    return "#NODES: {} ({} -> {}) -- #EDGES: {}".format(
         len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
     )
 
@@ -292,17 +292,10 @@ def get_network_from(
     if G is None:
         # Try to download
         try:
-            logging.info(f"# Loading graph from '{region}'...")
+            logging.info(f"Loading graph from '{region}'...")
             G = download_network(region, "drive")
 
-            logging.info(
-                "NODES: {} ({} -> {}) -- #EDGES: {}".format(
-                    len(G.nodes()),
-                    min(G.nodes()),
-                    max(G.nodes()),
-                    len(G.edges()),
-                )
-            )
+            logging.info(get_graph_info(G))
 
             # Create and store graph name
             G.graph["name"] = graph_name
@@ -311,66 +304,51 @@ def get_network_from(
             G.graph["region"] = region
 
             G = clean_network(G)
-            logging.info(
-                "#NODES: {} ({} -> {}) -- #EDGES: {}".format(
-                    len(G.nodes()),
-                    min(G.nodes()),
-                    max(G.nodes()),
-                    len(G.edges()),
-                )
-            )
-
-            # Relabel nodes
-            mapping = {k: i for i, k in enumerate(sorted(G.nodes()))}
-            G = nx.relabel_nodes(G, mapping)
+            logging.info("Cleaning network...")
+            logging.info(get_graph_info(G))
 
             # Add extra nodes to the network such that each edge can
             # be traveled in at most max_travel_time_edge seconds
             if max_travel_time_edge is not None:
+                logging.info(
+                    "Enriching graph "
+                    f"(max_trave_time_edge={max_travel_time_edge}, "
+                    f"speed_km_h={speed_km_h})..."
+                )
                 G = enrich_graph(
                     G,
                     max_travel_time_edge=max_travel_time_edge,
                     speed_km_h=speed_km_h,
-                    n_coords=4000,
+                    n_coords=10,
                 )
 
-                logging.info("# Enriched graph")
-                logging.info(
-                    "NODES: {} ({} -> {}) -- #EDGES: {}".format(
-                        len(G.nodes()),
-                        min(G.nodes()),
-                        max(G.nodes()),
-                        len(G.edges()),
-                    )
-                )
+                logging.info(get_graph_info(G))
 
+                logging.info("Cleaning enriched network...")
                 G = clean_network(G)
 
-                logging.info(
-                    "NODES: {} ({} -> {}) -- #EDGES: {}".format(
-                        len(G.nodes()),
-                        min(G.nodes()),
-                        max(G.nodes()),
-                        len(G.edges()),
-                    )
-                )
+                logging.info(get_graph_info(G))
 
             # Compress graph by removing nodes within edges
-            logging.info(f"Removing internal points (max.:{n_points_edges})")
+            logging.info(
+                f"Removing internal edge points (max.:{n_points_edges})..."
+            )
             G = remove_edges(G, sample_size=n_points_edges)
 
+            # Relabel nodes
+            logging.info("Re-labelling nodes...")
+            mapping = {k: i for i, k in enumerate(sorted(G.nodes()))}
+            G = nx.relabel_nodes(G, mapping)
+
             # Save
+            logging.info("Saving...")
             ox.save_graphml(G, filename=graph_filename, folder=root_path)
 
         except Exception as e:
             logging.info(f"Error loading graph: {e}")
             traceback.print_exc()
 
-    logging.info(
-        "\n# NETWORK -  NODES: {} ({} -> {}) -- #EDGES: {}".format(
-            len(G.nodes()), min(G.nodes()), max(G.nodes()), len(G.edges())
-        )
-    )
+    logging.info(get_graph_info(G))
 
     return G
 
@@ -1194,13 +1172,16 @@ def enrich_graph(
                     cumsum_duration, partial_duration
                 )
 
+                # TODO Remove while, prone to delays
                 # Guarantee edge length does not surpass max travel time
                 while (
                     cumsum_duration[sub_d_idx] - cumsum_duration[sub_o_idx]
                     > max_travel_time_edge
                 ):
                     sub_d_idx -= 1
-                # print(f"Partial duration={partial_duration} n_coords={len(intermediate_coords)}, sub_o_idx={sub_o_idx}, sub_d_idx={sub_d_idx}")
+                # print(
+                #     f"Partial duration={partial_duration} n_coords={len(intermediate_coords)}, sub_o_idx={sub_o_idx}, sub_d_idx={sub_d_idx}"
+                # )
 
                 if sub_o_idx == sub_d_idx:
                     continue
