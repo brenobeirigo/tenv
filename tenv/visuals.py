@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import osmnx as ox
 import os
+import logging
 
 
 def plot_region_neighbors(
@@ -109,6 +110,7 @@ def plot_region_neighbors(
 
         # TODO Warning! Plot graph routes was modified to support line
         # plotting
+        logging.info(f"Plotting (level={max_dist}, #centers={len(centers)}")
         fig, ax = ox.plot_graph_routes(
             G,
             all_paths,
@@ -126,11 +128,6 @@ def plot_region_neighbors(
             show=False,
             close=False,
         )
-
-        # print(
-        #     f"{centers}({len(centers)}) "
-        #     f"\n {centers_from_nodes}({len(centers)})"
-        # )
 
         ax.title.set_text(
             f"Reachable from centers in {(max_dist/60):.1f} min\n"
@@ -236,6 +233,7 @@ def plot_regions(
 
         # TODO Warning! Plot graph routes was modified to support line
         # plotting
+        logging.info(f"Plotting (level={max_dist}, #centers={len(centers)}")
         fig, ax = ox.plot_graph_routes(
             G,
             all_paths,
@@ -253,11 +251,6 @@ def plot_regions(
             show=False,
             close=False,
         )
-
-        # print(
-        #     f"{centers}({len(centers)}) "
-        #     f"\n {centers_from_nodes}({len(centers)})"
-        # )
 
         ax.title.set_text(
             f"Reachable from centers in {(max_dist/60):>4.1f} min\n"
