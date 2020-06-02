@@ -30,6 +30,7 @@ vi.plot_regions(
     replace=True,
 )
 
+
 print(f"Plotting region neighbors at {config.root_img_neighbors}...")
 vi.plot_region_neighbors(
     util.G,
