@@ -292,7 +292,7 @@ def get_network_from(
     if G is None:
         # Try to download
         try:
-            logging.info(f"# Downloading graph from '{region}'.")
+            logging.info(f"# Loading graph from '{region}'...")
             G = download_network(region, "drive")
 
             logging.info(
@@ -310,9 +310,6 @@ def get_network_from(
             # Save region name
             G.graph["region"] = region
 
-            logging.info("# Downloaded graph")
-
-            logging.info("# Cleaned graph")
             G = clean_network(G)
             logging.info(
                 "#NODES: {} ({} -> {}) -- #EDGES: {}".format(
@@ -692,9 +689,7 @@ def get_reachability_dic(
 
     try:
         reachability_dict = np.load(root_path, allow_pickle=True).item()
-        logging.info(
-            "\nReading reachability dictionary..." f"\nSource: '{root_path}'."
-        )
+        logging.info(f"Reading reachability dictionary from: '{root_path}'.")
 
     except Exception as e:
         logging.info(
