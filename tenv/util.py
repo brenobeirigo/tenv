@@ -24,6 +24,8 @@ import logging
 logging.getLogger().setLevel(logging.INFO)
 
 print(config.info())
+
+# Time log dictionary - Save time to execute each step
 time_dict = dict()
 
 # Network time
@@ -84,7 +86,7 @@ if os.path.exists(config.root_lean):
         f"{config.root_lean}node_region_ids.npy", allow_pickle=True
     ).item()
     node_delay_center_id = np.load(
-        f"{config.root_lean}node_region_ids.npy", allow_pickle=True
+        f"{config.root_lean}node_delay_center_id.npy", allow_pickle=True
     ).item()
     center_nodes = np.load(
         f"{config.root_lean}center_nodes.npy", allow_pickle=True
@@ -101,7 +103,7 @@ if os.path.exists(config.root_lean):
     )
 
 else:
-    print("Precalculated data couldn't be created!")
+    print("Precalculated data couldn't be loaded!")
     config.make_folders()
 
     t_start = time.time()
@@ -210,24 +212,6 @@ else:
     t_start = time.time()
     center_nodes = nw.get_center_nodes(region_id_dict)
     time_dict["center_nodes"] = time.time() - t_start
-
-    # Saving number of centers per maximal delay
-    t_start = time.time()
-    maximal_dist_center_count = {
-        m: len(centers) for m, centers in center_nodes.items()
-    }
-    maximal_dist_center_count[0] = len(G.nodes())
-    time_dict["maximal_dist_center_count"] = time.time() - t_start
-
-    t_start = time.time()
-    dists, centers = list(zip(*(maximal_dist_center_count.items())))
-    time_dict["dists_centers"] = time.time() - t_start
-
-    t_start = time.time()
-    df = pd.DataFrame({"Maximal delay (s)": dists, "#Centers": centers})
-    df.sort_values(by=["Maximal delay (s)"], inplace=True)
-    df.to_csv(config.root_map + "/center_count.csv", index=False)
-    time_dict["df_center_count"] = time.time() - t_start
 
     if config.step_list:
         # ##### Discarding centers to save memory ######################## #
