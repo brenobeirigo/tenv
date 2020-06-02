@@ -167,18 +167,6 @@ else:
         )
         time_dict["region_id_REG"] = time.time() - t_start
 
-        # Plot region centers (blue) and associated nodes
-        print("Plotting regions...")
-        vi.plot_regions(
-            G,
-            region_centers,
-            region_id_dict,
-            path=config.root_img_regions,
-            show=False,
-            file_format="png",
-            replace=False,
-        )
-
     elif config.region_slice == config.REGION_CONCENTRIC:
 
         t_start = time.time()
