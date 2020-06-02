@@ -24,30 +24,6 @@ import tenv.util as util
 
 print(config.info())
 
-# print("\n##### Distance dictionary ###################################")
-# # pprint(distance_dic)
-
-# print("\n##### Reachability dictionary ###############################")
-# pprint(util.reachability_dict)
-
-# print("\n##### Centers per trip duration #############################")
-# print(" - Count: ")
-# pprint({dist: len(region_centers[dist]) for dist in region_centers})
-# print(" - Centers:")
-# pprint(region_centers)
-
-# print("\n##### Region id #############################################")
-# pprint(region_id_dict)
-
-# print("\n##### Node region ids #######################################")
-# pprint(node_region_ids)
-
-# print("\n##### Center nodes ##########################################")
-# pprint(center_nodes)
-
-# print("\n##### Sorted neighbors ######################################")
-# pprint(sorted_neighbors)
-
 app = Flask(__name__)
 
 
