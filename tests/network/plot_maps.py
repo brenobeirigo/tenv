@@ -15,11 +15,12 @@ import tenv.visuals as vi
 import tenv.util as util
 import pandas as pd
 from collections import defaultdict
+import logging
 
 config.make_folders()
 
 # Plot region centers (blue) and associated nodes
-print(f"Plotting regions at '{config.root_img_regions}'...")
+logging.info(f"Plotting regions at '{config.root_img_regions}'...")
 vi.plot_regions(
     util.G,
     util.region_centers,
@@ -31,7 +32,7 @@ vi.plot_regions(
 )
 
 
-print(f"Plotting region neighbors at {config.root_img_neighbors}...")
+logging.info(f"Plotting region neighbors at {config.root_img_neighbors}...")
 vi.plot_region_neighbors(
     util.G,
     util.region_centers,
