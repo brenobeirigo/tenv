@@ -90,7 +90,8 @@ def process_tripdata(config, G, distance_dic):
                 output_ids + file_name_ids,
                 G,
                 distance_dic,
-                filtered_columns=config.tripdata["filtered_columns"]
+                filtered_columns=config.tripdata["filtered_columns"],
+                max_dist_km=0.05,
             )
 
 
@@ -259,91 +260,8 @@ def create_trip_data():
         round_trip=config.round_trip,
     )
 
-    # Distance from centers
-    sorted_neighbors = gen.get_sorted_neighbors(
-        distance_dic,
-        region_centers,
-        minimum_distance=0,
-        path_sorted_neighbors=config.path_sorted_neighbors,
-    )
 
-    # pprint(sorted_neighbors)
-
-    print("Plotting region neighbors...")
-    vi.plot_region_neighbors(
-        G,
-        region_centers,
-        sorted_neighbors,
-        path=config.root_img_neighbors,
-        show=False,
-        file_format="png",
-        max_neighbors=4,
-        replace=False,
-    )
-
-    # Each node is associated to the closest region center according
-    # to list of max. travel durations
-    region_ids = gen.get_region_ids(
-        G,
-        reachability,
-        region_centers,
-        path_region_ids=config.path_region_center_ids,
-    )
-
-    # Plot region centers (blue) and associated nodes
-    print("Plotting regions...")
-    vi.plot_regions(
-        G,
-        region_centers,
-        region_ids,
-        path=config.root_img_regions,
-        show=False,
-        file_format="png",
-        replace=False,
-    )
-    # ################################################################ #
-    # Creating concentric network #################################### #
-    # ################################################################ #
-
-    concentric_region_ids, concentric_region_centers = gen.concentric_regions(
-        G,
-        steps,
-        reachability,
-        list(G.nodes()),
-        center=-1,
-        root_reachability=config.root_reachability_concentric,
-    )
-
-    # Distance from centers
-    sorted_neighbors_concentric = gen.get_sorted_neighbors(
-        distance_dic,
-        concentric_region_centers,
-        minimum_distance=0,
-        path_sorted_neighbors=config.path_sorted_neighbors_concentric,
-    )
-
-    print("Plotting region neighbors...")
-    vi.plot_region_neighbors(
-        G,
-        concentric_region_centers,
-        sorted_neighbors_concentric,
-        path=config.root_img_neighbors_concentric,
-        show=False,
-        file_format="png",
-        max_neighbors=4,
-        replace=False,
-    )
-
-    print("Plotting concentric regions...")
-    vi.plot_regions(
-        G,
-        concentric_region_centers,
-        concentric_region_ids,
-        path=config.root_img_regions_concentric,
-        show=False,
-        file_format="png",
-        replace=False,
-    )
+def create_tripdata(config, G, distance_dic):
 
     if "url_tripdata" in config.tripdata:
         download_tripdata(config, G, distance_dic)
@@ -359,4 +277,4 @@ def create_trip_data():
 if __name__ == "__main__":
 
     # execute only if run as a script
-    create_trip_data()
+    create_tripdata()
