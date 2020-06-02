@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import osmnx as ox
 import os
 
+
 def plot_region_neighbors(
     G,
     region_centers,
@@ -32,7 +33,7 @@ def plot_region_neighbors(
     max_neighbors: int
         Max. number of closest neighbors
     """
-    
+
     nodes = list(G.nodes())
 
     map_features = {
@@ -51,10 +52,10 @@ def plot_region_neighbors(
     for max_dist, centers in region_centers.items():
         if path:
             filename = (
-                    f"{path}/"
-                    f"max_dist_{max_dist:03}_"
-                    f"neighbors_{max_neighbors:03}.{file_format}"
-                )
+                f"{path}/"
+                f"max_dist_{max_dist:03}_"
+                f"neighbors_{max_neighbors:03}.{file_format}"
+            )
 
             # If file exists and should not be replaced, skip
             if os.path.isfile(filename) and not replace:
@@ -75,8 +76,9 @@ def plot_region_neighbors(
         for o in centers:
             if max_dist not in sorted_neighbors:
                 continue
-            for i, id_dist in enumerate(sorted_neighbors[max_dist][o]):
-                n, dist = id_dist
+
+            for i, n in enumerate(sorted_neighbors[max_dist][o]):
+
                 # Does not create self edge
                 if o == n:
                     continue
@@ -112,14 +114,14 @@ def plot_region_neighbors(
             all_paths,
             use_geom=False,
             orig_dest_points=all_tuples,
-            route_linewidth=2,
+            route_linewidth=5,
             edge_linewidth=0.5,
             node_color=node_color,
             fig_height=10,
             node_edgecolor=edge_color,
             node_zorder=1000,
             node_size=node_size,
-            route_alpha=0.3,
+            route_alpha=0.5,
             save=False,
             show=False,
             close=False,
@@ -135,17 +137,21 @@ def plot_region_neighbors(
             f"(Max. neighbors = {max_neighbors})"
         )
 
-        if show:
-            plt.show()
-
         if path:
             fig.savefig(filename, dpi=300, bbox_inches="tight")
 
-            plt.close()
+        if show:
+            plt.show()
 
 
 def plot_regions(
-    G, region_centers, region_id_dict, path=None, show=False, file_format="png", replace=False
+    G,
+    region_centers,
+    region_id_dict,
+    path=None,
+    show=False,
+    file_format="png",
+    replace=False,
 ):
     """Plot all region centers and associated nodes
 
@@ -185,7 +191,7 @@ def plot_regions(
         n_centers = len(region_centers[max_dist])
 
         if path:
-            
+
             filename = (
                 f"{path}/"
                 f"max_dist_{max_dist:03}_centers_{n_centers:03}.{file_format}"
@@ -258,8 +264,8 @@ def plot_regions(
             f"(#centers = {n_centers:>3})"
         )
 
-        if show:
-            plt.show()
-
         if path:
             fig.savefig(filename, dpi=300, bbox_inches="tight")
+
+        if show:
+            plt.show()
