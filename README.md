@@ -63,6 +63,17 @@ Create a new local repository
     
     git init
 
+### Tests
+To create dataframes related to network structure execute `tests\create_network_dfs.py`. The following `.csv` files will be saved in the `network_info` folder:
+
+|File (.csv) |Headers|
+|---|---|
+|node_level_id|node, level1, level2, level3, ..., levelN|
+|level_center_children|level, center, n_children, children_list|
+|level_center_neighbors_asc|level, center, n_neighbors, neighbors_asc|
+|region_centers|center, center_count, centers|
+
+
 ### Update & Publish
 
 List all currently  configured remotes
