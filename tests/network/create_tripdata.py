@@ -70,9 +70,9 @@ def process_tripdata(config, G, distance_matrix):
     logging.info("Cleaning trip data...")
 
     for file_name, tws in config.tripdata["file_tw"].items():
-        logging.info(" - File:", file_name)
+        logging.info(f"File: {file_name}")
         for tw in tws:
-            logging.info("  * Time window:", tw)
+            logging.info(f" - TW: {tw}")
             earliest, latest = tw
 
             # Cleaned data setup
