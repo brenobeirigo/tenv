@@ -211,10 +211,11 @@ def can_reach(n, t):
     output = 0;1;3720;3721;4112;3152;3092;1754;1309;928;929;1572;3623;
         3624;169;1897;1901;751;1841;308
     """
-
-    return ";".join(
+    reachable = ";".join(
         map(str, nw.get_can_reach_set(n, util.reachability_dict, t))
     )
+
+    return reachable
 
 
 @app.route(
