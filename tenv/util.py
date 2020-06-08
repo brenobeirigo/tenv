@@ -121,11 +121,6 @@ else:
         config.path_dist_matrix, distance_matrix
     )
 
-    # Creating distance matrix from dictionary
-    distance_matrix = nw.get_distance_matrix(
-        config.path_dist_matrix, G, distance_dic_m=distance_dic
-    )
-
     time_dict["distance_matrix"] = time.time() - t_start
 
     # Inbound reachability dictionary: Which nodes can access node n?
