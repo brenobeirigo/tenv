@@ -1,5 +1,6 @@
 # Trip data sandbox
 
+
 ## Donwload trip data
 
 1. Access `data\in\tripdata\download_tripdata.ipynb`
@@ -13,6 +14,128 @@
         target_path = "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/in/trip_data/"
 
 ## Clear and match ids
+
+Create `.csv` data in `in\config_scenario` with download data. Example:
+
+```json
+{
+    "mapdata": {
+        "region": "Manhattan Island, New York City, New York, USA",
+        "label": "manhattan_nyc",
+        "reachability": {
+            "step": 30,
+            "total_range": 600,
+            "speed_km_h": 30,
+            "max_neighbors": 6,
+            "step_list": [0, 60, 300, 600], // If null, step_list = [0, 30, 60, ..., 600]
+            "round_trip": false
+        },
+        "max_travel_time_edge": 60, // Edge travel time <= 60
+        "info": "Creates data for ITSM paper (old Manhattan graph from 2018)"
+    },
+    "tripdata": {
+        "path_tripdata": "O:/phd/nyc_trips/raw/",
+        "output_cleaned_tripdata": "C:/Users/LocalAdmin/manhattan_nyc/tripdata/cleaned/",
+        "output_ids_tripdata": "C:/Users/LocalAdmin/manhattan_nyc/tripdata/ids/",
+        "index_col": "pickup_datetime",
+        "max_dist_km": 0.05,
+        "filtered_columns": [
+            "pickup_datetime",
+            "passenger_count",
+            "pickup_longitude",
+            "pickup_latitude",
+            "dropoff_longitude",
+            "dropoff_latitude",
+            "fare_amount",
+            "payment_type",
+            "total_amount",
+            "tip_amount",
+            "trip_distance"
+        ],
+        "file_tw": {
+            "yellow_tripdata_2011-02.csv": [
+                // Ranges extracted
+                [
+                "2011-02-01 00:00:00",
+                "2011-02-28 23:59:59"
+                ]
+            ]
+        }
+    }
+}
+```
+
+Execute the file `util.py` to generate the following data will create folder `out\manhattan_nyc\` containing:
+
+    +---distance
+    |       dist_dict_m.npy
+    |       dist_matrix_m.csv
+    |       dist_matrix_m.npy
+    |       
+    +---lean_data
+    |       center_nodes.npy
+    |       distance_matrix_km.npy
+    |       node_delay_center_id.npy
+    |       node_region_ids.npy
+    |       region_centers.npy
+    |       region_id_dict.npy
+    |       sorted_neighbors.npy
+    |       
+    +---map
+    |   |   manhattan_nyc.graphml
+    |   |   manhattan_nyc.svg
+    |   |   
+    |   \---reachability_reg_30_600_kmh30
+    |       |   reach_dict.npy
+    |       |   reach_dict_round.npy
+    |       |   region_centers.npy
+    |       |   region_center_ids.npy
+    |       |   sorted_neighbors_region_centers.npy
+    |       |   
+    |       +---img_region_centers
+    |       |       max_dist_000_centers_4546.png
+    |       |       max_dist_060_centers_284.png
+    |       |       max_dist_300_centers_020.png
+    |       |       max_dist_600_centers_009.png
+    |       |       
+    |       +---img_region_center_neighbors
+    |       |       max_dist_000_neighbors_004.png
+    |       |       max_dist_060_neighbors_004.png
+    |       |       max_dist_300_neighbors_004.png
+    |       |       max_dist_600_neighbors_004.png
+    |       |       
+    |       \---mip_region_centers
+    |           +---gurobi_log
+    |           |       region_centers_0.log
+    |           |       region_centers_0.lp
+    |           |       region_centers_300.log
+    |           |       region_centers_300.lp
+    |           |       region_centers_60.log
+    |           |       region_centers_60.lp
+    |           |       region_centers_600.log
+    |           |       region_centers_600.lp
+    |           |       
+    |           \---sub_sols
+    |                   _0000.npy
+    |                   _0060.npy
+    |                   _0300.npy
+    |                   _0600.npy
+    |                   
+    +---network_info
+    |       level_center_children.csv
+    |       level_center_neighbors_asc.csv
+    |       node_level_id.csv
+    |       region_centers.csv
+    |       
+    \---tripdata
+        +---cleaned
+        |       tripdata_cleaned_2011-02-01_000000_2011-02-07_235959.csv
+        |       
+        +---ids
+        |       tripdata_ids_2011-02-01_000000_2011-02-07_235959.csv
+        |       
+        *---raw
+                yellow_tripdata_2011-01.csv
 
 Execute `make_dataset.py` to create:
 1. Street network map `.graphml`;
