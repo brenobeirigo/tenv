@@ -1,7 +1,7 @@
 {
   "mapdata": {
     "region": "Manhattan Island, New York City, New York, USA",
-    "label": "manhattan_nyc3",
+    "label": "manhattan_nyc",
     "reachability": {
       "step": 30,
       "total_range": 600,
