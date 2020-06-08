@@ -1488,7 +1488,7 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
     return dist_matrix
 
 
-def get_dt_distance_matrix(path, dist_matrix):
+def get_distance_matrix_df(path, dist_matrix):
     """Get dataframe from distance matrix
 
     Arguments:

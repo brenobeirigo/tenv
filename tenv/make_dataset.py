@@ -226,7 +226,7 @@ def create_trip_data():
     )
 
     # Distance matrix as dataframe
-    dt_distance_matrix = gen.get_dt_distance_matrix(
+    dt_distance_matrix = gen.get_distance_matrix_df(
         config.path_dist_matrix, distance_matrix
     )
 
