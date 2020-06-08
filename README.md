@@ -65,6 +65,15 @@ Create `.csv` data in `in\config_scenario` with download data. Example:
 }
 ```
 
+Refer to the file created in file `file_info.json` using:
+
+```json
+{
+    "root": "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv",
+    "case_study": "nyc_business_class.json"
+}
+```
+
 Execute the file `util.py` to generate the following data will create folder `out\manhattan_nyc\` containing:
 
     +---distance
@@ -137,12 +146,7 @@ Execute the file `util.py` to generate the following data will create folder `ou
         *---raw
                 yellow_tripdata_2011-01.csv
 
-Execute `make_dataset.py` to create:
-1. Street network map `.graphml`;
-2. Reachability dictionary (regular and concentric);
-3. Region centers;
-4. Matched tripdata (coordinates to street network ids).
-
+Execute `server.py` to create REST server.
 
 ## Installing Gurobi on Anaconda
 

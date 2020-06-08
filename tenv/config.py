@@ -32,7 +32,7 @@ short_path = False
 # root = "C:/Users/breno/Documents/phd/tenv"
 # root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
 
-with open("file_info.json") as js:
+with open("case_study_info.json") as js:
     data_paths = json.load(js)
     root = data_paths["root"]
     case_study = data_paths["case_study"]
