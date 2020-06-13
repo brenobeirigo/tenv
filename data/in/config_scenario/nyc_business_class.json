@@ -1,17 +1,17 @@
 {
   "mapdata": {
     "region": "Manhattan Island, New York City, New York, USA",
-    "label": "manhattan_nyc",
+    "label": "manhattan",
     "reachability": {
       "step": 30,
       "total_range": 600,
       "speed_km_h": 30,
       "max_neighbors": 6,
       "step_list": [
-        0,
-        60,
-        300,
-        600
+        150,
+        330,
+        270,
+        570
       ],
       "round_trip": false
     },
