@@ -11,6 +11,7 @@ from gurobipy import Model, GurobiError, GRB, quicksum
 import math
 import logging
 import traceback
+import json
 
 from shapely.geometry import Point, LineString
 from copy import deepcopy
@@ -200,12 +201,12 @@ def download_network(region, network_type):
 def clean_network(G):
     """Set of nodes with low connectivity (end points) must be 
     eliminated to avoid stuck vehicles (enter but cannot leave).
-    
+
     Parameters
     ----------
     G : networkx
         Graph to be cleaned (e.g., isolated nodes)
-    
+
     Returns
     -------
     networkx
@@ -242,6 +243,116 @@ def clean_network(G):
     G.remove_nodes_from(disconnected)
 
     return G
+
+
+def save_adjacency_matrix(G, filepath):
+
+    logging.info(f'Saving adjacency matrix at "{filepath}"...')
+
+    df = None
+
+    try:
+        df = pd.read_csv(filepath)
+
+    except Exception as e:
+        logging.info(str(e))
+        df = pd.DataFrame(
+            get_adjacency_matrix(G, nodelist=list(range(len(G.nodes))))
+        )
+
+        df.to_csv(filepath, index=False, header=False)
+
+    return df
+
+
+def save_nodeset_json(filepath, G, reachability_dict):
+
+    logging.info(f'Saving node info at "{filepath}"...')
+
+    try:
+        with open(filepath, "r") as fp:
+            reachability_json = json.load(fp)
+
+    except Exception as e:
+
+        node_dict = [
+            {
+                "id": node_id,
+                "x": G.nodes[node_id]["x"],
+                "y": G.nodes[node_id]["y"],
+                "step_center": t_locations,
+            }
+            for node_id, t_locations in reachability_dict.items()
+        ]
+
+        reachability_json = dict(nodes=node_dict)
+
+        with open(filepath, "w") as fp:
+            json.dump(reachability_json, fp, sort_keys=True, indent=4)
+
+    return reachability_json
+
+
+def save_nodeset_gps_json(G, filepath, projection="GPS"):
+
+    logging.info(f'Saving node set gps data at "{filepath}"...')
+
+    try:
+        with open(filepath, "r") as fp:
+            node_dict = json.load(fp)
+
+    except Exception as e:
+
+        if projection == "GPS":
+            nodes = [
+                {"id": id, "x": G.nodes[id]["x"], "y": G.nodes[id]["y"]}
+                for id in sorted(G.nodes())
+            ]
+
+        else:
+            nodes = [
+                {"id": id, "x": x, "y": y}
+                for id, x, y in [
+                    (
+                        id,
+                        *wgs84_to_web_mercator(
+                            G.nodes[id]["x"], G.nodes[id]["y"]
+                        ),
+                    )
+                    for id in G.nodes()
+                ]
+            ]
+
+        node_dict = dict(nodes=nodes)
+
+        with open(filepath, "w") as fp:
+            json.dump(node_dict, fp, sort_keys=True, indent=4)
+
+    return node_dict
+
+
+def save_node_info_csv(G, filepath):
+
+    logging.info(f'Saving node info at "{filepath}"...')
+
+    df = None
+
+    try:
+        df = pd.read_csv(filepath, header=True)
+
+    except Exception as e:
+        logging.info(str(e))
+        node_dict = defaultdict(list)
+        for node in sorted(G.nodes()):
+            lon, lat = get_coords_node(node, G)
+            node_dict["id"].append(node)
+            node_dict["x"].append(lon)
+            node_dict["y"].append(lat)
+
+        df = pd.DataFrame(node_dict)
+        df.to_csv(filepath, index=False)
+
+    return df
 
 
 def get_graph_info(G):
@@ -1514,6 +1625,10 @@ def get_distance_matrix_df(path, dist_matrix):
         )
 
     return dt
+
+
+def get_adjacency_matrix(G, nodelist=None):
+    return nx.to_pandas_adjacency(G, nodelist=nodelist, dtype=int)
 
 
 def get_distance_dic(root_path, G):

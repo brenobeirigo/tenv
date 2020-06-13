@@ -79,6 +79,15 @@ root_map = root_path + "/map"
 # .csv network information (centers, neighbors, etc)
 root_network_info = root_path + "/network_info"
 
+# Node id, lon, lat
+path_node_info_csv = "{}/nodeset_gps.csv".format(root_network_info)
+
+path_adjacency_matrix = "{}/adjacency_matrix.csv".format(root_network_info)
+
+path_nodeset_gps_json = "{}/nodeset_gps.json".format(root_network_info)
+
+path_node_info_json = "{}/nodeset_info.json".format(root_network_info)
+
 # Get remove superflous data
 root_lean = root_path + "/lean_data/"
 
@@ -126,8 +135,10 @@ if "url_tripdata" in tripdata:
 # -------------------------------------------------------------------- #
 
 root_dist = root_path + "/distance"
+
 # Distance matrix
 path_dist_matrix = "{}/dist_matrix_m.csv".format(root_dist)
+
 # Distance dictionary (meters)
 path_dist_dic = "{}/dist_dict_m.npy".format(root_dist)
 
@@ -137,6 +148,7 @@ path_dist_matrix_npy = "{}/dist_matrix_m.npy".format(root_dist)
 # Reachability #########################################################
 ########################################################################
 
+# TODO remove step, total_range and rely only on step_list
 # Reachability layers
 # (e.g., reachable in 30, 60, ..., total_range steps)
 step = mapdata["reachability"]["step"]
@@ -152,7 +164,8 @@ max_neighbors = mapdata["reachability"].get("max_neighbors", None)
 # step_list = [0, 60, 300, 600]
 # step_list = [0, 150, 300, 600]
 step_list = mapdata["reachability"].get("step_list", [])
-step_list_concentric = [60, 300, 600]
+
+step_list_concentric = mapdata["reachability"].get("step_list_concentric", [])
 
 # Max travel time (seconds) to traverse an edge, i.e., if = 30, every
 # edge can be traveled in 30 seconds
@@ -188,10 +201,6 @@ path_region_center_ids = "{}/region_center_ids.npy".format(root_reachability)
 
 path_sorted_neighbors = "{}/sorted_neighbors_region_centers.npy".format(
     root_reachability
-)
-
-path_sorted_neighbors_lean = "{}/sorted_neighbors_region_centers_{}.npy".format(
-    root_reachability, "_".join([str(t) for t in step_list])
 )
 
 path_recheable_neighbors = "{}/sorted_reach_neighbors.npy".format(

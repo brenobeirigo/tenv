@@ -161,7 +161,6 @@ else:
             round_trip=config.round_trip,
         )
         time_dict["region_centers_REG"] = time.time() - t_start
-        print("Regions", region_centers)
 
         # What is the closest region center of every node (given a time limit)?
         t_start = time.time()
@@ -206,6 +205,23 @@ else:
     t_start = time.time()
     center_nodes = nw.get_center_nodes(region_id_dict)
     time_dict["center_nodes"] = time.time() - t_start
+
+    t_start = time.time()
+    nodes_df = nw.save_node_info_csv(G, config.path_node_info_csv)
+    nodes_dict = nw.save_nodeset_gps_json(G, config.path_nodeset_gps_json)
+    time_dict["network_nodes"] = time.time() - t_start
+
+    t_start = time.time()
+    adjacency_matrix = nw.save_adjacency_matrix(
+        G, config.path_adjacency_matrix
+    )
+    time_dict["adjacency_matrix"] = time.time() - t_start
+
+    t_start = time.time()
+    nodeset_json = nw.save_nodeset_json(
+        config.path_node_info_json, G, region_id_dict
+    )
+    time_dict["nodeset_data_json"] = time.time() - t_start
 
     if config.step_list:
         # ##### Discarding centers to save memory ######################## #
