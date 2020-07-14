@@ -41,6 +41,34 @@ def download_file(url, root_path, file_name):
         logging.info(f"File downloaded successfully to '{output_file}'.")
 
 
+def gen_random_data(config, G, distance_dic):
+
+    # Loop all generation function (e.g., clone, cluster)
+    for random_func_name in config.data_gen["funcs"]:
+
+        if random_func_name == "random_clone":
+
+            data_gen_path_tripdata_ids = "{}/{}_{}_ids.csv".format(
+                config.root_tripdata_generated_ids,
+                random_func_name,
+                config.get_excerpt_name(
+                    config.data_gen["start"], config.data_gen["stop"],
+                ),
+            )
+
+            gen_requests(
+                config.data_gen["source"],
+                config.data_gen["max_passenger_count"],
+                G,
+                data_gen_path_tripdata_ids,
+                start_timestamp=config.data_gen["start"],
+                end_timestamp=config.data_gen["stop"],
+                distance_dic=distance_dic,
+                min_dist=config.data_gen["min_dist_km"],
+                max_dist=config.data_gen["max_dist_km"],
+            )
+
+
 def get_trip_data(
     tripdata_path,
     output_path,
