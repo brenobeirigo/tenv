@@ -80,6 +80,9 @@ Execute the file `util.py` to generate the following data will create folder `ou
     |       dist_dict_m.npy
     |       dist_matrix_m.csv
     |       dist_matrix_m.npy
+    |       dist_dict_duration_s.npy
+    |       dist_matrix_duration_s.csv
+    |       dist_matrix_duration_s.npy
     |       
     +---lean_data
     |       center_nodes.npy
@@ -156,7 +159,7 @@ This project implements an ILP model to determine the smallest set of region cen
 2. Request a free academic license ([link](https://user.gurobi.com/download/licenses/free-academic));
 3. Add Gurobi to Anaconda ([link](http://www.gurobi.com/downloads/get-anaconda)).
 
-WARNING: When creating the environment, check python version. Gurobi call only be installed with python 3.7:
+WARNING: When creating the environment, check python version. Gurobi can only be installed with python 3.7:
 
     conda create -n yourenvname python=x.x
 
