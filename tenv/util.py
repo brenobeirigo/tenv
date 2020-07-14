@@ -41,13 +41,13 @@ if G is None:
     config.make_folders()
 
     print(
-        (
-            "\n>>>>> Target folders:\n"
-            + "\n - Distance matrix (csv) and dictionary (npy): {}"
-            + "\n -   Data excerpt from NYC taxi dataset (csv): {}"
-            + "\n -  Reachability (npy) & region centers (npy): {}.\n"
-        ).format(
-            config.root_dist, config.root_tripdata, config.root_reachability
+        "\n>>>>> Target folders:\n"
+        + f"\n - Distance matrix (csv) and dictionary (npy): {config.root_dist}"
+        + f"\n -   Data excerpt from NYC taxi dataset (csv): {config.root_tripdata}"
+        + (
+            f"\n -  Reachability (npy) & region centers (npy): {config.root_reachability}.\n"
+            if config.root_reachability is not None
+            else ""
         )
     )
 
@@ -68,6 +68,7 @@ if G is None:
     )
 
     nw.save_graph_pic(G, config.root_map)
+
 
 time_dict["graph"] = time.time() - t_start
 
@@ -123,88 +124,173 @@ else:
 
     time_dict["distance_matrix"] = time.time() - t_start
 
-    # Inbound reachability dictionary: Which nodes can access node n?
-    t_start = time.time()
-    reachability_dict, steps = nw.get_reachability_dic(
-        config.path_reachability_dic,
-        distance_matrix,
-        step=config.step,
-        total_range=config.total_range,
-        speed_km_h=config.speed_km_h,
-        step_list=config.step_list,
-    )
-    time_dict["reachability"] = time.time() - t_start
-
-    # Outbound reachability dictionary: Which nodes node n can access?
-    t_start = time.time()
-    reachability_r_dict, steps = nw.get_reachability_dic(
-        config.path_reachability_r_dic,
-        distance_matrix,
-        step=config.step,
-        total_range=config.total_range,
-        speed_km_h=config.speed_km_h,
-        step_list=config.step_list,
-        outbound=True,
-    )
-    time_dict["reachability_r"] = time.time() - t_start
-
-    if config.region_slice == config.REGION_REGULAR:
-        # All region centers
+    if config.root_reachability:
+        # Inbound reachability dictionary: Which nodes can access node n?
         t_start = time.time()
-
-        region_centers = nw.get_region_centers(
-            steps,
-            config.path_region_centers,
-            reachability_dict,
-            list(G.nodes()),
-            root_path=config.root_reachability,
-            round_trip=config.round_trip,
+        reachability_dict, steps = nw.get_reachability_dic(
+            config.path_reachability_dic,
+            distance_matrix,
+            speed_km_h=config.speed_km_h,
+            step_list=config.step_list,
         )
-        time_dict["region_centers_REG"] = time.time() - t_start
+        time_dict["reachability"] = time.time() - t_start
 
-        # What is the closest region center of every node (given a time limit)?
+        # Outbound reachability dictionary: Which nodes node n can access?
         t_start = time.time()
-        region_id_dict = nw.get_region_ids(
-            G,
-            reachability_dict,
+        reachability_r_dict, steps = nw.get_reachability_dic(
+            config.path_reachability_r_dic,
+            distance_matrix,
+            speed_km_h=config.speed_km_h,
+            step_list=config.step_list,
+            roundtrip=True,
+        )
+        time_dict["reachability_r"] = time.time() - t_start
+
+        if config.region_slice == config.REGION_REGULAR:
+            # All region centers
+            t_start = time.time()
+
+            region_centers = nw.get_region_centers(
+                steps,
+                config.path_region_centers,
+                reachability_dict,
+                list(G.nodes()),
+                root_path=config.root_reachability,
+                round_trip=config.round_trip,
+            )
+            time_dict["region_centers_REG"] = time.time() - t_start
+
+            # What is the closest region center of every node (given a time limit)?
+            t_start = time.time()
+            region_id_dict = nw.get_region_ids(
+                G,
+                reachability_dict,
+                region_centers,
+                path_region_ids=config.path_region_center_ids,
+            )
+            time_dict["region_id_REG"] = time.time() - t_start
+
+        elif config.region_slice == config.REGION_CONCENTRIC:
+
+            t_start = time.time()
+            region_id_dict, region_centers = nw.concentric_regions(
+                G,
+                config.step_list_concentric,
+                reachability_dict,
+                list(G.nodes()),
+                center=-1,
+                root_reachability=config.root_reachability,
+            )
+            time_dict["region_id_CON"] = time.time() - t_start
+
+        t_start = time.time()
+        sorted_neighbors = nw.get_sorted_neighbors(
+            distance_matrix,
             region_centers,
-            path_region_ids=config.path_region_center_ids,
+            path_sorted_neighbors=config.path_sorted_neighbors,
         )
-        time_dict["region_id_REG"] = time.time() - t_start
 
-    elif config.region_slice == config.REGION_CONCENTRIC:
+        time_dict["sorted_neighbors"] = time.time() - t_start
 
         t_start = time.time()
-        region_id_dict, region_centers = nw.concentric_regions(
-            G,
-            config.step_list_concentric,
-            reachability_dict,
-            list(G.nodes()),
-            center=-1,
-            root_reachability=config.root_reachability,
+        node_region_ids = nw.get_node_region_ids(G, region_id_dict)
+        time_dict["node_region_ids"] = time.time() - t_start
+
+        t_start = time.time()
+        node_delay_center_id = nw.get_node_delay_center_id(G, region_id_dict)
+        time_dict["node_delay_center_id"] = time.time() - t_start
+
+        t_start = time.time()
+        center_nodes = nw.get_center_nodes(region_id_dict)
+        time_dict["center_nodes"] = time.time() - t_start
+
+        t_start = time.time()
+        nodeset_json = nw.save_nodeset_json(
+            config.path_node_info_json, G, region_id_dict
         )
-        time_dict["region_id_CON"] = time.time() - t_start
+        time_dict["nodeset_data_json"] = time.time() - t_start
 
-    t_start = time.time()
-    sorted_neighbors = nw.get_sorted_neighbors(
-        distance_matrix,
-        region_centers,
-        path_sorted_neighbors=config.path_sorted_neighbors,
-    )
+        if config.step_list:
+            # ##### Discarding centers to save memory ################ #
+            # A higher number of centers might have been processed
+            # before (e.g., every 15 seconds) but end up not being used
+            # in the end. Hence, their previously loaded information
+            # become superfluous and can be excluded.
+            t_start = time.time()
+            superfluous = set(region_centers.keys()).difference(
+                config.step_list
+            )
+            print(f"Removing superfluous centers {superfluous}.")
+            for c in superfluous:
+                del region_centers[c]
+                for n in region_id_dict:
+                    del region_id_dict[n][c]
+                del sorted_neighbors[c]
+                del node_region_ids[c]
+                del center_nodes[c]
+                for n in reachability_dict:
+                    try:
+                        del reachability_dict[n][c]
+                    except:
+                        pass
 
-    time_dict["sorted_neighbors"] = time.time() - t_start
+            time_dict["superfluous"] = time.time() - t_start
 
-    t_start = time.time()
-    node_region_ids = nw.get_node_region_ids(G, region_id_dict)
-    time_dict["node_region_ids"] = time.time() - t_start
+            t_start = time.time()
+            lean_sorted_neighbors = dict()
+            for c, n_neighbors in sorted_neighbors.items():
+                lean_sorted_neighbors[c] = dict()
+                for n, neighbors in n_neighbors.items():
+                    lean_sorted_neighbors[c][n] = [
+                        i for i, d in neighbors[1 : config.max_neighbors + 1]
+                    ]
+            time_dict["lean_sorted_neighbors"] = time.time() - t_start
 
-    t_start = time.time()
-    node_delay_center_id = nw.get_node_delay_center_id(G, region_id_dict)
-    time_dict["node_delay_center_id"] = time.time() - t_start
+            t_start = time.time()
+            sorted_neighbors = lean_sorted_neighbors
 
-    t_start = time.time()
-    center_nodes = nw.get_center_nodes(region_id_dict)
-    time_dict["center_nodes"] = time.time() - t_start
+            # Adding immediate forward neighbors (level 0)
+            sorted_neighbors[0] = dict()
+            for center_id in G.nodes:
+                node_neighbors = nw.node_access(G, center_id, degree=1)
+
+                # Node is not its own neighbor
+                node_neighbors.discard(center_id)
+
+                # Sort neighbors by distance
+                node_neighbors = list(node_neighbors)
+                node_neighbors.sort(
+                    key=lambda x: nw.get_distance(G, center_id, x)
+                )
+                sorted_neighbors[0][center_id] = node_neighbors[
+                    : config.max_neighbors
+                ]
+
+            time_dict["sorted_neighbors"] = time.time() - t_start
+
+            # Client application uses distances in kilometers
+            t_start = time.time()
+            distance_matrix = distance_matrix / 1000
+            time_dict["distance_matrix_1000"] = time.time() - t_start
+
+            os.makedirs(config.root_lean)
+
+            np.save(f"{config.root_lean}region_centers.npy", region_centers)
+            np.save(f"{config.root_lean}region_id_dict.npy", region_id_dict)
+            np.save(
+                f"{config.root_lean}sorted_neighbors.npy", sorted_neighbors
+            )
+            np.save(f"{config.root_lean}node_region_ids.npy", node_region_ids)
+            np.save(
+                f"{config.root_lean}node_delay_center_id.npy",
+                node_delay_center_id,
+            )
+            np.save(f"{config.root_lean}center_nodes.npy", center_nodes)
+            np.save(
+                f"{config.root_lean}distance_matrix_km.npy", distance_matrix
+            )
+
+            print(center_nodes.keys())
 
     t_start = time.time()
     nodes_df = nw.save_node_info_csv(G, config.path_node_info_csv)
@@ -217,84 +303,58 @@ else:
     )
     time_dict["adjacency_matrix"] = time.time() - t_start
 
+    ## DURATION DATA ###################################################
+    # Created to solve approximation errors found when comparing:
+    # 1 - Sum of shortest path distances from o to d
+    # 2 - Total distance between o and d
+    # Convert all distances to integer seconds (considering speed), and
+    # run dijkstra shortest paths considering these durations, to
+    # guarantee there are no fractional data.
     t_start = time.time()
-    nodeset_json = nw.save_nodeset_json(
-        config.path_node_info_json, G, region_id_dict
+    G_duration = nw.add_duration_to_graph(G, config.speed_km_h)
+    time_dict["add_duration_graph"] = time.time() - t_start
+
+    t_start = time.time()
+    df_G = nw.get_network_data(config.path_network_data, G_duration)
+    time_dict["get_network_data"] = time.time() - t_start
+
+    t_start = time.time()
+    dist_matrix_duration_dict = nw.get_distance_dic(
+        config.path_dist_dict_duration, G_duration, weight="duration"
     )
-    time_dict["nodeset_data_json"] = time.time() - t_start
+    time_dict["dist_matrix_duration_dict"] = time.time() - t_start
 
-    if config.step_list:
-        # ##### Discarding centers to save memory ######################## #
-        # A higher number of centers might have been processed before (e.g.,
-        # every 15 seconds) but end up not being used in the end. Hence,
-        # their previously loaded information become superfluous and can be
-        # excluded.
-        t_start = time.time()
-        superfluous = set(region_centers.keys()).difference(config.step_list)
-        print(f"Removing superfluous centers {superfluous}.")
-        for c in superfluous:
-            del region_centers[c]
-            for n in region_id_dict:
-                del region_id_dict[n][c]
-            del sorted_neighbors[c]
-            del node_region_ids[c]
-            del center_nodes[c]
-            for n in reachability_dict:
-                try:
-                    del reachability_dict[n][c]
-                except:
-                    pass
+    # Creating distance matrix from dictionary
+    t_start = time.time()
+    dist_matrix_duration = nw.get_distance_matrix(
+        config.path_dist_matrix_duration_npy,
+        G_duration,
+        distance_dic_m=dist_matrix_duration_dict,
+    )
+    time_dict["dist_matrix_duration_npy"] = time.time() - t_start
 
-        time_dict["superfluous"] = time.time() - t_start
+    t_start = time.time()
+    dist_matrix_duration_df = nw.get_distance_matrix_df(
+        config.path_dist_matrix_duration,
+        dist_matrix_duration,
+        float_format="%.0f",
+    )
 
-        t_start = time.time()
-        lean_sorted_neighbors = dict()
-        for c, n_neighbors in sorted_neighbors.items():
-            lean_sorted_neighbors[c] = dict()
-            for n, neighbors in n_neighbors.items():
-                lean_sorted_neighbors[c][n] = [
-                    i for i, d in neighbors[1 : config.max_neighbors + 1]
-                ]
-        time_dict["lean_sorted_neighbors"] = time.time() - t_start
+    time_dict["dist_matrix_duration_csv"] = time.time() - t_start
 
-        t_start = time.time()
-        sorted_neighbors = lean_sorted_neighbors
 
-        # Adding immediate forward neighbors (level 0)
-        sorted_neighbors[0] = dict()
-        for center_id in G.nodes:
-            node_neighbors = nw.node_access(G, center_id, degree=1)
+if config.data_gen:
+    print(
+        "\n############################"
+        "## Generating random data ##"
+        "############################"
+    )
 
-            # Node is not its own neighbor
-            node_neighbors.discard(center_id)
+    print("Trip data generation settings:")
+    pprint(config.data_gen)
 
-            # Sort neighbors by distance
-            node_neighbors = list(node_neighbors)
-            node_neighbors.sort(key=lambda x: nw.get_distance(G, center_id, x))
-            sorted_neighbors[0][center_id] = node_neighbors[
-                : config.max_neighbors
-            ]
+    tp.gen_random_data(config, G, distance_dic)
 
-        time_dict["sorted_neigbors"] = time.time() - t_start
-
-        # Client application uses distances in kilometers
-        t_start = time.time()
-        distance_matrix = distance_matrix / 1000
-        time_dict["distance_matrix_1000"] = time.time() - t_start
-
-        os.makedirs(config.root_lean)
-
-        np.save(f"{config.root_lean}region_centers.npy", region_centers)
-        np.save(f"{config.root_lean}region_id_dict.npy", region_id_dict)
-        np.save(f"{config.root_lean}sorted_neighbors.npy", sorted_neighbors)
-        np.save(f"{config.root_lean}node_region_ids.npy", node_region_ids)
-        np.save(
-            f"{config.root_lean}node_delay_center_id.npy", node_delay_center_id
-        )
-        np.save(f"{config.root_lean}center_nodes.npy", center_nodes)
-        np.save(f"{config.root_lean}distance_matrix_km.npy", distance_matrix)
-
-        print(center_nodes.keys())
 pprint(time_dict)
 
 
@@ -673,7 +733,7 @@ def level_nodes(time_limit):
     Example
     -------
     input = http://localhost:4999/nodes
-    output = {"nodes":[{"id":1360,"xpath_region_ids7}...]}
+    output = {"nodes":[{"id":13roundtripon_ids7}...]}
 
     """
     nodes = [region_id_dict[node_id][time_limit] for node_id in G.nodes()]

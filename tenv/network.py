@@ -69,7 +69,7 @@ def remove_edges(G_old, sample_size=3):
             G.edges[o, d, 0]["geometry"] = LineString(coords)
 
         except Exception as e:
-            logging.info(f"Error! Can't remove node. Exception:'{e}'.")
+            # logging.info(f"Error! Can't remove node. Exception:'{e}'.")
             pass
             # print(f"{e}-{sp_list}{a}{b}")
     return G
@@ -713,13 +713,7 @@ def get_region_ids(
 
 
 def get_reachability_dic(
-    root_path,
-    distances,
-    step=30,
-    total_range=600,
-    speed_km_h=30,
-    step_list=None,
-    outbound=False,
+    root_path, distances, speed_km_h=30, step_list=None, roundtrip=False,
 ):
     """Which nodes are reachable from one another in "step" steps?
     E.g.:
@@ -747,15 +741,8 @@ def get_reachability_dic(
 
     Keyword Arguments:
 
-        step {int} -- The minimum reachability distance that multiplies
-            until it reaches the total range.
-        total_range{int} -- Total range used to define concentric
-            reachability, step from step. Considered a multiple of step.
-        speed_kh_h {int} -- in km/h to convert distance
-            (default: {30} km_h). If different of None, 'step' and
-            'total_range' are considered in seconds.
         step_list {list} -- Ad-hoc step list.
-        outbound {bool} -- If True, get outbound reachability.
+        roundtrip {bool} -- If True, get roundtrip reachability.
 
     Returns:
         [dict] -- Reachability structure.
@@ -768,14 +755,6 @@ def get_reachability_dic(
 
     reachability_dict = None
 
-    if step_list:
-        steps_in_range_list = step_list
-    else:
-        # E.g., [30, 60, 90, ..., 600]
-        steps_in_range_list = [
-            i for i in range(step, total_range + step, step)
-        ]
-
     try:
         reachability_dict = np.load(root_path, allow_pickle=True).item()
         logging.info(f"Reading reachability dictionary from: '{root_path}'.")
@@ -787,9 +766,7 @@ def get_reachability_dic(
         reachability_dict = defaultdict(lambda: defaultdict(set))
 
         logging.info(
-            ("Calculating reachability...\n" + "Steps:{}").format(
-                steps_in_range_list
-            )
+            ("Calculating reachability...\n" + "Steps:{}").format(step_list)
         )
 
         # Select generator for different structures (dict or matrix)
@@ -818,20 +795,20 @@ def get_reachability_dic(
                 dist = dist_s
 
             # Find the index of which max_travel_time_edge box dist_s is in
-            step_id = bisect.bisect_left(steps_in_range_list, dist)
+            step_id = bisect.bisect_left(step_list, dist)
 
-            if step_id < len(steps_in_range_list):
+            if step_id < len(step_list):
 
-                if outbound:
+                if roundtrip:
                     # Which nodes can o access?
-                    reachability_dict[o][steps_in_range_list[step_id]].add(d)
+                    reachability_dict[o][step_list[step_id]].add(d)
                 else:
                     # Which nodes can access d?
-                    reachability_dict[d][steps_in_range_list[step_id]].add(o)
+                    reachability_dict[d][step_list[step_id]].add(o)
 
         np.save(root_path, dict(reachability_dict))
 
-    return reachability_dict, steps_in_range_list
+    return reachability_dict, step_list
 
 
 def get_can_reach_set(n, reach_dic, max_trip_duration=150):
@@ -1412,7 +1389,7 @@ def get_number_of_nodes(G):
     return nx.number_of_nodes(G)
 
 
-def get_sp(G, o, d):
+def get_sp(G, o, d, weight="length"):
     """Return shortest path between node ids o and d
 
     Arguments:
@@ -1423,7 +1400,7 @@ def get_sp(G, o, d):
     Returns:
         list -- List of nodes between o and d (included)
     """
-    return nx.shortest_path(G, source=o, target=d, weight="length")
+    return nx.shortest_path(G, source=o, target=d, weight=weight)
 
 
 def get_random_node(G):
@@ -1444,8 +1421,8 @@ def get_coords_node(n, G):
 
 
 @functools.lru_cache(maxsize=None)
-def get_distance(G, o, d):
-    return nx.dijkstra_path_length(G, o, d, weight="length")
+def get_distance(G, o, d, weight="length"):
+    return nx.dijkstra_path_length(G, o, d, weight=weight)
 
 
 def get_largest_connected_component(G):
@@ -1563,7 +1540,7 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
                 root_path
             )
         )
-        dist_matrix = np.load(root_path)
+        dist_matrix = np.load(root_path, allow_pickle=True)
 
     except Exception as e:
         logging.info(
@@ -1577,8 +1554,8 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
                 for to_node in range(0, get_number_of_nodes(G)):
 
                     try:
-                        dist_km = distance_dic_m[from_node][to_node]
-                        to_distance_list.append(dist_km)
+                        dist = distance_dic_m[from_node][to_node]
+                        to_distance_list.append(dist)
                     except:
                         to_distance_list.append(None)
 
@@ -1599,7 +1576,7 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
     return dist_matrix
 
 
-def get_distance_matrix_df(path, dist_matrix):
+def get_distance_matrix_df(path, dist_matrix, float_format="%.6f"):
     """Get dataframe from distance matrix
 
     Arguments:
@@ -1621,7 +1598,11 @@ def get_distance_matrix_df(path, dist_matrix):
         logging.info(str(e))
         dt = pd.DataFrame(dist_matrix)
         dt.to_csv(
-            path, index=False, header=False, float_format="%.6f", na_rep="INF"
+            path,
+            index=False,
+            header=False,
+            float_format=float_format,
+            na_rep="INF",
         )
 
     return dt
@@ -1631,7 +1612,70 @@ def get_adjacency_matrix(G, nodelist=None):
     return nx.to_pandas_adjacency(G, nodelist=nodelist, dtype=int)
 
 
-def get_distance_dic(root_path, G):
+def add_duration_to_graph(G, speed_km_h):
+
+    for edge in G.edges():
+        u, v = edge
+        for edge_id, edge_data in G[u][v].items():
+
+            # Delay to cross edge
+            duration = round(
+                get_duration(edge_data["length"], speed_km_h=speed_km_h)
+            )
+
+            G[u][v][edge_id]["duration"] = duration
+
+    return G
+
+
+def get_network_data(filepath, G):
+
+    df_G = None
+
+    try:
+
+        logging.info(f'Reading network data from "{filepath}"...')
+
+        df_G = pd.read_csv(filepath)
+
+    except Exception as e:
+
+        logging.info(
+            f"Generationg network data, can't load file! Exception:{e}"
+        )
+
+        G_data_dict = defaultdict(list)
+
+        keys = [
+            "osmid",
+            "oneway",
+            "name",
+            "highway",
+            "maxspeed",
+            "length",
+            "duration",
+            "id",
+        ]
+
+        for edge in G.edges():
+            u, v = edge
+
+            for edge_id, edge_data in G[u][v].items():
+
+                G_data_dict["origin"].append(u)
+                G_data_dict["destination"].append(v)
+
+                for k in keys:
+                    G_data_dict[k].append(edge_data.get(k, None))
+
+        # Saving graph info
+        df_G = pd.DataFrame.from_dict(dict(G_data_dict))
+        df_G.to_csv(filepath, header=True, index=False)
+
+    return df_G
+
+
+def get_distance_dic(root_path, G, weight="length"):
     """Get distance dictionary (Dijkstra all to all using path length).
     E.g.: [o][d]->distance
 
@@ -1659,7 +1703,7 @@ def get_distance_dic(root_path, G):
             )
             try:
                 all_dists_gen = nx.all_pairs_dijkstra_path_length(
-                    G, weight="length"
+                    G, weight=weight
                 )
             except Exception as e2:
                 logging.info(
