@@ -499,10 +499,20 @@ def gen_requests(
             parse_dates=True,
             index_col="pickup_datetime",
             chunksize=chunksize,
+            usecols=[
+                "pickup_datetime",
+                "passenger_count",
+                "pk_id",
+                "dp_id",
+                "pickup_longitude",
+                "pickup_latitude",
+                "dropoff_longitude",
+                "dropoff_latitude",
+            ],
         )
 
         count = 0
-        logging.info("Time window:", start_timestamp, "----", end_timestamp)
+        logging.info(f"Time window: {start_timestamp} ----{end_timestamp}")
 
         for chunk_dt_clone in gen_chunks:
 
