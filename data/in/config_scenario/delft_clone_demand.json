@@ -1,0 +1,20 @@
+{
+    "mapdata": {
+        "region": "Delft, The Netherlands",
+        "label": "delft_simple",
+        "max_travel_time_edge_sec": 60,
+        "speed_km_h": 60,
+        "info": "Create data for Delft"
+    },
+    "data_gen": {
+        "source": "data/in/trip_data/raw/nyc_2011_fev.csv",
+        "funcs": [
+            "random_clone"
+        ],
+        "max_passenger_count": 4,
+        "min_dist_km": 2,
+        "max_dist_km": 5,
+        "start": "2011-02-01 00:00:00",
+        "stop": "2011-02-02 00:00:00"
+    }
+}

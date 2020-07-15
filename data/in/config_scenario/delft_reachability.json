@@ -1,0 +1,31 @@
+{
+  "mapdata": {
+    "region": "Delft, The Netherlands",
+    "label": "delft_simple_reachability",
+    "max_travel_time_edge_sec": 60,
+    "speed_km_h": 60,
+    "info": "Create data for Delft and define four region center levels.",
+    "reachability": {
+      "ilp_time_limit_min": 2,
+      "max_neighbors": 6,
+      "step_list": [
+        180,
+        300
+      ],
+      "round_trip": false
+    },
+    "attribute_info": {
+      "region": "OSMNX map region.",
+      "label": "Define folder where data will be saved.",
+      "max_travel_time_edge_sec": "Enrich the original graph with nodes to make sure edges are of a maximum size.",
+      "speed_km_h": "Used to create waiting time matrix and create regional centers.",
+      "info": "Case study description.",
+      "reachability_info": {
+        "ilp_time_limit_min": "Max. time spent optimizing Gurobi ILP model to create regional centers.",
+        "max_neighbors": "Dictionary of 'max_neighbors' neighbors surrounding each node.",
+        "step_list": "List of delays to define regional centers.",
+        "round_trip": "Region center are defined considering round trips."
+      }
+    }
+  }
+}
