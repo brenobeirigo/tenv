@@ -786,15 +786,55 @@ def get_next_batch(
     return batch
 
 
-if __name__ == "__main__":
-    pass
-    # Get network graph and save
-    # G = nw.get_network_from(config.tripdata["region"],
-    #                          config.root_path,
-    #                          config.graph_name,
-    #                          config.graph_file_name)
-    # nw.save_graph_pic(G)
+def process_tripdata(config, G, distance_matrix):
+    """ Loop trip files, select time windows, and match (lon,lat) to 
+    to node ids in G.
 
-    # logging.info( "\nGetting distance data...")
-    # # Creating distance dictionary [o][d] -> distance
-    # distance_dic = nw.get_distance_dic(config.path_dist_dic, G)
+    Parameters
+    ----------
+    config : module
+        All configurations derived from .json file.
+    G : networkx
+        Street graph.
+    distance_matrix : float matrix
+        Distance matrix (km) of nodes in G
+    """
+
+    logging.info("Cleaning trip data...")
+
+    for file_name, tws in config.tripdata["file_tw"].items():
+        logging.info(f"File: {file_name}")
+        for tw in tws:
+            logging.info(f" - TW: {tw}")
+            earliest, latest = tw
+
+            # Cleaned data setup
+            output_cleaned = config.tripdata["output_cleaned_tripdata"]
+            file_name_cleaned = (
+                config.get_excerpt_name(earliest, latest, label="cleaned")
+                + ".csv"
+            )
+
+            dt_tripdata = get_trip_data(
+                f'{config.tripdata["path_tripdata"]}{file_name}',
+                output_cleaned + file_name_cleaned,
+                earliest,
+                latest,
+                index_col=config.tripdata["index_col"],
+                filtered_columns=config.tripdata["filtered_columns"],
+            )
+
+            # Cleaned data + graph ids setup
+            output_ids = config.tripdata["output_ids_tripdata"]
+            file_name_ids = (
+                config.get_excerpt_name(earliest, latest, label="ids") + ".csv"
+            )
+            #  street network node ids (from G) to tripdata
+            logging.info("Adding ids...")
+            add_ids(
+                output_cleaned + file_name_cleaned,
+                output_ids + file_name_ids,
+                G,
+                distance_matrix,
+                filtered_columns=config.tripdata["filtered_columns"],
+            )
