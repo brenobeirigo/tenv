@@ -1,6 +1,15 @@
 # Trip data sandbox
 
+Tip: Test trip data (timestamp, o_lat, o_lon, d_lat, d_lon) on `https://kepler.gl/demo`.
+
+
+### Dutch map data processing
+
+Run `notebooks\nl_map_generation.ipynb` to generate map data of using geographic information from The Netherlands.
+Run `notebooks\nl_demand_add_timestamps.ipynb` to create NL first-mile demand.
+
 ## Installation
+
 ### Loading the python environment
 
 Load the python environment in the file `tenv.yaml` to install all modules used in this project.
@@ -166,7 +175,7 @@ Execute the file `util.py` to create create folder `out\nyc_manhattan\` (assumin
 After downloading the NYC trip data, you can create a temporal distribution clone for other regions.
 
 ### Downloading
--  Access `data\in\tripdata\download_tripdata.ipynb`
+-  Access `notebooks\nyc_download_tripdata.ipynb`
 -  Set trip link sources. E.g.:
 
 ```python
