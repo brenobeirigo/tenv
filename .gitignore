@@ -1,6 +1,8 @@
 # Data
 data/out/
-
+notebooks/data/nl/nl_district_neighbors/
+notebooks/output/
+notebooks/.idea/
 # Python
 __pycache__/
 *.pyc
@@ -8,6 +10,7 @@ __pycache__/
 # Images
 *.png
 *.jpg
+*.pdf
 
 # Gurobi logs
 *.log
