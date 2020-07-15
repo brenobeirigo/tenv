@@ -354,7 +354,7 @@ else:
         print("NYC trip data generation settings:")
         pprint(config.data_gen)
 
-        tp.process_tripdata(config, G, distance_matrix)
+        tp.process_tripdata(config, G, distance_dic)
         time_dict["process_tripdata"] = time.time() - t_start
 
     if config.data_gen:
@@ -370,7 +370,7 @@ else:
         print("Trip data generation settings:")
         pprint(config.data_gen)
 
-        tp.gen_random_data(config, G, distance_matrix)
+        tp.gen_random_data(config, G, distance_dic)
 
         time_dict["generate_tripdata"] = time.time() - t_start
 
