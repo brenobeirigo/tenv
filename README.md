@@ -1,80 +1,91 @@
 # Trip data sandbox
 
+## Installation
+### Loading the python environment
 
-## Donwload trip data
+Load the python environment in the file `tenv.yaml` to install all modules used in this project.
 
-1. Access `data\in\tripdata\download_tripdata.ipynb`
-2. Set trip link sources. E.g.:
+In the following section, tips on manipulating python environments from the [Anaconda Cheat Sheet](https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf).
 
-        path_trip_list = "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/in/trip_data/nyc_tripdata.csv"
+#### Using environments
+List all packages and versions installed in active environment
 
+    conda list
 
-3. Set the taget folder where files will be saved. E.g.:
+Get a list of all my environments, active
+environment is shown with *
 
-        target_path = "C:/Users/LocalAdmin/Documents/GitHub/tenv/data/in/trip_data/"
+    conda env list
 
-## Clear and match ids
+Create a new environment named py35, install Python 3.5
+    
+    conda create --name py35 python=3.5 
 
-Create `.csv` data in `in\config_scenario` with download data. Example:
+Create environment from a text file
 
-```json
-{
-    "mapdata": {
-        "region": "Manhattan Island, New York City, New York, USA",
-        "label": "manhattan_nyc",
-        "reachability": {
-            "step": 30,
-            "total_range": 600,
-            "speed_km_h": 30,
-            "max_neighbors": 6,
-            "step_list": [0, 60, 300, 600], // If null, step_list = [0, 30, 60, ..., 600]
-            "round_trip": false
-        },
-        "max_travel_time_edge": 60, // Edge travel time <= 60
-        "info": "Creates data for ITSM paper (old Manhattan graph from 2018)"
-    },
-    "tripdata": {
-        "path_tripdata": "O:/phd/nyc_trips/raw/",
-        "output_cleaned_tripdata": "C:/Users/LocalAdmin/manhattan_nyc/tripdata/cleaned/",
-        "output_ids_tripdata": "C:/Users/LocalAdmin/manhattan_nyc/tripdata/ids/",
-        "index_col": "pickup_datetime",
-        "max_dist_km": 0.05,
-        "filtered_columns": [
-            "pickup_datetime",
-            "passenger_count",
-            "pickup_longitude",
-            "pickup_latitude",
-            "dropoff_longitude",
-            "dropoff_latitude",
-            "fare_amount",
-            "payment_type",
-            "total_amount",
-            "tip_amount",
-            "trip_distance"
-        ],
-        "file_tw": {
-            "yellow_tripdata_2011-02.csv": [
-                // Ranges extracted
-                [
-                "2011-02-01 00:00:00",
-                "2011-02-28 23:59:59"
-                ]
-            ]
-        }
-    }
-}
-```
+    conda env create -f environment_name.yaml
 
-Refer to the file created in file `file_info.json` using:
+Save environment to a text file
+
+    conda env export > environment_name.yaml
+
+Remove environment
+
+    conda env remove --name NAME_ENV
+
+### Installing Gurobi on Anaconda
+
+This project implements an ILP model to determine the smallest set of region centers in a network (according to a maximum distance). Follow the steps to run the model:
+
+1. Download and install Gurobi ([link](http://www.gurobi.com/downloads/download-center));
+2. Request a free academic license ([link](https://user.gurobi.com/download/licenses/free-academic));
+3. Add Gurobi to Anaconda ([link](http://www.gurobi.com/downloads/get-anaconda)).
+
+WARNING: When creating the environment, check python version. Gurobi can only be installed with python 3.7:
+
+    conda create -n yourenvname python=x.x
+
+### Installing OSMNX
+
+Adding `--strict-channel-priority` is essencial to ensure that all the dependencies will come from the conda-forge channel.
+    conda config --prepend channels conda-forge
+    conda create -n ox --strict-channel-priority osmnx
+
+### Installing H3 (Uber)
+
+Uber geoindexing with hexagons:
+
+    conda install h3
+
+## Setup
+
+Create `.csv` files in `in\config_scenario` with the case study settings. Then, define the target case study and the root directory in file `case_study_info.json`.
+
+### Example: generate Delft network data
+
+Change the `case_study_info.json` file:
 
 ```json
 {
-    "root": "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv",
-    "case_study": "nyc_business_class.json"
+    "root": "C:/Users/LocalAdmin/street_network_server/tenv",
+    "case_study": "delft.json"
 }
 ```
 
-Execute the file `util.py` to generate the following data will create folder `out\manhattan_nyc\` containing:
+### Example: generate Delft network data and create region centers
+
+Change the `case_study_info.json` file:
+
+```json
+{
+    "root": "C:/Users/LocalAdmin/street_network_server/tenv",
+    "case_study": "delft_reachability.json"
+}
+```
+
+## Creating network data structures
+
+Execute the file `util.py` to create create folder `out\nyc_manhattan\` (assuming case study `nyc_process_demand.json`) containing:
 
     +---distance
     |       dist_dict_m.npy
@@ -149,109 +160,54 @@ Execute the file `util.py` to generate the following data will create folder `ou
         *---raw
                 yellow_tripdata_2011-01.csv
 
-Execute `server.py` to create REST server.
 
-## Installing Gurobi on Anaconda
+## Creating trip data
 
-This project implements an ILP model to determine the smallest set of region centers in a network (according to a maximum distance). Follow the steps to run the model:
+After downloading the NYC trip data, you can create a temporal distribution clone for other regions.
 
-1. Download and install Gurobi ([link](http://www.gurobi.com/downloads/download-center));
-2. Request a free academic license ([link](https://user.gurobi.com/download/licenses/free-academic));
-3. Add Gurobi to Anaconda ([link](http://www.gurobi.com/downloads/get-anaconda)).
+### Downloading
+-  Access `data\in\tripdata\download_tripdata.ipynb`
+-  Set trip link sources. E.g.:
 
-WARNING: When creating the environment, check python version. Gurobi can only be installed with python 3.7:
+```python
+    path_trip_list = "data/in/trip_data/nyc_tripdata.csv"
+```
 
-    conda create -n yourenvname python=x.x
+- Set the taget folder where files will be saved. E.g.:
 
-## Installing OSMNX
+```python
+    target_path = "data/in/trip_data/raw"
+```
 
-Adding `--strict-channel-priority` is essencial to ensure that all the dependencies will come from the conda-forge channel.
-    conda config --prepend channels conda-forge
-    conda create -n ox --strict-channel-priority osmnx
+### Example: Generate Manhattan network data, create region centers, and process downloaded demand data
 
-## Istalling H3 (Uber)
+Change the `case_study_info.json` file:
 
-Uber geoindexing with hexagons:
+```json
+{
+    "root": "C:/Users/LocalAdmin/street_network_server/tenv",
+    "case_study": "nyc_process_demand.json"
+}
+```
 
-    conda install h3
+Execute file `util.py`.
 
-## Using GIT
+### Generate network data, create region centers, and clone demand from NYC
 
-Use this project remote:
+Change the `case_study_info.json` file:
 
-    https://github.com/brenobeirigo/input_tripdata.git
+```json
+{
+    "root": "C:/Users/LocalAdmin/street_network_server/tenv",
+    "case_study": "delft_clone_demand.json"
+}
+```
 
-In the following section, Git tips from the [Git Cheat Sheet](https://www.git-tower.com/blog/) (git-tower).
-
-
-### Create
-Clone an existing repository
-    
-    git clone <remote>
-
-Create a new local repository
-    
-    git init
-
-### Tests
-To create dataframes related to network structure execute `tests\create_network_dfs.py`. The following `.csv` files will be saved in the `network_info` folder:
-
-|File (.csv) |Headers|
-|---|---|
-|node_level_id|node, level1, level2, level3, ..., levelN|
-|level_center_children|level, center, n_children, children_list|
-|level_center_neighbors_asc|level, center, n_neighbors, neighbors_asc|
-|region_centers|center, center_count, centers|
-
-
-### Update & Publish
-
-List all currently  configured remotes
-    
-    git remote - v
-
-Download changes and directly merge/integrate into HEAD
-    
-    git pull <remote> <branch>
-
-#### Publish local changes on a remote
-    git push <remote> <branch>
-
-## Loading the python environment
-
-Load the python environment in the file `env_slevels.yaml` to install all modules used in this project.
-
-In the following section, tips on manipulating python environments from the [Anaconda Cheat Sheet](https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf).
-
-### Using environments
-List all packages and versions installed in active environment
-
-    conda list
-
-Get a list of all my environments, active
-environment is shown with *
-
-    conda env list
-
-Create a new environment named py35, install Python 3.5
-    
-    conda create --name py35 python=3.5 
-
-Create environment from a text file
-
-    conda env create -f environment_name.yaml
-
-Save environment to a text file
-
-    conda env export > environment_name.yaml
-
-Remove environment
-
-    conda env remove --name NAME_ENV
+Execute file `util.py`.
 
 ## SERVER
 
-The file `server.py` starts a local server to provide easy access to the trip data.
+The file `server.py` starts a local REST server to provide easy access to the trip data.
 
 
 ### Adjusting TCP Settings for Heavy Load on Windows
