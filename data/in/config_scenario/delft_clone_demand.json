@@ -1,7 +1,7 @@
 {
     "mapdata": {
         "region": "Delft, The Netherlands",
-        "label": "delft_simple",
+        "label": "delft_clone_demand",
         "max_travel_time_edge_sec": 60,
         "speed_km_h": 60,
         "info": "Create data for Delft"
@@ -15,6 +15,6 @@
         "min_dist_km": 2,
         "max_dist_km": 5,
         "start": "2011-02-01 00:00:00",
-        "stop": "2011-02-02 00:00:00"
+        "stop": "2011-02-01 01:00:00"
     }
 }
