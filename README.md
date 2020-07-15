@@ -2,12 +2,6 @@
 
 Tip: Test trip data (timestamp, o_lat, o_lon, d_lat, d_lon) on `https://kepler.gl/demo`.
 
-
-### Dutch map data processing
-
-Run `notebooks\nl_map_generation.ipynb` to generate map data of using geographic information from The Netherlands.
-Run `notebooks\nl_demand_add_timestamps.ipynb` to create NL first-mile demand.
-
 ## Installation
 
 ### Loading the python environment
