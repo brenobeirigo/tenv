@@ -97,8 +97,6 @@ if os.path.exists(config.root_lean):
     reachability_dict, steps = nw.get_reachability_dic(
         config.path_reachability_dic,
         distance_matrix,
-        step=config.step,
-        total_range=config.total_range,
         speed_km_h=config.speed_km_h,
         step_list=config.step_list,
     )
@@ -342,18 +340,39 @@ else:
 
     time_dict["dist_matrix_duration_csv"] = time.time() - t_start
 
+    # Trip data is saved in external drive
+    if config.tripdata:
 
-if config.data_gen:
-    print(
-        "\n############################"
-        "## Generating random data ##"
-        "############################"
-    )
+        t_start = time.time()
 
-    print("Trip data generation settings:")
-    pprint(config.data_gen)
+        logging.info(
+            "\n############################"
+            "## Processing NYC trip data ##"
+            "############################"
+        )
 
-    tp.gen_random_data(config, G, distance_dic)
+        print("NYC trip data generation settings:")
+        pprint(config.data_gen)
+
+        tp.process_tripdata(config, G, distance_matrix)
+        time_dict["process_tripdata"] = time.time() - t_start
+
+    if config.data_gen:
+
+        t_start = time.time()
+
+        logging.info(
+            "\n############################"
+            "## Generating random trip data ##"
+            "############################"
+        )
+
+        print("Trip data generation settings:")
+        pprint(config.data_gen)
+
+        tp.gen_random_data(config, G, distance_matrix)
+
+        time_dict["generate_tripdata"] = time.time() - t_start
 
 pprint(time_dict)
 
