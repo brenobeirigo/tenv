@@ -1518,7 +1518,21 @@ def intermediate_coord(lon1, lat1, lon2, lat2, fraction):
     return lon, lat
 
 
-def get_distance_matrix(root_path, G, distance_dic_m=None):
+def get_distance_dic_from_graph(G, weight="length"):
+
+    try:
+        all_dists_gen = nx.all_pairs_dijkstra_path_length(G, weight=weight)
+
+    except Exception as e:
+        logging.info(f"Can't calculate shortest paths! Exception: {e}.")
+
+    # Save with pickle (meters)
+    distance_dic_m = dict(all_dists_gen)
+
+    return distance_dic_m
+
+
+def get_distance_matrix(root_path, G, weight="length", distance_dic_m=None):
     """Return distance matrix (n x n). Value is 'None' when path does
     not exist
 
@@ -1546,6 +1560,9 @@ def get_distance_matrix(root_path, G, distance_dic_m=None):
         logging.info(
             f"Reading failed! Exception: {e} \nCalculating shortest paths..."
         )
+
+        if distance_dic_m is None:
+            distance_dic_m = get_distance_dic_from_graph(G, weight=weight)
 
         try:
 
@@ -1697,25 +1714,7 @@ def get_distance_dic(root_path, G, weight="length"):
 
     except Exception as e:
 
-        try:
-            logging.info(
-                f"Reading failed! Exception: {e} \nCalculating shortest paths..."
-            )
-            try:
-                all_dists_gen = nx.all_pairs_dijkstra_path_length(
-                    G, weight=weight
-                )
-            except Exception as e2:
-                logging.info(
-                    f"Can't calculate shortest paths! Exception: {e2}."
-                )
-
-            # Save with pickle (meters)
-            distance_dic_m = dict(all_dists_gen)
-            np.save(root_path, distance_dic_m)
-
-        except Exception as e2:
-            print(f"Exception {e2}.")
+        distance_dic_m = get_distance_dic_from_graph(G, weight=weight)
 
     logging.info(
         f"Distance data loaded successfully. "
