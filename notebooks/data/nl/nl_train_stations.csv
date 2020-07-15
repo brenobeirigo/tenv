@@ -1,0 +1,410 @@
+id,code,uic,naam,middel_naam,korte_naam,friendly,land,type,geo_lat,geo_lng
+266,ht,8400319,'s-Hertogenbosch,'s-Hertogenbosch,H'bosch,s-hertogenbosch,NL,knooppuntintercitystation,51.69048,5.29362
+269,hto,8400320,'s-Hertogenbosch Oost,Hertogenbosch O.,H'bosch O,s-hertogenbosch-oost,NL,stoptreinstation,51.70055389,5.318333149
+227,hde,8400388,'t Harde,'t Harde,'t Harde,t-harde,NL,stoptreinstation,52.4091682,5.893611
+51,atn,8400045,Aalten,Aalten,Aalten,aalten,NL,stoptreinstation,51.92132652,6.578627229
+5,ac,8400047,Abcoude,Abcoude,Abcoude,abcoude,NL,stoptreinstation,52.2785,4.977
+14,akm,8400049,Akkrum,Akkrum,Akkrum,akkrum,NL,stoptreinstation,53.04639053,5.84361124
+26,amr,8400050,Alkmaar,Alkmaar,Alkmaar,alkmaar,NL,knooppuntintercitystation,52.63777924,4.739722252
+28,amrn,8400052,Alkmaar Noord,Alkmaar Noord,Alkmaar N,alkmaar-noord,NL,stoptreinstation,52.64389038,4.764166832
+25,aml,8400051,Almelo,Almelo,Almelo,almelo,NL,knooppuntintercitystation,52.35805511,6.653888702
+27,amri,8400520,Almelo de Riet,Almelo de Riet,de Riet,almelo-de-riet,NL,stoptreinstation,52.34194565,6.666666508
+18,almb,8400081,Almere Buiten,Almere Buiten,Buiten,almere-buiten,NL,stoptreinstation,52.39416504,5.278055668
+17,alm,8400080,Almere Centrum,Almere C.,Almere C,almere-centrum,NL,knooppuntintercitystation,52.37503,5.21764
+19,almm,8400082,Almere Muziekwijk,Muziekwijk,Muziekwijk,almere-muziekwijk,NL,stoptreinstation,52.36750031,5.190277576
+20,almo,8400226,Almere Oostvaarders,Oostvaarders,Oostvaard,almere-oostvaarders,NL,stoptreinstation,52.40333176,5.300555706
+21,almp,8400104,Almere Parkwijk,Almere Parkwijk,Parkwijk,almere-parkwijk,NL,stoptreinstation,52.37666702,5.244722366
+680,ampo,8400450,Almere Poort,Almere Poort,Almere P,almere-poort,NL,stoptreinstation,52.342778,5.151944
+36,apn,8400053,Alphen a/d Rijn,Alphen a/d Rijn,Alphen,alphen-a-d-rijn,NL,knooppuntintercitystation,52.12444305,4.657777786
+23,amf,8400055,Amersfoort,Amersfoort,Amersfoort,amersfoort,NL,knooppuntintercitystation,52.1538887,5.370555401
+24,amfs,8400054,Amersfoort Schothorst,Schothorst,Schothorst,amersfoort-schothorst,NL,stoptreinstation,52.17482214,5.403888702
+54,avat,8400228,Amersfoort Vathorst,Vathorst,Vathorst,amersfoort-vathorst,NL,sneltreinstation,52.19277954,5.433888912
+40,asa,8400057,Amsterdam Amstel,Amsterdam Amstel,Amstel,amsterdam-amstel,NL,intercitystation,52.34666824,4.917778015
+41,asb,8400074,Amsterdam Bijlmer ArenA,Bijlmer ArenA,Bijlmer A,amsterdam-bijlmer-arena,NL,knooppuntstoptreinstation,52.31222153,4.946944237
+43,asd,8400058,Amsterdam Centraal,Amsterdam C.,A'dam C,amsterdam-centraal,NL,megastation,52.37888718,4.900277615
+47,ashd,8400231,Amsterdam Holendrecht,Holendrecht,Holendrcht,amsterdam-holendrecht,NL,stoptreinstation,52.29844,4.95972
+44,asdl,8400079,Amsterdam Lelylaan,Lelylaan,Lelylaan,amsterdam-lelylaan,NL,stoptreinstation,52.35777664,4.833889008
+45,asdm,8400060,Amsterdam Muiderpoort,Muiderpoort,Muiderprt,amsterdam-muiderpoort,NL,stoptreinstation,52.36055374,4.931111336
+393,rai,8400056,Amsterdam RAI,Amsterdam RAI,A'dam RAI,amsterdam-rai,NL,stoptreinstation,52.33722305,4.890277863
+48,assp,8400235,Amsterdam Science Park,Science Park,Scienceprk,amsterdam-science-park,NL,stoptreinstation,52.35526,4.94651
+50,ass,8400059,Amsterdam Sloterdijk,Sloterdijk,Sloterdijk,amsterdam-sloterdijk,NL,knooppuntintercitystation,52.38888931,4.837777615
+738,vmw,8400078,Amsterdam Van der Madeweg,Van der Madeweg,vd Madeweg,amsterdam-van-der-madeweg,NL,facultatiefstation,52.330134,4.92975
+46,asdz,8400061,Amsterdam Zuid,Amsterdam Zuid,A'dam Z,amsterdam-zuid,NL,intercitystation,52.33889008,4.871666431
+29,ana,8400065,Anna Paulowna,Anna Paulowna,Anna Paulo,anna-paulowna,NL,stoptreinstation,52.86722183,4.811110973
+31,apd,8400066,Apeldoorn,Apeldoorn,Apeldoorn,apeldoorn,NL,knooppuntintercitystation,52.20916748,5.970277786
+32,apdm,8400233,Apeldoorn De Maten,De Maten,De Maten,apeldoorn-de-maten,NL,stoptreinstation,52.20527649,6.000555515
+33,apdo,8400229,Apeldoorn Osseveld,Osseveld,Osseveld,apeldoorn-osseveld,NL,stoptreinstation,52.21527863,6.004444599
+34,apg,8400067,Appingedam,Appingedam,Appingedam,appingedam,NL,stoptreinstation,53.3258135,6.8619577
+13,akl,8400068,Arkel,Arkel,Arkel,arkel,NL,stoptreinstation,51.87194443,4.992777824
+37,arn,8400069,Arnemuiden,Arnemuiden,Arnemuiden,arnemuiden,NL,stoptreinstation,51.50166702,3.669166565
+6,ah,8400071,Arnhem,Arnhem,Arnhem,arnhem,NL,knooppuntintercitystation,51.98500061,5.899166584
+10,ahpr,8400075,Arnhem Presikhaaf,Presikhaaf,Presikhaaf,arnhem-presikhaaf,NL,stoptreinstation,51.98805618,5.943888664
+9,ahp,8400072,Arnhem Velperpoort,Velperpoort,Velperprt,arnhem-velperpoort,NL,stoptreinstation,51.98527908,5.919444561
+11,ahz,8400227,Arnhem Zuid,Arnhem Zuid,Arnhem Z,arnhem-zuid,NL,stoptreinstation,51.95500183,5.851944447
+49,asn,8400073,Assen,Assen,Assen,assen,NL,knooppuntintercitystation,52.99166489,6.570833206
+102,brn,8400086,Baarn,Baarn,Baarn,baarn,NL,knooppuntstoptreinstation,52.20833206,5.280833244
+361,nsch,8400457,Bad Nieuweschans,Bad Nieuweschans,Nweschans,bad-nieuweschans,NL,knooppuntstoptreinstation,53.1844,7.19937
+74,bf,8400089,Baflo,Baflo,Baflo,baflo,NL,stoptreinstation,53.3608969,6.5185581
+98,brd,8400090,Barendrecht,Barendrecht,Barendrcht,barendrecht,NL,stoptreinstation,51.85472107,4.553333282
+87,bnc,8400091,Barneveld Centrum,Barneveld C.,Barnevld C,barneveld-centrum,NL,stoptreinstation,52.13999939,5.590277672
+89,bnn,8400092,Barneveld Noord,Barneveld Noord,Barnevld N,barneveld-noord,NL,stoptreinstation,52.1613884,5.598055363
+764,bnz,8400115,Barneveld Zuid,Barneveld Zuid,Barnevld Z,barneveld-zuid,NL,stoptreinstation,52.128853,5.60246
+64,bdm,8400094,Bedum,Bedum,Bedum,bedum,NL,stoptreinstation,53.3068857,6.593054
+78,bk,8400096,Beek-Elsloo,Beek-Elsloo,Beek-E,beek-elsloo,NL,stoptreinstation,50.94749832,5.78666687
+106,bsd,8400097,Beesd,Beesd,Beesd,beesd,NL,stoptreinstation,51.89944458,5.194444656
+82,bl,8400100,Beilen,Beilen,Beilen,beilen,NL,stoptreinstation,52.85472107,6.521111012
+75,bgn,8400108,Bergen op Zoom,Bergen op Zoom,Bergen opZ,bergen-op-zoom,NL,stoptreinstation,51.49388885,4.296111107
+73,bet,8400112,Best,Best,Best,best,NL,stoptreinstation,51.50999832,5.389166832
+111,bv,8400113,Beverwijk,Beverwijk,Beverwijk,beverwijk,NL,intercitystation,52.47833252,4.656666756
+77,bhv,8400114,Bilthoven,Bilthoven,Bilthoven,bilthoven,NL,stoptreinstation,52.13000107,5.203888893
+97,br,8400117,Blerick,Blerick,Blerick,blerick,NL,stoptreinstation,51.37250137,6.15500021
+83,bll,8400118,Bloemendaal,Bloemendaal,Bloemendl,bloemendaal,NL,stoptreinstation,52.40416718,4.627500057
+63,bdg,8400121,Bodegraven,Bodegraven,Bodegraven,bodegraven,NL,stoptreinstation,52.08139038,4.746110916
+86,bn,8400124,Borne,Borne,Borne,borne,NL,stoptreinstation,52.29888916,6.748055458
+107,bsk,8400125,Boskoop,Boskoop,Boskoop,boskoop,NL,stoptreinstation,52.07777786,4.646944523
+546,bhdv,8400236,Boven-Hardinxveld,Boven-Hardinxv.,Boven-H.,boven-hardinxveld,NL,stoptreinstation,51.832222,4.878056
+79,bkf,8400230,Bovenkarspel Flora,Bovenkarspel Fl.,Bovenk Flo,bovenkarspel-flora,NL,stoptreinstation,52.69610977,5.252777576
+80,bkg,8400127,Bovenkarspel-Grootebroek,Bovenkarspel-Gr.,Bovenk-Gr,bovenkarspel-grootebroek,NL,stoptreinstation,52.69499969,5.23777771
+85,bmr,8400128,Boxmeer,Boxmeer,Boxmeer,boxmeer,NL,knooppuntstoptreinstation,51.64452177,5.939033031
+109,btl,8400129,Boxtel,Boxtel,Boxtel,boxtel,NL,knooppuntstoptreinstation,51.58433,5.31912
+61,bd,8400131,Breda,Breda,Breda,breda,NL,knooppuntintercitystation,51.59555435,4.78000021
+65,bdpb,8400132,Breda-Prinsenbeek,Prinsenbeek,Prinsenbk,breda-prinsenbeek,NL,stoptreinstation,51.60638809,4.720833302
+81,bkl,8400133,Breukelen,Breukelen,Breukelen,breukelen,NL,knooppuntstoptreinstation,52.17149,4.9906
+84,bmn,8400136,Brummen,Brummen,Brummen,brummen,NL,stoptreinstation,52.09111023,6.146944523
+96,bp,8400139,Buitenpost,Buitenpost,Buitenpost,buitenpost,NL,knooppuntsneltreinstation,53.2564547,6.1446496
+62,bde,8400140,Bunde,Bunde,Bunde,bunde,NL,stoptreinstation,50.89694595,5.736666679
+88,bnk,8400141,Bunnik,Bunnik,Bunnik,bunnik,NL,stoptreinstation,52.06305695,5.194444656
+108,bsmz,8400145,Bussum Zuid,Bussum Zuid,Bussum Z,bussum-zuid,NL,stoptreinstation,52.26583481,5.16305542
+119,cps,8400147,Capelle Schollevaar,Schollevaar,Schollevr,capelle-schollevaar,NL,stoptreinstation,51.95416641,4.584166527
+113,cas,8400151,Castricum,Castricum,Castricum,castricum,NL,intercitystation,52.54583359,4.658611298
+120,cvm,8400152,Chevremont,Chevremont,Chevremont,chevremont,NL,stoptreinstation,50.87611008,6.059722424
+117,co,8400153,Coevorden,Coevorden,Coevorden,coevorden,NL,knooppuntsneltreinstation,52.66361237,6.735555649
+115,ck,8400155,Cuijk,Cuijk,Cuijk,cuijk,NL,stoptreinstation,51.72668259,5.874295235
+116,cl,8400154,Culemborg,Culemborg,Culemborg,culemborg,NL,stoptreinstation,51.94666672,5.226944447
+121,da,8400164,Daarlerveen,Daarlerveen,Daarlervn,daarlerveen,NL,stoptreinstation,52.4407702,6.5759947
+134,dln,8400161,Dalen,Dalen,Dalen,dalen,NL,stoptreinstation,52.69416809,6.758055687
+129,dl,8400167,Dalfsen,Dalfsen,Dalfsen,dalfsen,NL,sneltreinstation,52.49833298,6.258611202
+157,dvnk,8400188,De Vink,De Vink,De Vink,de-vink,NL,stoptreinstation,52.14722061,4.45638895
+127,dei,8400168,Deinum,Deinum,Deinum,deinum,NL,stoptreinstation,53.1888115,5.7281572
+123,ddn,8400169,Delden,Delden,Delden,delden,NL,stoptreinstation,52.25999832,6.716111183
+144,dt,8400170,Delft,Delft,Delft,delft,NL,knooppuntintercitystation,52.00666809,4.356389046
+147,dtz,8400166,Delft Zuid,Delft Zuid,Delft Z,delft-zuid,NL,stoptreinstation,51.99083328,4.364722252
+158,dz,8400171,Delfzijl,Delfzijl,Delfzijl,delfzijl,NL,stoptreinstation,53.3336625,6.9240797
+159,dzw,8400175,Delfzijl West,Delfzijl West,Delfzijl W,delfzijl-west,NL,stoptreinstation,53.3320834,6.9069092
+132,dld,8400179,Den Dolder,Den Dolder,Den Dolder,den-dolder,NL,knooppuntstoptreinstation,52.14027786,5.242777824
+214,gvc,8400282,Den Haag Centraal,Den Haag C.,Den Haag C,den-haag-centraal,NL,megastation,52.08027649,4.324999809
+213,gv,8400280,Den Haag HS,Den Haag HS,Dn Haag HS,den-haag-hs,NL,knooppuntintercitystation,52.06972122,4.322500229
+302,laa,8400380,Den Haag Laan v NOI,Laan v NOI,Laan v NOI,den-haag-laan-v-noi,NL,intercitystation,52.07860947,4.342777729
+215,gvm,8400278,Den Haag Mariahoeve,Mariahoeve,Mariahoeve,den-haag-mariahoeve,NL,stoptreinstation,52.0905571,4.36944437
+216,gvmw,8400279,Den Haag Moerwijk,Moerwijk,Moerwijk,den-haag-moerwijk,NL,stoptreinstation,52.05389023,4.308610916
+525,ypb,8400379,Den Haag Ypenburg,Ypenburg,Ypenburg,den-haag-ypenburg,NL,stoptreinstation,52.05527878,4.392222404
+229,hdr,8400311,Den Helder,Den Helder,Den Helder,den-helder,NL,intercitystation,52.95527649,4.761111259
+230,hdrz,8400303,Den Helder Zuid,Den Helder Zuid,Dn Heldr Z,den-helder-zuid,NL,stoptreinstation,52.93249893,4.764166832
+137,dn,8400172,Deurne,Deurne,Deurne,deurne,NL,stoptreinstation,51.45583344,5.788888931
+153,dv,8400173,Deventer,Deventer,Deventer,deventer,NL,knooppuntintercitystation,52.25749969,6.160555363
+154,dvc,8400185,Deventer Colmschate,Colmschate,Colmschate,deventer-colmschate,NL,stoptreinstation,52.25027847,6.214444637
+128,did,8400174,Didam,Didam,Didam,didam,NL,stoptreinstation,51.933502,6.1324106
+135,dmn,8400165,Diemen,Diemen,Diemen,diemen,NL,stoptreinstation,52.34583282,4.965555668
+136,dmnz,8400163,Diemen Zuid,Diemen Zuid,Diemen Z,diemen-zuid,NL,stoptreinstation,52.33027649,4.955833435
+141,dr,8400176,Dieren,Dieren,Dieren,dieren,NL,intercitystation,52.04499817,6.103055477
+145,dtc,8400177,Doetinchem,Doetinchem,Doetinchem,doetinchem,NL,knooppuntstoptreinstation,51.9585962,6.2962148
+146,dtch,8400184,Doetinchem De Huet,De Huet,De Huet,doetinchem-de-huet,NL,stoptreinstation,51.9591413,6.2598521
+124,ddr,8400180,Dordrecht,Dordrecht,Dordrecht,dordrecht,NL,knooppuntintercitystation,51.80722046,4.66833353
+125,ddrs,8400186,Dordrecht Stadspolders,Stadspolders,Stadspldrs,dordrecht-stadspolders,NL,stoptreinstation,51.80194473,4.716666698
+126,ddzd,8400181,Dordrecht Zuid,Dordrecht Zuid,Dordrcht Z,dordrecht-zuid,NL,stoptreinstation,51.79000092,4.671389103
+122,db,8400182,Driebergen-Zeist,Driebergen-Zeist,Driebergen,driebergen-zeist,NL,knooppuntstoptreinstation,52.0652771,5.258611202
+142,drh,8400183,Driehuis,Driehuis,Driehuis,driehuis,NL,stoptreinstation,52.44250107,4.638055325
+143,drp,8400192,Dronrijp,Dronrijp,Dronrijp,dronrijp,NL,stoptreinstation,53.1778086,5.6347411
+682,dron,8400198,Dronten,Dronten,Dronten,dronten,NL,stoptreinstation,52.5344,5.72089
+156,dvn,8400193,Duiven,Duiven,Duiven,duiven,NL,stoptreinstation,51.94333267,6.014722347
+155,dvd,8400194,Duivendrecht,Duivendrecht,Duivendt,duivendrecht,NL,knooppuntstoptreinstation,52.32333374,4.936388969
+161,ec,8400195,Echt,Echt,Echt,echt,NL,stoptreinstation,51.10055542,5.878889084
+163,edc,8400201,Ede Centrum,Ede C.,Ede C,ede-centrum,NL,stoptreinstation,52.04360962,5.66833353
+162,ed,8400200,Ede-Wageningen,Ede-Wageningen,Ede-Wag,ede-wageningen,NL,knooppuntintercitystation,52.02777863,5.673055649
+697,wtm,8400608,Eijs-Wittem,Eijs-Wittem,Eijs-Witt,eijs-wittem,NL,facultatiefstation,50.82317,5.92479
+164,edn,8400219,Eijsden,Eijsden,Eijsden,eijsden,NL,stoptreinstation,50.77194595,5.710000038
+168,ehv,8400206,Eindhoven,Eindhoven,Eindhoven,eindhoven,NL,knooppuntintercitystation,51.44333267,5.481389046
+167,ehb,8400196,Eindhoven Beukenlaan,Beukenlaan,Beukenlaan,eindhoven-beukenlaan,NL,stoptreinstation,51.45111084,5.455833435
+184,est,8400207,Elst,Elst,Elst,elst,NL,knooppuntstoptreinstation,51.9169426,5.855000019
+173,emn,8400208,Emmen,Emmen,Emmen,emmen,NL,sneltreinstation,52.79000092,6.89944458
+174,emnz,8400407,Emmen Zuid,Emmen Zuid,Emmen Z,emmen-zuid,NL,sneltreinstation,52.74886637,6.874780655
+170,ekz,8400210,Enkhuizen,Enkhuizen,Enkhuizen,enkhuizen,NL,stoptreinstation,52.69916534,5.286388874
+178,es,8400212,Enschede,Enschede,Enschede,enschede,NL,knooppuntintercitystation,52.22249985,6.889999866
+181,ese,8400217,Enschede De Eschmarke,De Eschmarke,Eschmarke,enschede-de-eschmarke,NL,stoptreinstation,52.22138977,6.951111317
+180,esd,8400221,Enschede Drienerlo,Drienerlo,Drienerlo,enschede-drienerlo,NL,stoptreinstation,52.23749924,6.838889122
+172,eml,8400216,Ermelo,Ermelo,Ermelo,ermelo,NL,stoptreinstation,52.30166626,5.614722252
+185,etn,8400218,Etten-Leur,Etten-Leur,Etten-Leur,etten-leur,NL,intercitystation,51.57500076,4.635833263
+165,egh,8400338,Eygelshoven,Eygelshoven,Eygelshov,eygelshoven,NL,stoptreinstation,50.89055634,6.045000076
+166,eghm,8400234,Eygelshoven Markt,Eygelshoven Mrkt,Eygelsh M,eygelshoven-markt,NL,stoptreinstation,50.89604982,6.060247421
+187,fn,8400232,Franeker,Franeker,Franeker,franeker,NL,stoptreinstation,53.1824488,5.5483094
+199,gdr,8400241,Gaanderen,Gaanderen,Gaanderen,gaanderen,NL,stoptreinstation,51.93074,6.3486
+197,gdk,8400239,Geerdijk,Geerdijk,Geerdijk,geerdijk,NL,stoptreinstation,52.47625,6.56674
+198,gdm,8400244,Geldermalsen,Geldermalsen,G'malsen,geldermalsen,NL,knooppuntstoptreinstation,51.88301,5.27127
+209,gp,8400245,Geldrop,Geldrop,Geldrop,geldrop,NL,stoptreinstation,51.41972351,5.550555706
+203,gln,8400246,Geleen Oost,Geleen Oost,Geleen O,geleen-oost,NL,stoptreinstation,50.96694565,5.843055725
+320,lut,8400248,Geleen-Lutterade,Geleen-Lutterade,Geleen-Lut,geleen-lutterade,NL,stoptreinstation,50.97555542,5.82472229
+218,gz,8400251,Gilze-Rijen,Gilze-Rijen,Gilze-Rij,gilze-rijen,NL,stoptreinstation,51.58361053,4.926111221
+194,gbr,8400262,Glanerbrug,Glanerbrug,Glanerbrug,glanerbrug,NL,stoptreinstation,52.21861267,6.974444389
+211,gs,8400253,Goes,Goes,Goes,goes,NL,stoptreinstation,51.4980545,3.89055562
+207,go,8400254,Goor,Goor,Goor,goor,NL,stoptreinstation,52.23027802,6.584444523
+210,gr,8400256,Gorinchem,Gorinchem,Gorinchem,gorinchem,NL,knooppuntstoptreinstation,51.83388901,4.968333244
+195,gd,8400258,Gouda,Gouda,Gouda,gouda,NL,knooppuntintercitystation,52.01750183,4.704444408
+196,gdg,8400257,Gouda Goverwelle,Gouda Goverwelle,Goverwelle,gouda-goverwelle,NL,stoptreinstation,52.01499939,4.740833282
+193,gbg,8400259,Gramsbergen,Gramsbergen,Gramsbergn,gramsbergen,NL,stoptreinstation,52.60916519,6.675833225
+202,gk,8400267,Grijpskerk,Grijpskerk,Grijpskerk,grijpskerk,NL,stoptreinstation,53.25574033,6.30977869
+204,gn,8400263,Groningen,Groningen,Groningen,groningen,NL,knooppuntintercitystation,53.21055603,6.564722061
+201,gerp,8400238,Groningen Europapark,Europapark,Europapark,groningen-europapark,NL,stoptreinstation,53.20480027,6.5854178
+206,gnn,8400264,Groningen Noord,Groningen Noord,Groning N,groningen-noord,NL,stoptreinstation,53.2301469,6.5563172
+217,gw,8400266,Grou-Jirnsum,Grou-Jirnsum,Grou-Jirns,grou-jirnsum,NL,stoptreinstation,53.08889008,5.822500229
+696,wij,8400712,Gulpen-Wijlre,Gulpen-Wijlre,Gulpen-W,gulpen-wijlre,NL,facultatiefstation,50.833056,5.898056
+244,hlm,8400285,Haarlem,Haarlem,Haarlem,haarlem,NL,knooppuntintercitystation,52.38777924,4.638333321
+245,hlms,8400270,Haarlem Spaarnwoude,Spaarnwoude,Spaarnwde,haarlem-spaarnwoude,NL,stoptreinstation,52.38277817,4.673055649
+684,hwzb,8400400,Halfweg-Zwanenburg,Halfweg-Zwanenb.,Halfweg-Zw,halfweg-zwanenburg,NL,stoptreinstation,52.385935,4.747165
+226,hdb,8400293,Hardenberg,Hardenberg,Hardenberg,hardenberg,NL,sneltreinstation,52.57277679,6.628611088
+225,hd,8400294,Harderwijk,Harderwijk,Harderwijk,harderwijk,NL,knooppuntstoptreinstation,52.33750153,5.619722366
+685,hbzm,8400438,Hardinxveld Blauwe Zoom,Blauwe Zoom,Blauwe Z,hardinxveld-blauwe-zoom,NL,stoptreinstation,51.82944,4.81556
+205,gnd,8400295,Hardinxveld-Giessendam,Hardinxveld-G.,Hardinxvld,hardinxveld-giessendam,NL,stoptreinstation,51.83055496,4.835833549
+264,hrn,8400297,Haren,Haren,Haren,haren,NL,stoptreinstation,53.17610931,6.617222309
+242,hlg,8400296,Harlingen,Harlingen,Harlingen,harlingen,NL,stoptreinstation,53.1704205,5.4251932
+243,hlgh,8400298,Harlingen Haven,Harlingen Haven,Harl Haven,harlingen-haven,NL,stoptreinstation,53.174917,5.4112885
+238,hk,8400317,Heemskerk,Heemskerk,Heemskerk,heemskerk,NL,stoptreinstation,52.4952774,4.686944485
+219,had,8400302,Heemstede-Aerdenhout,Heemstede-A.,Heemstede,heemstede-aerdenhout,NL,intercitystation,52.35916519,4.606666565
+260,hr,8400305,Heerenveen,Heerenveen,Heerenveen,heerenveen,NL,intercitystation,52.96138763,5.914166451
+599,hry,8400301,Heerenveen IJsstadion,IJsstadion,H'veen IJs,heerenveen-ijsstadion,NL,facultatiefstation,52.93527603,5.943888664
+274,hwd,8400306,Heerhugowaard,Heerhugowaard,Heerhugow,heerhugowaard,NL,knooppuntstoptreinstation,52.66972351,4.822777748
+261,hrl,8400307,Heerlen,Heerlen,Heerlen,heerlen,NL,knooppuntintercitystation,50.89083481,5.974999905
+263,hrlk,8400409,Heerlen De Kissel,Hrl De Kissel,De Kissel,heerlen-de-kissel,NL,stoptreinstation,50.89016893,5.9933424
+262,hrlw,8400404,Heerlen Woonboulevard,Hrl Woonblvd,Heerlen W,heerlen-woonboulevard,NL,stoptreinstation,50.896667,5.952222
+276,hze,8400308,Heeze,Heeze,Heeze,heeze,NL,stoptreinstation,51.38499832,5.569444656
+246,hlo,8400309,Heiloo,Heiloo,Heiloo,heiloo,NL,stoptreinstation,52.59944534,4.700555325
+254,hno,8400310,Heino,Heino,Heino,heino,NL,stoptreinstation,52.42722321,6.221111298
+247,hm,8400313,Helmond,Helmond,Helmond,helmond,NL,knooppuntintercitystation,51.47555542,5.661944389
+250,hmh,8400300,Helmond 't Hout,Helmond 't Hout,'t Hout,helmond-t-hout,NL,stoptreinstation,51.46794,5.63085
+249,hmbv,8400242,Helmond Brandevoort,Brandevoort,Brandevrt,helmond-brandevoort,NL,stoptreinstation,51.46222305,5.60722208
+248,hmbh,8400299,Helmond Brouwhuis,Brouwhuis,Brouwhuis,helmond-brouwhuis,NL,stoptreinstation,51.47068,5.70177
+251,hmn,8400315,Hemmen-Dodewaard,Hemmen-Dodewaard,Hemmen-D,hemmen-dodewaard,NL,stoptreinstation,51.9222129,5.6737254
+233,hgl,8400316,Hengelo,Hengelo,Hengelo,hengelo,NL,knooppuntintercitystation,52.26166534,6.793889046
+686,hglg,8400433,Hengelo Gezondheidspark,Hengelo Gezondh.,Hengelo G,hengelo-gezondheidspark,NL,stoptreinstation,52.261667,6.773611
+234,hglo,8400312,Hengelo Oost,Hengelo Oost,Hengelo O,hengelo-oost,NL,stoptreinstation,52.26889038,6.819444656
+237,hil,8400329,Hillegom,Hillegom,Hillegom,hillegom,NL,stoptreinstation,52.30250168,4.565555573
+271,hvs,8400322,Hilversum,Hilversum,Hilversum,hilversum,NL,knooppuntintercitystation,52.22583389,5.18194437
+722,hvsm,8400324,Hilversum Media Park,Media Park,Media Park,hilversum-media-park,NL,stoptreinstation,52.23805618,5.173888683
+273,hvsp,8400570,Hilversum Sportpark,Sportpark,Sportpark,hilversum-sportpark,NL,stoptreinstation,52.21611023,5.187222004
+255,hnp,8400323,Hindeloopen,Hindeloopen,Hindeloopn,hindeloopen,NL,stoptreinstation,52.9464903,5.423063
+240,hld,8400325,Hoek van Holland Haven,Hoek v H. Haven,HvH Haven,hoek-van-holland-haven,NL,knooppuntstoptreinstation,51.97527695,4.128889084
+241,hlds,8400342,Hoek van Holland Strand,Hoek v H. Strand,HvH Strand,hoek-van-holland-strand,NL,stoptreinstation,51.98166656,4.119722366
+224,hb,8400326,Hoensbroek,Hoensbroek,Hoensbroek,hoensbroek,NL,stoptreinstation,50.90555573,5.930555344
+687,hvl,8400490,Hoevelaken,Hoevelaken,Hoevelaken,hoevelaken,NL,stoptreinstation,52.16652,5.45718
+259,hor,8400327,Hollandsche Rading,Holl. Rading,Hol Rading,hollandsche-rading,NL,stoptreinstation,52.17777634,5.179166794
+258,hon,8400328,Holten,Holten,Holten,holten,NL,stoptreinstation,52.28388977,6.420277596
+232,hfd,8400332,Hoofddorp,Hoofddorp,Hoofddorp,hoofddorp,NL,stoptreinstation,52.29333496,4.700555325
+235,hgv,8400330,Hoogeveen,Hoogeveen,Hoogeveen,hoogeveen,NL,stoptreinstation,52.73389053,6.473610878
+236,hgz,8400331,Hoogezand-Sappemeer,Hoogezand-Sap.,Hoogezand,hoogezand-sappemeer,NL,knooppuntstoptreinstation,53.15981813,6.77075386
+239,hks,8400334,Hoogkarspel,Hoogkarspel,Hoogkrspl,hoogkarspel,NL,stoptreinstation,52.69055557,5.183888912
+252,hn,8400337,Hoorn,Hoorn,Hoorn,hoorn,NL,knooppuntintercitystation,52.64472198,5.055555344
+253,hnk,8400336,Hoorn Kersenboogerd,Kersenboogerd,Hoorn Kers,hoorn-kersenboogerd,NL,stoptreinstation,52.65361023,5.085555553
+265,hrt,8400339,Horst-Sevenum,Horst-Sevenum,Horst-Sev,horst-sevenum,NL,stoptreinstation,51.42638779,6.042222023
+267,htn,8400340,Houten,Houten,Houten,houten,NL,knooppuntstoptreinstation,52.03402,5.16821
+268,htnc,8400335,Houten Castellum,Castellum,Houten C,houten-castellum,NL,stoptreinstation,52.01701,5.17949
+426,sgl,8400341,Houthem-St Gerlach,Houthem-St Gerl.,Houthem-St,houthem-st-gerlach,NL,stoptreinstation,50.87333298,5.797222137
+228,hdg,8400292,Hurdegaryp,Hurdegaryp,Hurdegaryp,hurdegaryp,NL,stoptreinstation,53.2187783,5.934543
+277,ijt,8400722,IJlst,IJlst,IJlst,ijlst,NL,stoptreinstation,53.0146614,5.6160801
+294,kpn,8400353,Kampen,Kampen,Kampen,kampen,NL,stoptreinstation,52.5597229,5.921666622
+688,kpnz,8400360,Kampen Zuid,Kampen Zuid,Kampen Z,kampen-zuid,NL,stoptreinstation,52.5331,5.91309
+112,bzl,8400354,Kapelle-Biezelinge,Kapelle-Biezel.,Kapelle-B,kapelle-biezelinge,NL,stoptreinstation,51.48083496,3.956111193
+295,krd,8400355,Kerkrade Centrum,Kerkrade C.,Kerkrade,kerkrade-centrum,NL,knooppuntstoptreinstation,50.86166763,6.057499886
+610,krw,8400573,Kerkrade West,Kerkrade West,Kerkrade W,kerkrade-west,NL,facultatiefstation,50.85355,6.02578
+299,ktr,8400359,Kesteren,Kesteren,Kesteren,kesteren,NL,stoptreinstation,51.9313869,5.5833465
+282,kbk,8400361,Klarenbeek,Klarenbeek,Klarenbk,klarenbeek,NL,stoptreinstation,52.17805481,6.083611012
+287,kmr,8400362,Klimmen-Ransdaal,Klimmen-Ransdaal,Klimmen-R,klimmen-ransdaal,NL,stoptreinstation,50.86639023,5.890555382
+283,kbw,8400363,Koog Bloemwijk,Koog Bloemwijk,Koog Bloem,koog-bloemwijk,NL,stoptreinstation,52.45861053,4.805555344
+301,kzd,8400364,Koog-Zaandijk,Koog-Zaandijk,Koog Zaand,koog-zaandijk,NL,stoptreinstation,52.4691658,4.804999828
+288,kmw,8400366,Koudum-Molkwerum,Koudum-Molkwerum,Koudum-M,koudum-molkwerum,NL,stoptreinstation,52.9028197,5.4106913
+281,kbd,8400367,Krabbendijke,Krabbendijke,Krabbendke,krabbendijke,NL,stoptreinstation,51.43333435,4.116944313
+286,kma,8400368,Krommenie-Assendelft,Krommenie-Ass.,Krommenie,krommenie-assendelft,NL,stoptreinstation,52.49511,4.75417
+300,kw,8400369,Kropswolde,Kropswolde,Kropswolde,kropswolde,NL,stoptreinstation,53.1617362,6.7220882
+297,krg,8400370,Kruiningen-Yerseke,Kruiningen-Y.,Kruiningen,kruiningen-yerseke,NL,stoptreinstation,51.46500015,4.037222385
+533,zlw,8400382,Lage Zwaluwe,Lage Zwaluwe,Lage Zwalu,lage-zwaluwe,NL,knooppuntstoptreinstation,51.69111252,4.66305542
+312,lg,8400548,Landgraaf,Landgraaf,Landgraaf,landgraaf,NL,knooppuntstoptreinstation,50.89638901,6.01916647
+307,ldm,8400386,Leerdam,Leerdam,Leerdam,leerdam,NL,stoptreinstation,51.89472198,5.091388702
+321,lw,8400387,Leeuwarden,Leeuwarden,Leeuwarden,leeuwarden,NL,knooppuntintercitystation,53.19583511,5.792222023
+709,adh,8400406,Leeuwarden Achter d Hoven,Achter de Hoven,Achter d.H,leeuwarden-achter-d-hoven,NL,facultatiefstation,53.19889,5.81639
+322,lwc,8400389,Leeuwarden Camminghaburen,Camminghaburen,Camminghab,leeuwarden-camminghaburen,NL,stoptreinstation,53.2021808,5.8422968
+308,ledn,8400390,Leiden Centraal,Leiden C.,Leiden C,leiden-centraal,NL,knooppuntintercitystation,52.16611099,4.481666565
+306,ldl,8400384,Leiden Lammenschans,Lammenschans,Leiden Lam,leiden-lammenschans,NL,stoptreinstation,52.14694595,4.492499828
+313,lls,8400394,Lelystad Centrum,Lelystad C.,Lelystad,lelystad-centrum,NL,knooppuntintercitystation,52.50777817,5.472777843
+316,ltv,8400395,Lichtenvoorde-Groenlo,Lichtenvoorde-G.,Lichtenv-G,lichtenvoorde-groenlo,NL,stoptreinstation,52.01188,6.59641
+304,lc,8400399,Lochem,Lochem,Lochem,lochem,NL,stoptreinstation,52.16666794,6.426388741
+314,lp,8400403,Loppersum,Loppersum,Loppersum,loppersum,NL,stoptreinstation,53.3347145,6.7472625
+315,ltn,8400405,Lunteren,Lunteren,Lunteren,lunteren,NL,stoptreinstation,52.08527756,5.624444485
+348,mz,8400432,Maarheeze,Maarheeze,Maarheeze,maarheeze,NL,stoptreinstation,51.30376236,5.63034296
+339,mrn,8400417,Maarn,Maarn,Maarn,maarn,NL,knooppuntstoptreinstation,52.06416702,5.369999886
+327,mas,8400419,Maarssen,Maarssen,Maarssen,maarssen,NL,stoptreinstation,52.13527679,5.033611298
+340,mss,8400422,Maassluis,Maassluis,Maassluis,maassluis,NL,knooppuntstoptreinstation,51.91611099,4.254722118
+341,msw,8400421,Maassluis West,Maassluis West,Maassl W,maassluis-west,NL,stoptreinstation,51.92583466,4.236111164
+342,mt,8400424,Maastricht,Maastricht,Maastricht,maastricht,NL,knooppuntintercitystation,50.85027695,5.705555439
+723,mtn,8400449,Maastricht Noord,Maastricht Noord,Maastr N,maastricht-noord,NL,stoptreinstation,50.87087,5.71774
+344,mtr,8400426,Maastricht Randwyck,Maastricht Randw,Maastr Rw,maastricht-randwyck,NL,knooppuntstoptreinstation,50.8386116,5.717222214
+333,mg,8400427,Mantgum,Mantgum,Mantgum,mantgum,NL,stoptreinstation,53.1296368,5.7131996
+338,mrb,8400428,Mariënberg,Mariënberg,Mariënberg,marienberg,NL,knooppuntsneltreinstation,52.50944519,6.575277805
+343,mth,8400430,Martenshoek,Martenshoek,Martensh,martenshoek,NL,stoptreinstation,53.1607232,6.7402989
+331,mes,8400434,Meerssen,Meerssen,Meerssen,meerssen,NL,sneltreinstation,50.88287939,5.750999451
+337,mp,8400435,Meppel,Meppel,Meppel,meppel,NL,knooppuntstoptreinstation,52.69083405,6.197500229
+329,mdb,8400436,Middelburg,Middelburg,Middelburg,middelburg,NL,stoptreinstation,51.49472046,3.617222309
+335,mmlh,8400446,Mook Molenhoek,Molenhoek,Mook Molen,mook-molenhoek,NL,stoptreinstation,51.77158,5.88145
+350,ndb,8400452,Naarden-Bussum,Naarden-Bussum,Naarden-B,naarden-bussum,NL,knooppuntstoptreinstation,52.28027725,5.156944275
+349,na,8400454,Nieuw Amsterdam,Nieuw Amsterdam,Nw A'dam,nieuw-amsterdam,NL,sneltreinstation,52.71861267,6.848610878
+364,nvp,8400460,Nieuw Vennep,Nieuw Vennep,Nw Vennep,nieuw-vennep,NL,stoptreinstation,52.25888824,4.645555496
+365,nwk,8400455,Nieuwerkerk a/d IJssel,Nieuwerkerk,Nieuwerkrk,nieuwerkerk-a-d-ijssel,NL,stoptreinstation,51.96527863,4.616944313
+354,nkk,8400469,Nijkerk,Nijkerk,Nijkerk,nijkerk,NL,stoptreinstation,52.22222137,5.493888855
+355,nm,8400470,Nijmegen,Nijmegen,Nijmegen,nijmegen,NL,knooppuntintercitystation,51.84361267,5.852222443
+356,nmd,8400475,Nijmegen Dukenburg,Dukenburg,Dukenburg,nijmegen-dukenburg,NL,stoptreinstation,51.82416534,5.795555592
+762,nmgo,8400477,Nijmegen Goffert,Nijmegen Goffert,Goffert,nijmegen-goffert,NL,stoptreinstation,51.8273,5.822722
+357,nmh,8400468,Nijmegen Heyendaal,Nm Heyendaal,Heyendaal,nijmegen-heyendaal,NL,stoptreinstation,51.82694626,5.867499828
+358,nml,8400451,Nijmegen Lent,Nijmegen Lent,Lent,nijmegen-lent,NL,stoptreinstation,51.861811,5.859686
+362,nvd,8400472,Nijverdal,Nijverdal,Nijverdal,nijverdal,NL,stoptreinstation,52.36555,6.471111
+360,ns,8400466,Nunspeet,Nunspeet,Nunspeet,nunspeet,NL,stoptreinstation,52.37083435,5.785277843
+352,nh,8400467,Nuth,Nuth,Nuth,nuth,NL,stoptreinstation,50.91944504,5.89277792
+368,obd,8400480,Obdam,Obdam,Obdam,obdam,NL,stoptreinstation,52.67805481,4.907222271
+380,ot,8400482,Oisterwijk,Oisterwijk,Oisterwijk,oisterwijk,NL,stoptreinstation,51.58222198,5.19416666
+372,odz,8400483,Oldenzaal,Oldenzaal,Oldenzaal,oldenzaal,NL,stoptreinstation,52.30638885,6.934722424
+379,ost,8400486,Olst,Olst,Olst,olst,NL,stoptreinstation,52.33472061,6.113055706
+376,omn,8400487,Ommen,Ommen,Ommen,ommen,NL,knooppuntsneltreinstation,52.50944519,6.415833473
+381,otb,8400489,Oosterbeek,Oosterbeek,Oosterbeek,oosterbeek,NL,stoptreinstation,51.99499893,5.840000153
+377,op,8400494,Opheusden,Opheusden,Opheusden,opheusden,NL,stoptreinstation,51.9261615,5.6371145
+367,o,8400495,Oss,Oss,Oss,oss,NL,knooppuntintercitystation,51.76555634,5.532222271
+383,ow,8400496,Oss West,Oss West,Oss W,oss-west,NL,stoptreinstation,51.75805664,5.50555563
+371,odb,8400498,Oudenbosch,Oudenbosch,Oudenbosch,oudenbosch,NL,stoptreinstation,51.58777618,4.533333302
+382,ovn,8400501,Overveen,Overveen,Overveen,overveen,NL,stoptreinstation,52.39110947,4.60611105
+388,pmr,8400508,Purmerend,Purmerend,Purmerend,purmerend,NL,knooppuntstoptreinstation,52.50305557,4.953610897
+387,pmo,8400506,Purmerend Overwhere,Overwhere,Overwhere,purmerend-overwhere,NL,stoptreinstation,52.51139069,4.968333244
+389,pmw,8400499,Purmerend Weidevenne,Weidevenne,Weidevenne,purmerend-weidevenne,NL,stoptreinstation,52.49659063,4.935629368
+391,pt,8400509,Putten,Putten,Putten,putten,NL,stoptreinstation,52.26499939,5.575277805
+394,rat,8400513,Raalte,Raalte,Raalte,raalte,NL,stoptreinstation,52.39166641,6.277500153
+416,rvs,8400515,Ravenstein,Ravenstein,Ravenstein,ravenstein,NL,stoptreinstation,51.79416656,5.635833263
+415,rv,8400518,Reuver,Reuver,Reuver,reuver,NL,stoptreinstation,51.28321917,6.078958511
+397,rh,8400519,Rheden,Rheden,Rheden,rheden,NL,stoptreinstation,52.00999832,6.030555725
+399,rhn,8400517,Rhenen,Rhenen,Rhenen,rhenen,NL,knooppuntstoptreinstation,51.95861053,5.578333378
+406,rsn,8400538,Rijssen,Rijssen,Rijssen,rijssen,NL,stoptreinstation,52.31222153,6.520277977
+407,rsw,8400505,Rijswijk,Rijswijk,Rijswijk,rijswijk,NL,stoptreinstation,52.03972244,4.31916666
+395,rb,8400521,Rilland-Bath,Rilland-Bath,Rilland-B,rilland-bath,NL,stoptreinstation,51.42277908,4.161110878
+402,rm,8400523,Roermond,Roermond,Roermond,roermond,NL,knooppuntintercitystation,51.1930542,5.994166851
+396,rd,8400525,Roodeschool,Roodeschool,Roodesch,roodeschool,NL,stoptreinstation,53.4192128,6.7606167
+405,rsd,8400526,Roosendaal,Roosendaal,Roosendaal,roosendaal,NL,knooppuntintercitystation,51.54027939,4.458333492
+404,rs,8400524,Rosmalen,Rosmalen,Rosmalen,rosmalen,NL,stoptreinstation,51.71472168,5.368055344
+409,rta,8400507,Rotterdam Alexander,Alexander,Alexander,rotterdam-alexander,NL,intercitystation,51.95194626,4.553611279
+410,rtb,8400529,Rotterdam Blaak,Rotterdam Blaak,Blaak,rotterdam-blaak,NL,intercitystation,51.92027664,4.488888741
+411,rtd,8400530,Rotterdam Centraal,Rotterdam C.,R'dam C,rotterdam-centraal,NL,megastation,51.92499924,4.46888876
+401,rlb,8400542,Rotterdam Lombardijen,Lombardijen,Lombardije,rotterdam-lombardijen,NL,stoptreinstation,51.88000107,4.53138876
+412,rtn,8400531,Rotterdam Noord,Rotterdam Noord,R'dam N,rotterdam-noord,NL,stoptreinstation,51.9422226,4.481666565
+413,rtst,8400534,Rotterdam Stadion,R'dam Stadion,R'dam Sta,rotterdam-stadion,NL,facultatiefstation,51.89389038,4.519721985
+414,rtz,8400533,Rotterdam Zuid,Rotterdam Zuid,R'dam Z,rotterdam-zuid,NL,stoptreinstation,51.90444565,4.510277748
+400,rl,8400537,Ruurlo,Ruurlo,Ruurlo,ruurlo,NL,stoptreinstation,52.0810888,6.4492656
+435,sptn,8400543,Santpoort Noord,Santpoort Noord,Santprt N,santpoort-noord,NL,stoptreinstation,52.43388748,4.632500172
+436,sptz,8400544,Santpoort Zuid,Santpoort Zuid,Santprt Z,santpoort-zuid,NL,stoptreinstation,52.41972351,4.631388664
+434,spm,8400545,Sappemeer Oost,Sappemeer Oost,Sappemr O,sappemeer-oost,NL,stoptreinstation,53.1589183,6.7955648
+544,ssh,8400603,Sassenheim,Sassenheim,Sassenheim,sassenheim,NL,stoptreinstation,52.215278,4.517222
+449,swd,8400547,Sauwerd,Sauwerd,Sauwerd,sauwerd,NL,stoptreinstation,53.29113,6.5404
+427,sgn,8400549,Schagen,Schagen,Schagen,schagen,NL,stoptreinstation,52.7844429,4.805277824
+421,sda,8400551,Scheemda,Scheemda,Scheemda,scheemda,NL,stoptreinstation,53.1655362,6.9777775
+422,sdm,8400553,Schiedam Centrum,Schiedam C.,Schiedam C,schiedam-centrum,NL,intercitystation,51.92124381,4.408993721
+366,nwl,8400563,Schiedam Nieuwland,Nieuwland,Nieuwland,schiedam-nieuwland,NL,stoptreinstation,51.92222214,4.382222176
+433,sog,8400555,Schin op Geul,Schin op Geul,Schin op G,schin-op-geul,NL,stoptreinstation,50.85638809,5.872222424
+432,sn,8400554,Schinnen,Schinnen,Schinnen,schinnen,NL,stoptreinstation,50.93916702,5.874444485
+428,shl,8400561,Schiphol,Schiphol,Schiphol,schiphol,NL,megastation,52.30944443,4.761944294
+650,spv,8400559,Simpelveld,Simpelveld,Simpelveld,simpelveld,NL,facultatiefstation,50.83147507,5.979738235
+440,std,8400564,Sittard,Sittard,Sittard,sittard,NL,knooppuntintercitystation,51.00166702,5.858611107
+423,sdt,8400565,Sliedrecht,Sliedrecht,Sliedrecht,sliedrecht,NL,stoptreinstation,51.82972336,4.778333187
+548,sdtb,8400497,Sliedrecht Baanhoek,Baanhoek,Baanhoek,sliedrecht-baanhoek,NL,stoptreinstation,51.829722,4.743333
+429,sk,8400566,Sneek,Sneek,Sneek,sneek,NL,knooppuntstoptreinstation,53.0328688,5.6523969
+430,sknd,8400574,Sneek Noord,Sneek Noord,Sneek N,sneek-noord,NL,stoptreinstation,53.0409319,5.6631808
+438,st,8400567,Soest,Soest,Soest,soest,NL,knooppuntstoptreinstation,52.17333221,5.309999943
+448,stz,8400571,Soest Zuid,Soest Zuid,Soest Z,soest-zuid,NL,stoptreinstation,52.16527939,5.303055763
+420,sd,8400569,Soestdijk,Soestdijk,Soestdijk,soestdijk,NL,stoptreinstation,52.18361282,5.300000191
+417,sbk,8400572,Spaubeek,Spaubeek,Spaubeek,spaubeek,NL,stoptreinstation,50.9430542,5.851666451
+694,sph,8400670,Spekholzerheide,Spekholzerheide,Spekholzer,spekholzerheide,NL,facultatiefstation,50.85355,6.02578
+447,stv,8400575,Stavoren,Stavoren,Stavoren,stavoren,NL,stoptreinstation,52.8865535,5.3600212
+442,stm,8400576,Stedum,Stedum,Stedum,stedum,NL,stoptreinstation,53.3262092,6.6875551
+450,swk,8400578,Steenwijk,Steenwijk,Steenwijk,steenwijk,NL,intercitystation,52.79151099,6.114555763
+437,srn,8400582,Susteren,Susteren,Susteren,susteren,NL,stoptreinstation,51.06138992,5.863055706
+431,sm,8400583,Swalmen,Swalmen,Swalmen,swalmen,NL,stoptreinstation,51.23582,6.03228
+457,tg,8400591,Tegelen,Tegelen,Tegelen,tegelen,NL,stoptreinstation,51.33894,6.14253
+454,tbg,8400592,Terborg,Terborg,Terborg,terborg,NL,stoptreinstation,51.9224549,6.3642466
+458,tl,8400596,Tiel,Tiel,Tiel,tiel,NL,knooppuntstoptreinstation,51.88944626,5.422222137
+459,tpsw,8400600,Tiel Passewaaij,Tiel Passewaaij,Passewaaij,tiel-passewaaij,NL,stoptreinstation,51.87388992,5.392222404
+453,tb,8400597,Tilburg,Tilburg,Tilburg,tilburg,NL,knooppuntintercitystation,51.5605545,5.083611012
+455,tbr,8400598,Tilburg Reeshof,Tilburg Reeshof,Reeshof,tilburg-reeshof,NL,stoptreinstation,51.57361221,4.99444437
+456,tbu,8400594,Tilburg Universiteit,Tilburg Univers.,Tilburg U,tilburg-universiteit,NL,stoptreinstation,51.56499863,5.051111221
+460,twl,8400599,Twello,Twello,Twello,twello,NL,stoptreinstation,52.23777771,6.098610878
+468,utg,8400615,Uitgeest,Uitgeest,Uitgeest,uitgeest,NL,knooppuntstoptreinstation,52.52166748,4.701666832
+462,uhz,8400617,Uithuizen,Uithuizen,Uithuizen,uithuizen,NL,stoptreinstation,53.4099568,6.6748869
+461,uhm,8400618,Uithuizermeeden,Uithuizermeeden,Uithuizerm,uithuizermeeden,NL,stoptreinstation,53.4145845,6.7202975
+465,ust,8400619,Usquert,Usquert,Usquert,usquert,NL,stoptreinstation,53.4014742,6.6093776
+467,ut,8400621,Utrecht Centraal,Utrecht C.,Utrecht C,utrecht-centraal,NL,megastation,52.08889008,5.110277653
+718,utlr,8400607,Utrecht Leidsche Rijn,Leidsche Rijn,Leidsche R,utrecht-leidsche-rijn,NL,stoptreinstation,52.09896,5.06523
+469,utl,8400623,Utrecht Lunetten,Utrecht Lunetten,Lunetten,utrecht-lunetten,NL,stoptreinstation,52.06555557,5.14416647
+470,utm,8400624,Utrecht Maliebaan,Maliebaan,Maliebaan,utrecht-maliebaan,NL,stoptreinstation,52.08777618,5.131388664
+471,uto,8400620,Utrecht Overvecht,Overvecht,Overvecht,utrecht-overvecht,NL,knooppuntstoptreinstation,52.11000061,5.124722004
+472,utt,8400614,Utrecht Terwijde,Utrecht Terwijde,Terwijde,utrecht-terwijde,NL,stoptreinstation,52.10055542,5.041666508
+473,utzl,8400613,Utrecht Zuilen,Utrecht Zuilen,Zuilen,utrecht-zuilen,NL,stoptreinstation,52.103055,5.09
+486,vk,8400632,Valkenburg,Valkenburg,Valkenburg,valkenburg,NL,knooppuntsneltreinstation,50.86972046,5.832221985
+496,vsv,8400635,Varsseveld,Varsseveld,Varsseveld,varsseveld,NL,stoptreinstation,51.937257,6.458839
+543,vdm,8400636,Veendam,Veendam,Veendam,veendam,NL,knooppuntstoptreinstation,53.10324,6.88475
+489,vndc,8400627,Veenendaal Centrum,Veenendaal C.,Veenendl C,veenendaal-centrum,NL,knooppuntstoptreinstation,52.02000046,5.548611164
+490,vndw,8400628,Veenendaal West,Veenendaal West,Veenendl W,veenendaal-west,NL,stoptreinstation,52.0280571,5.53138876
+285,klp,8400637,Veenendaal-De Klomp,De Klomp,De Klomp,veenendaal-de-klomp,NL,stoptreinstation,52.04583359,5.573888779
+498,vwd,8400638,Veenwouden,Veenwouden,Veenwouden,veenwouden,NL,stoptreinstation,53.2351834,5.9886615
+491,vp,8400640,Velp,Velp,Velp,velp,NL,stoptreinstation,51.99472046,5.980278015
+487,vl,8400644,Venlo,Venlo,Venlo,venlo,NL,knooppuntintercitystation,51.36360931,6.172777653
+492,vry,8400646,Venray,Venray,Venray,venray,NL,knooppuntstoptreinstation,51.5265681,6.014177799
+488,vlb,8400647,Vierlingsbeek,Vierlingsbeek,Vierlingsb,vierlingsbeek,NL,stoptreinstation,51.59193,5.99714
+477,vdg,8400650,Vlaardingen Centrum,Vlaardingen C.,Vlaard C,vlaardingen-centrum,NL,knooppuntstoptreinstation,51.9030571,4.344166756
+479,vdo,8400649,Vlaardingen Oost,Vlaardingen Oost,Vlaard O,vlaardingen-oost,NL,stoptreinstation,51.91027832,4.361666679
+480,vdw,8400642,Vlaardingen West,Vlaardingen West,Vlaard W,vlaardingen-west,NL,stoptreinstation,51.90416718,4.313055515
+497,vtn,8400651,Vleuten,Vleuten,Vleuten,vleuten,NL,stoptreinstation,52.10305405,5.010833263
+493,vs,8400652,Vlissingen,Vlissingen,Vlissingen,vlissingen,NL,knooppuntintercitystation,51.44583511,3.595277786
+494,vss,8400653,Vlissingen Souburg,Souburg,Souburg,vlissingen-souburg,NL,stoptreinstation,51.46472168,3.595277786
+478,vdl,8400656,Voerendaal,Voerendaal,Voerendaal,voerendaal,NL,stoptreinstation,50.88722229,5.930277824
+475,vb,8400658,Voorburg,Voorburg,Voorburg,voorburg,NL,stoptreinstation,52.06666565,4.359444618
+483,vh,8400655,Voorhout,Voorhout,Voorhout,voorhout,NL,stoptreinstation,52.22444534,4.484444618
+495,vst,8400659,Voorschoten,Voorschoten,Voorschtn,voorschoten,NL,stoptreinstation,52.12527847,4.432499886
+481,vem,8400668,Voorst-Empe,Voorst-Empe,Voorst-E,voorst-empe,NL,stoptreinstation,52.15750122,6.143610954
+476,vd,8400661,Vorden,Vorden,Vorden,vorden,NL,stoptreinstation,52.1071949,6.3170457
+499,vz,8400664,Vriezenveen,Vriezenveen,Vriezenvn,vriezenveen,NL,stoptreinstation,52.40203,6.60041
+484,vhp,8400666,Vroomshoop,Vroomshoop,Vroomshoop,vroomshoop,NL,stoptreinstation,52.4571921,6.5696679
+482,vg,8400667,Vught,Vught,Vught,vught,NL,stoptreinstation,51.65555573,5.291944504
+500,wad,8400675,Waddinxveen,Waddinxveen,Waddinxv,waddinxveen,NL,stoptreinstation,52.04416656,4.649722099
+501,wadn,8400674,Waddinxveen Noord,Waddinxveen N.,Waddinxv N,waddinxveen-noord,NL,stoptreinstation,52.05500031,4.648333549
+506,wfm,8400679,Warffum,Warffum,Warffum,warffum,NL,stoptreinstation,53.3908431,6.5671364
+517,wt,8400684,Weert,Weert,Weert,weert,NL,intercitystation,51.24861145,5.703610897
+513,wp,8400685,Weesp,Weesp,Weesp,weesp,NL,knooppuntstoptreinstation,52.31277847,5.043055534
+510,wl,8400686,Wehl,Wehl,Wehl,wehl,NL,stoptreinstation,51.9578065,6.213844
+545,wtv,8400688,Westervoort,Westervoort,Westervrt,westervoort,NL,stoptreinstation,51.96286,5.9695
+524,wz,8400690,Wezep,Wezep,Wezep,wezep,NL,stoptreinstation,52.45416641,6.002500057
+504,wdn,8400691,Wierden,Wierden,Wierden,wierden,NL,knooppuntstoptreinstation,52.36138916,6.591666698
+502,wc,8400710,Wijchen,Wijchen,Wijchen,wijchen,NL,stoptreinstation,51.8116684,5.73083353
+507,wh,8400711,Wijhe,Wijhe,Wijhe,wijhe,NL,stoptreinstation,52.39027786,6.140555382
+515,ws,8400696,Winschoten,Winschoten,Winschoten,winschoten,NL,knooppuntstoptreinstation,53.1392377,7.035101
+516,wsm,8400697,Winsum,Winsum,Winsum,winsum,NL,stoptreinstation,53.3300994,6.5202905
+522,ww,8400698,Winterswijk,Winterswijk,Winterswk,winterswijk,NL,knooppuntstoptreinstation,51.9677307,6.7155181
+523,www,8400700,Winterswijk West,Winterswijk West,Wintersw W,winterswijk-west,NL,stoptreinstation,51.97453,6.70417
+503,wd,8400702,Woerden,Woerden,Woerden,woerden,NL,knooppuntstoptreinstation,52.08499908,4.893610954
+505,wf,8400704,Wolfheze,Wolfheze,Wolfheze,wolfheze,NL,stoptreinstation,52.0055542,5.79361105
+521,wv,8400705,Wolvega,Wolvega,Wolvega,wolvega,NL,stoptreinstation,52.88083267,6.003611088
+509,wk,8400706,Workum,Workum,Workum,workum,NL,stoptreinstation,52.9724864,5.4564285
+511,wm,8400707,Wormerveer,Wormerveer,Wormerveer,wormerveer,NL,stoptreinstation,52.48916626,4.792222023
+529,zd,8400731,Zaandam,Zaandam,Zaandam,zaandam,NL,knooppuntintercitystation,52.43888855,4.813611031
+530,zdk,8400728,Zaandam Kogerveld,Kogerveld,Kogerveld,zaandam-kogerveld,NL,stoptreinstation,52.45666504,4.820277691
+528,zbm,8400732,Zaltbommel,Zaltbommel,Zaltbommel,zaltbommel,NL,stoptreinstation,51.80888748,5.263333321
+540,zvt,8400733,Zandvoort aan Zee,Zandvoort a Zee,Zandvoort,zandvoort-aan-zee,NL,stoptreinstation,52.37527847,4.532777786
+526,za,8400734,Zetten-Andelst,Zetten-Andelst,Zetten-A,zetten-andelst,NL,stoptreinstation,51.920056,5.7228408
+538,zv,8400735,Zevenaar,Zevenaar,Zevenaar,zevenaar,NL,knooppuntstoptreinstation,51.92305374,6.071944237
+539,zvb,8400737,Zevenbergen,Zevenbergen,Zevenbergn,zevenbergen,NL,stoptreinstation,51.64042,4.60904
+535,ztm,8400741,Zoetermeer,Zoetermeer,Zoetermeer,zoetermeer,NL,knooppuntstoptreinstation,52.04750061,4.477222443
+536,ztmo,8400740,Zoetermeer Oost,Zoetermeer Oost,Z'meer O,zoetermeer-oost,NL,stoptreinstation,52.04639053,4.492777824
+527,zb,8400742,Zuidbroek,Zuidbroek,Zuidbroek,zuidbroek,NL,knooppuntstoptreinstation,53.15961228,6.8679142
+531,zh,8400743,Zuidhorn,Zuidhorn,Zuidhorn,zuidhorn,NL,stoptreinstation,53.2486292,6.4062361
+534,zp,8400744,Zutphen,Zutphen,Zutphen,zutphen,NL,knooppuntintercitystation,52.14527893,6.19416666
+542,zww,8400745,Zwaagwesteinde,Zwaagwesteinde,Zwaagwest,zwaagwesteinde,NL,stoptreinstation,53.24817,6.03463
+541,zwd,8400752,Zwijndrecht,Zwijndrecht,Zwijndrcht,zwijndrecht,NL,stoptreinstation,51.81499863,4.641666889
+532,zl,8400747,Zwolle,Zwolle,Zwolle,zwolle,NL,knooppuntintercitystation,52.5047226,6.091944218
