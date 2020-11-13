@@ -120,6 +120,56 @@ else:
         config.path_dist_matrix, distance_matrix
     )
 
+    t_start = time.time()
+    nodes_df = nw.save_node_info_csv(G, config.path_node_info_csv)
+    nodes_dict = nw.save_nodeset_gps_json(G, config.path_nodeset_gps_json)
+    time_dict["network_nodes"] = time.time() - t_start
+
+    t_start = time.time()
+    adjacency_matrix = nw.save_adjacency_matrix(
+        G, config.path_adjacency_matrix
+    )
+    time_dict["adjacency_matrix"] = time.time() - t_start
+
+    ## DURATION DATA ###################################################
+    # Created to solve approximation errors found when comparing:
+    # 1 - Sum of shortest path distances from o to d
+    # 2 - Total distance between o and d
+    # Convert all distances to integer seconds (considering speed), and
+    # run dijkstra shortest paths considering these durations, to
+    # guarantee there are no fractional data.
+    t_start = time.time()
+    G_duration = nw.add_duration_to_graph(G, config.speed_km_h)
+    time_dict["add_duration_graph"] = time.time() - t_start
+
+    t_start = time.time()
+    df_G = nw.get_network_data(config.path_network_data, G_duration)
+    time_dict["get_network_data"] = time.time() - t_start
+
+    t_start = time.time()
+    dist_matrix_duration_dict = nw.get_distance_dic(
+        config.path_dist_dict_duration, G_duration, weight="duration"
+    )
+    time_dict["dist_matrix_duration_dict"] = time.time() - t_start
+
+    # Creating distance matrix from dictionary
+    t_start = time.time()
+    dist_matrix_duration = nw.get_distance_matrix(
+        config.path_dist_matrix_duration_npy,
+        G_duration,
+        distance_dic_m=dist_matrix_duration_dict,
+    )
+
+    time_dict["dist_matrix_duration_npy"] = time.time() - t_start
+
+    t_start = time.time()
+    dist_matrix_duration_df = nw.get_distance_matrix_df(
+        config.path_dist_matrix_duration,
+        dist_matrix_duration,
+        float_format="%.0f",
+    )
+
+    time_dict["dist_matrix_duration_csv"] = time.time() - t_start
     time_dict["distance_matrix"] = time.time() - t_start
 
     if config.root_reachability:
@@ -127,8 +177,8 @@ else:
         t_start = time.time()
         reachability_dict, steps = nw.get_reachability_dic(
             config.path_reachability_dic,
-            distance_matrix,
-            speed_km_h=config.speed_km_h,
+            dist_matrix_duration,
+            speed_km_h=None,
             step_list=config.step_list,
         )
         time_dict["reachability"] = time.time() - t_start
@@ -137,8 +187,8 @@ else:
         t_start = time.time()
         reachability_r_dict, steps = nw.get_reachability_dic(
             config.path_reachability_r_dic,
-            distance_matrix,
-            speed_km_h=config.speed_km_h,
+            dist_matrix_duration,
+            speed_km_h=None,
             step_list=config.step_list,
             roundtrip=True,
         )
@@ -289,56 +339,6 @@ else:
             )
 
             print(center_nodes.keys())
-
-    t_start = time.time()
-    nodes_df = nw.save_node_info_csv(G, config.path_node_info_csv)
-    nodes_dict = nw.save_nodeset_gps_json(G, config.path_nodeset_gps_json)
-    time_dict["network_nodes"] = time.time() - t_start
-
-    t_start = time.time()
-    adjacency_matrix = nw.save_adjacency_matrix(
-        G, config.path_adjacency_matrix
-    )
-    time_dict["adjacency_matrix"] = time.time() - t_start
-
-    ## DURATION DATA ###################################################
-    # Created to solve approximation errors found when comparing:
-    # 1 - Sum of shortest path distances from o to d
-    # 2 - Total distance between o and d
-    # Convert all distances to integer seconds (considering speed), and
-    # run dijkstra shortest paths considering these durations, to
-    # guarantee there are no fractional data.
-    t_start = time.time()
-    G_duration = nw.add_duration_to_graph(G, config.speed_km_h)
-    time_dict["add_duration_graph"] = time.time() - t_start
-
-    t_start = time.time()
-    df_G = nw.get_network_data(config.path_network_data, G_duration)
-    time_dict["get_network_data"] = time.time() - t_start
-
-    t_start = time.time()
-    dist_matrix_duration_dict = nw.get_distance_dic(
-        config.path_dist_dict_duration, G_duration, weight="duration"
-    )
-    time_dict["dist_matrix_duration_dict"] = time.time() - t_start
-
-    # Creating distance matrix from dictionary
-    t_start = time.time()
-    dist_matrix_duration = nw.get_distance_matrix(
-        config.path_dist_matrix_duration_npy,
-        G_duration,
-        distance_dic_m=dist_matrix_duration_dict,
-    )
-    time_dict["dist_matrix_duration_npy"] = time.time() - t_start
-
-    t_start = time.time()
-    dist_matrix_duration_df = nw.get_distance_matrix_df(
-        config.path_dist_matrix_duration,
-        dist_matrix_duration,
-        float_format="%.0f",
-    )
-
-    time_dict["dist_matrix_duration_csv"] = time.time() - t_start
 
     # Trip data is saved in external drive
     if config.tripdata:
