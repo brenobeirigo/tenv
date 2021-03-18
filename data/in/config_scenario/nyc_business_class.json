@@ -1,7 +1,7 @@
 {
   "mapdata": {
     "region": "Manhattan Island, New York City, New York, USA",
-    "label": "manhattan",
+    "label": "manhattan_nyc",
     "speed_km_h": 30,
     "max_travel_time_edge_sec": 60,
     "reachability": {
@@ -18,8 +18,8 @@
   },
   "tripdata": {
     "path_tripdata": "O:/phd/nyc_trips/raw/",
-    "output_cleaned_tripdata": "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv/data/out/manhattan_nyc/tripdata/cleaned/",
-    "output_ids_tripdata": "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv/data/out/manhattan_nyc/tripdata/ids/",
+    "output_cleaned_tripdata": "C:/tud/tenv/data/out/manhattan_nyc/tripdata/cleaned/",
+    "output_ids_tripdata": "C:/tud/tenv/data/out/manhattan_nyc/tripdata/ids/",
     "index_col": "pickup_datetime",
     "max_dist_km": 0.05,
     "filtered_columns": [

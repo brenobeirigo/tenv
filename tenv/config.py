@@ -31,7 +31,7 @@ short_path = False
 # root = "d:/bb/tenv"
 # root = "C:/Users/breno/Documents/phd/tenv"
 # root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
-case_study = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv/case_study_info.json"
+case_study = "case_study_info.json"
 with open(case_study) as js:
     data_paths = json.load(js)
     root = data_paths["root"]
