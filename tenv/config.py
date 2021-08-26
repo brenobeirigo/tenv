@@ -26,11 +26,9 @@ label_exp = ""
 # label_exp = "GIANT"
 # label_exp = "N"
 short_path = False
-# root = os.getcwd().replace("\\", "/")
-# root = "C:/Users/LocalAdmin/OneDrive/leap_forward/street_network_server/tenv"
-# root = "d:/bb/tenv"
-# root = "C:/Users/breno/Documents/phd/tenv"
-# root = "C:/Users/LocalAdmin/Documents/GitHub/tenv"
+
+root = "C:/Users/breno/Documents/phd/tenv"
+
 case_study = "case_study_info.json"
 with open(case_study) as js:
     data_paths = json.load(js)
@@ -71,8 +69,10 @@ if short_path:
     graph_name = graph_name[:4]
     label_exp = label_exp[:1]
 
+folder_name = "{}{}".format(label_exp, graph_name)
+
 # Where dataset is saved
-root_path = root + "/data/out/{}{}".format(label_exp, graph_name)
+root_path = os.path.join(root, "data/out", folder_name)
 
 # -------------------------------------------------------------------- #
 # Map ##################################################################
